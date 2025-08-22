@@ -1,0 +1,487 @@
+/* Dark Mode Styles for Bootstrap Components */
+
+/* Variables globales para dark mode */
+:root {
+    --bs-body-bg: #ffffff;
+    --bs-body-color: #212529;
+    --bs-card-bg: #ffffff;
+    --bs-card-border-color: rgba(0, 0, 0, 0.125);
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
+    --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+    --bs-navbar-bg: #f8f9fa;
+    --bs-form-control-bg: #ffffff;
+    --bs-form-control-border-color: #ced4da;
+    --bs-btn-bg: #ffffff;
+    --bs-modal-bg: #ffffff;
+    --bs-dropdown-bg: #ffffff;
+}
+
+.dark {
+    --bs-body-bg: #111827;
+    --bs-body-color: #f9fafb;
+    --bs-card-bg: #1f2937;
+    --bs-card-border-color: #374151;
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
+    --bs-navbar-bg: #1f2937;
+    --bs-form-control-bg: #374151;
+    --bs-form-control-border-color: #4b5563;
+    --bs-btn-bg: #374151;
+    --bs-modal-bg: #1f2937;
+    --bs-dropdown-bg: #1f2937;
+}
+
+/* Body dark mode */
+.dark body {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Cards */
+.dark .card {
+    background-color: #1f2937 !important;
+    border-color: #374151 !important;
+    color: var(--bs-body-color) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dark .card-header {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+    color: var(--bs-body-color) !important;
+    font-weight: 500 !important;
+}
+
+.dark .card-body {
+    background-color: #1f2937 !important;
+}
+
+.dark .card-footer {
+    background-color: #111827 !important;
+    border-color: #374151 !important;
+}
+
+/* Tables CORREGIDAS */
+.dark table,
+.dark .table {
+    --bs-table-bg: transparent;
+}
+
+/* Contenido de las tablas - texto gris oscuro, fondo sin cambiar */
+.dark .table tbody td,
+.dark table tbody td {
+    color: #374151 !important; /* Gris oscuro para buena legibilidad */
+    background-color: inherit !important; /* Mantiene el fondo original */
+}
+
+.dark .table-striped > tbody > tr:nth-of-type(odd) > td,
+.dark .table-striped > tbody > tr:nth-of-type(odd) > th {
+    background-color: var(--bs-table-striped-bg) !important;
+    color: #374151 !important; /* Texto gris oscuro también en filas alternas */
+}
+
+.dark .table-hover > tbody > tr:hover > td,
+.dark .table-hover > tbody > tr:hover > th {
+    background-color: var(--bs-table-hover-bg) !important;
+    color: #374151 !important; /* Texto gris oscuro en hover */
+}
+
+/* Headers de tabla mantienen su estilo actual (blanco sobre gris) */
+.dark .table thead th {
+    color: #ffffff !important;
+    border-color: var(--bs-card-border-color) !important;
+    background-color: #4b5563 !important;
+    font-weight: 600 !important;
+}
+
+.dark .table td,
+.dark .table th {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+/* DataTables headers específico - mantiene estilo actual */
+.dark .dataTables_wrapper .dataTable thead th,
+.dark .dataTables_wrapper .dataTable thead td {
+    background-color: #4b5563 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    border-color: #6b7280 !important;
+}
+
+.dark .dataTables_wrapper .dataTable thead .sorting,
+.dark .dataTables_wrapper .dataTable thead .sorting_asc,
+.dark .dataTables_wrapper .dataTable thead .sorting_desc,
+.dark .dataTables_wrapper .dataTable thead .sorting_asc_disabled,
+.dark .dataTables_wrapper .dataTable thead .sorting_desc_disabled {
+    color: #ffffff !important;
+    background-color: #4b5563 !important;
+}
+
+/* Contenido DataTables - texto gris oscuro */
+.dark .dataTables_wrapper .dataTable tbody td {
+    color: #374151 !important;
+}
+
+/* Forms */
+.dark .form-control {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-control:focus {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-control::placeholder {
+    color: #9ca3af !important;
+}
+
+.dark .form-select {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-label {
+    color: var(--bs-body-color) !important;
+}
+
+/* Buttons mejorados */
+.dark .btn-light {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+.dark .btn-light:hover {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+    color: #f9fafb !important;
+}
+
+.dark .btn-secondary {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+.dark .btn-secondary:hover {
+    background-color: #374151 !important;
+    border-color: #374151 !important;
+}
+
+.dark .btn-outline-secondary {
+    border-color: #6b7280 !important;
+    color: #f9fafb !important;
+}
+
+.dark .btn-outline-secondary:hover {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+/* Modals */
+.dark .modal-content {
+    background-color: var(--bs-modal-bg) !important;
+    color: var(--bs-body-color) !important;
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .modal-header {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .modal-footer {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%) !important;
+}
+
+/* Dropdowns */
+.dark .dropdown-menu {
+    background-color: var(--bs-dropdown-bg) !important;
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .dropdown-item {
+    color: var(--bs-body-color) !important;
+}
+
+.dark .dropdown-item:hover,
+.dark .dropdown-item:focus {
+    background-color: #374151 !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* DataTables específico - MEJORADO */
+.dark .dataTables_wrapper {
+    color: #374151 !important; /* Gris oscuro como el texto del menú */
+}
+
+.dark .dataTables_length label,
+.dark .dataTables_filter label,
+.dark .dataTables_info {
+    color: #374151 !important; /* Gris oscuro para "Buscar", "Mostrar X entradas", etc. */
+}
+
+.dark .dataTables_length select,
+.dark .dataTables_filter input {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: #374151 !important; /* Texto gris oscuro también en los campos */
+}
+
+/* Fix específico para el campo de búsqueda */
+.dark .dataTables_filter input[type="search"] {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #374151 !important; /* Texto gris oscuro consistente */
+    padding: 6px 12px !important;
+}
+
+.dark .dataTables_filter input[type="search"]:focus {
+    background-color: #374151 !important;
+    border-color: #3b82f6 !important;
+    color: #374151 !important; /* Mantener gris oscuro al hacer focus */
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+    outline: none !important;
+}
+
+.dark .dataTables_filter input[type="search"]::placeholder {
+    color: #6b7280 !important; /* Placeholder más claro que el texto */
+}
+
+/* Fix para el select de "Show entries" */
+.dark .dataTables_length select {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #374151 !important; /* Texto gris oscuro consistente */
+    padding: 6px 12px !important;
+}
+
+.dark .dataTables_length select:focus {
+    background-color: #374151 !important;
+    border-color: #3b82f6 !important;
+    color: #374151 !important;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+}
+
+.dark .dataTables_length select option {
+    background-color: #374151 !important;
+    color: #374151 !important; /* Opciones también gris oscuro */
+}
+
+/* Paginación MEJORADA */
+.dark .pagination {
+    --bs-pagination-bg: #374151;
+    --bs-pagination-border-color: #4b5563;
+    --bs-pagination-color: #f9fafb;
+    --bs-pagination-hover-color: #f9fafb;
+    --bs-pagination-hover-bg: #4b5563;
+    --bs-pagination-hover-border-color: #6b7280;
+    --bs-pagination-focus-color: #f9fafb;
+    --bs-pagination-focus-bg: #4b5563;
+    --bs-pagination-active-color: #ffffff;
+    --bs-pagination-active-bg: #3b82f6;
+    --bs-pagination-active-border-color: #3b82f6;
+    --bs-pagination-disabled-color: #9ca3af;
+    --bs-pagination-disabled-bg: #1f2937;
+    --bs-pagination-disabled-border-color: #374151;
+}
+
+.dark .page-link {
+    background-color: var(--bs-pagination-bg) !important;
+    border-color: var(--bs-pagination-border-color) !important;
+    color: var(--bs-pagination-color) !important;
+}
+
+.dark .page-link:hover {
+    background-color: var(--bs-pagination-hover-bg) !important;
+    border-color: var(--bs-pagination-hover-border-color) !important;
+    color: var(--bs-pagination-hover-color) !important;
+}
+
+.dark .page-link:focus {
+    background-color: var(--bs-pagination-focus-bg) !important;
+    border-color: var(--bs-pagination-hover-border-color) !important;
+    color: var(--bs-pagination-focus-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
+}
+
+.dark .page-item.active .page-link {
+    background-color: var(--bs-pagination-active-bg) !important;
+    border-color: var(--bs-pagination-active-border-color) !important;
+    color: var(--bs-pagination-active-color) !important;
+}
+
+.dark .page-item.disabled .page-link {
+    background-color: var(--bs-pagination-disabled-bg) !important;
+    border-color: var(--bs-pagination-disabled-border-color) !important;
+    color: var(--bs-pagination-disabled-color) !important;
+}
+
+/* DataTables botones de exportación */
+.dark .dt-buttons .btn {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #f9fafb !important;
+}
+
+.dark .dt-buttons .btn:hover {
+    background-color: #4b5563 !important;
+    border-color: #6b7280 !important;
+    color: #f9fafb !important;
+}
+
+/* Badges mejorados */
+.dark .badge.bg-success {
+    background-color: #10b981 !important;
+    color: #ffffff !important;
+}
+
+.dark .badge.bg-warning {
+    background-color: #f59e0b !important;
+    color: #ffffff !important;
+}
+
+.dark .badge.bg-danger {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+.dark .badge.bg-info {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+.dark .badge.bg-secondary {
+    background-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+.dark .badge.bg-primary {
+    background-color: #3b82f6 !important;
+    color: #ffffff !important;
+}
+
+/* Alerts mejorados */
+.dark .alert-info {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: #3b82f6 !important;
+    color: #93c5fd !important;
+}
+
+.dark .alert-success {
+    background-color: rgba(16, 185, 129, 0.1) !important;
+    border-color: #10b981 !important;
+    color: #6ee7b7 !important;
+}
+
+.dark .alert-warning {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+    border-color: #f59e0b !important;
+    color: #fcd34d !important;
+}
+
+.dark .alert-danger {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-color: #ef4444 !important;
+    color: #fca5a5 !important;
+}
+
+/* Toastr dark mode */
+.dark #toast-container > .toast {
+    background-color: #1f2937 !important;
+    color: #f9fafb !important;
+}
+
+.dark #toast-container > .toast-success {
+    background-color: #065f46 !important;
+}
+
+.dark #toast-container > .toast-error {
+    background-color: #7f1d1d !important;
+}
+
+.dark #toast-container > .toast-info {
+    background-color: #1e3a8a !important;
+}
+
+.dark #toast-container > .toast-warning {
+    background-color: #92400e !important;
+}
+
+/* Navigation Links - Dark Mode Fix - ESQUEMA CORREGIDO */
+/* Links ACTIVOS - texto BLANCO sobre fondo GRIS OSCURO */
+html.dark nav a.border-indigo-400,
+html.dark nav a.dark\:border-indigo-600,
+html.dark .space-x-8 a.border-indigo-400,
+html.dark .space-x-8 a.dark\:border-indigo-600,
+html.dark nav a[class*="border-indigo-400"],
+html.dark nav a[class*="border-indigo-600"] {
+    color: #ffffff !important; /* Texto BLANCO */
+    background-color: #374151 !important; /* Fondo GRIS OSCURO */
+    border-bottom-color: #4b5563 !important;
+    font-weight: 600 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    border-radius: 0.5rem 0.5rem 0 0 !important;
+}
+
+/* TODOS los links de navegación en dark mode - estado base GRIS OSCURO */
+html.dark nav a,
+html.dark .space-x-8 a,
+html.dark nav div a {
+    color: #374151 !important; /* Gris OSCURO para links inactivos */
+    transition: all 0.15s ease-in-out !important;
+}
+
+/* Links INACTIVOS hover - se aclaran un poco */
+html.dark nav a.border-transparent:hover,
+html.dark .space-x-8 a.border-transparent:hover {
+    color: #4b5563 !important; /* Gris un poco más claro en hover */
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    border-bottom-color: #6b7280 !important;
+}
+
+/* Sobrescribir TODAS las clases de texto de Tailwind en dark mode */
+html.dark nav a.text-gray-900,
+html.dark nav a.text-gray-500,
+html.dark .space-x-8 a.text-gray-900,
+html.dark .space-x-8 a.text-gray-500 {
+    color: #374151 !important; /* Gris oscuro */
+}
+
+html.dark nav a.dark\:text-gray-100,
+html.dark nav a.dark\:text-gray-400,
+html.dark .space-x-8 a.dark\:text-gray-100,
+html.dark .space-x-8 a.dark\:text-gray-400 {
+    color: #374151 !important; /* Gris oscuro */
+}
+
+/* Forzar color BLANCO para links activos independientemente de otras clases */
+html.dark nav a.text-gray-900.dark\:text-gray-100.border-indigo-400,
+html.dark nav a.text-gray-900.dark\:text-gray-100.dark\:border-indigo-600,
+html.dark .space-x-8 a.text-gray-900.dark\:text-gray-100.border-indigo-400,
+html.dark .space-x-8 a.text-gray-900.dark\:text-gray-100.dark\:border-indigo-600 {
+    color: #ffffff !important; /* BLANCO para contraste */
+}
+
+/* Mobile navigation */
+html.dark .responsive-nav-link {
+    color: #374151 !important; /* Gris oscuro */
+}
+
+html.dark .responsive-nav-link.bg-indigo-50 {
+    color: #ffffff !important; /* Blanco en móvil */
+    background-color: #374151 !important; /* Fondo gris oscuro en móvil */
+}

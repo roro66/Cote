@@ -1,0 +1,232 @@
+/* Dark Mode Styles for Bootstrap Components */
+
+/* Variables globales para dark mode */
+:root {
+    --bs-body-bg: #ffffff;
+    --bs-body-color: #212529;
+    --bs-card-bg: #ffffff;
+    --bs-card-border-color: rgba(0, 0, 0, 0.125);
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
+    --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+    --bs-navbar-bg: #f8f9fa;
+    --bs-form-control-bg: #ffffff;
+    --bs-form-control-border-color: #ced4da;
+    --bs-btn-bg: #ffffff;
+    --bs-modal-bg: #ffffff;
+    --bs-dropdown-bg: #ffffff;
+}
+
+.dark {
+    --bs-body-bg: #1a202c;
+    --bs-body-color: #e2e8f0;
+    --bs-card-bg: #2d3748;
+    --bs-card-border-color: #4a5568;
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(255, 255, 255, 0.05);
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.075);
+    --bs-navbar-bg: #2d3748;
+    --bs-form-control-bg: #2d3748;
+    --bs-form-control-border-color: #4a5568;
+    --bs-btn-bg: #2d3748;
+    --bs-modal-bg: #2d3748;
+    --bs-dropdown-bg: #2d3748;
+}
+
+/* Body dark mode */
+.dark body {
+    background-color: var(--bs-body-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Cards */
+.dark .card {
+    background-color: var(--bs-card-bg) !important;
+    border-color: var(--bs-card-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .card-header {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    border-color: var(--bs-card-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Tables */
+.dark table,
+.dark .table {
+    color: var(--bs-body-color) !important;
+    --bs-table-bg: transparent;
+}
+
+.dark .table-striped > tbody > tr:nth-of-type(odd) > td,
+.dark .table-striped > tbody > tr:nth-of-type(odd) > th {
+    background-color: var(--bs-table-striped-bg) !important;
+}
+
+.dark .table-hover > tbody > tr:hover > td,
+.dark .table-hover > tbody > tr:hover > th {
+    background-color: var(--bs-table-hover-bg) !important;
+}
+
+.dark .table thead th {
+    color: var(--bs-body-color) !important;
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .table td,
+.dark .table th {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+/* Forms */
+.dark .form-control {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-control:focus {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-select {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .form-label {
+    color: var(--bs-body-color) !important;
+}
+
+/* Buttons */
+.dark .btn-light {
+    background-color: #4a5568 !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .btn-light:hover {
+    background-color: #2d3748 !important;
+    border-color: #2d3748 !important;
+    color: #e2e8f0 !important;
+}
+
+.dark .btn-secondary {
+    background-color: #4a5568 !important;
+    border-color: #4a5568 !important;
+}
+
+.dark .btn-secondary:hover {
+    background-color: #2d3748 !important;
+    border-color: #2d3748 !important;
+}
+
+/* Modals */
+.dark .modal-content {
+    background-color: var(--bs-modal-bg) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .modal-header {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .modal-footer {
+    border-color: var(--bs-card-border-color) !important;
+}
+
+/* Dropdowns */
+.dark .dropdown-menu {
+    background-color: var(--bs-dropdown-bg) !important;
+    border-color: var(--bs-card-border-color) !important;
+}
+
+.dark .dropdown-item {
+    color: var(--bs-body-color) !important;
+}
+
+.dark .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* DataTables específico */
+.dark .dataTables_wrapper {
+    color: var(--bs-body-color) !important;
+}
+
+.dark .dataTables_length label,
+.dark .dataTables_filter label,
+.dark .dataTables_info {
+    color: var(--bs-body-color) !important;
+}
+
+.dark .dataTables_length select,
+.dark .dataTables_filter input {
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .page-link {
+    background-color: var(--bs-card-bg) !important;
+    border-color: var(--bs-card-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.dark .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--bs-card-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+/* Badges */
+.dark .badge.bg-success {
+    background-color: #38a169 !important;
+}
+
+.dark .badge.bg-warning {
+    background-color: #d69e2e !important;
+}
+
+.dark .badge.bg-danger {
+    background-color: #e53e3e !important;
+}
+
+.dark .badge.bg-info {
+    background-color: #3182ce !important;
+}
+
+.dark .badge.bg-secondary {
+    background-color: #4a5568 !important;
+}
+
+/* Alerts */
+.dark .alert-info {
+    background-color: rgba(49, 130, 206, 0.1) !important;
+    border-color: #3182ce !important;
+    color: #90cdf4 !important;
+}
+
+.dark .alert-success {
+    background-color: rgba(56, 161, 105, 0.1) !important;
+    border-color: #38a169 !important;
+    color: #9ae6b4 !important;
+}
+
+.dark .alert-warning {
+    background-color: rgba(214, 158, 46, 0.1) !important;
+    border-color: #d69e2e !important;
+    color: #faf089 !important;
+}
+
+.dark .alert-danger {
+    background-color: rgba(229, 62, 62, 0.1) !important;
+    border-color: #e53e3e !important;
+    color: #fed7d7 !important;
+}

@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Livewire;
+
+use App\Models\Account;
+use App\Models\Person;
+use App\Models\Team;
+use Livewire\Component;
+
+class AccountForm extends Component
+{
+    public $accountId = null;
+    public $name = '';
+    public $type = 'treasury';
+    public $person_id = '';
+    public $team_id = '';
+    public $balance = 0;
+    public $notes = '';
+    public $is_enabled = true;
+
+    protected $rules = [
+        'name' => 'required|string|max:255',
+        'type' => 'required|in:treasury,team,person',
+        'person_id' => 'nullable|exists:people,id',
+        'team_id' => 'nullable|exists:teams,id',
+        'balance' => 'required|numeric|min:0',
+        'notes' => 'nullable|string',
+        'is_enabled' => 'boolean',
+    ];
+
+    protected $messages = [
+        'name.required' => 'El nombre de la cuenta es obligatorio.',
+        'type.required' => 'El tipo de cuenta es obligatorio.',
+        'balance.required' => 'El saldo es obligatorio.',
+        'balance.numeric' => 'El saldo debe ser un número.',
+        'balance.min' => 'El saldo no puede ser negativo.',
+        'person_id.exists' => 'La persona seleccionada no existe.',
+        'team_id.exists' => 'El equipo seleccionado no existe.',
+    ];
+
+    public function mount($accountId = null)
+    {
+        if ($accountId) {
+            $this->accountId = $accountId;
+            $account = Account::findOrFail($accountId);
+            $this->name = $account->name;
+            $this->type = $account->type;
+            $this->person_id = $account->person_id;
+            $this->team_id = $account->team_id;
+            $this->balance = $account->balance;
+            $this->notes = $account->notes;
+            $this->is_enabled = $account->is_enabled;
+        }
+    }
+
+    public function updatedType()
+    {
+        // Reset related fields when type changes
+        $this->person_id = '';
+        $this->team_id = '';
+    }
+
+    public function save()
+    {
+        // Custom validation based on type
+        if ($this->type === 'person' && empty($this->person_id)) {
+            $this->addError('person_id', 'Debe seleccionar una persona para cuentas personales.');
+            return;
+        }
+        
+        if ($this->type === 'team' && empty($this->team_id)) {
+            $this->addError('team_id', 'Debe seleccionar un equipo para cuentas de equipo.');
+            return;
+        }
+
+        $this->validate();
+
+        $data = [
+            'name' => $this->name,
+            'type' => $this->type,
+            'person_id' => $this->type === 'person' ? $this->person_id : null,
+            'team_id' => $this->type === 'team' ? $this->team_id : null,
+            'balance' => $this->balance,
+            'notes' => $this->notes,
+            'is_enabled' => $this->is_enabled,
+        ];
+
+        if ($this->accountId) {
+            // Update existing account
+            $account = Account::findOrFail($this->accountId);
+            $account->update($data);
+
+            session()->flash('message', 'Cuenta actualizada correctamente.');
+        } else {
+            // Create new account
+            Account::create($data);
+
+            session()->flash('message', 'Cuenta creada correctamente.');
+        }
+
+        return redirect()->route('accounts.index');
+    }
+
+    public function render()
+    {
+        $people = Person::where('is_enabled', true)->orderBy('first_name')->get();
+        $teams = Team::where('is_enabled', true)->orderBy('name')->get();
+
+        return view('livewire.account-form', compact('people', 'teams'));
+    }
+}
