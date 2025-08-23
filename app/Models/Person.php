@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Rules\ValidChileanRut;
 use App\Helpers\RutHelper;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +14,7 @@ use Spatie\Activitylog\LogOptions;
 
 class Person extends Model
 {
-    use LogsActivity;
+    use HasFactory, LogsActivity;
 
     protected $fillable = [
         'first_name',
@@ -131,10 +132,8 @@ class Person extends Model
     public function getRoleTypeSpanishAttribute(): string
     {
         return match($this->role_type) {
-            'boss' => 'Jefe',
-            'treasurer' => 'Tesorero',
-            'team_leader' => 'Jefe de Cuadrilla',
-            'team_member' => 'Miembro de Cuadrilla',
+            'tesorero' => 'Tesorero',
+            'trabajador' => 'Trabajador',
             default => 'Sin Rol'
         };
     }

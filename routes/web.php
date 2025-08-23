@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rutas de Personas
     Route::resource('people', PersonController::class);
+    Route::get('people-export', [PersonController::class, 'export'])->name('people.export');
     
     // Rutas de Equipos (mantenemos solo para no romper referencias existentes)
     Route::resource('teams', TeamController::class);

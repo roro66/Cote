@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use App\Rules\ValidChileanRut;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePersonRequest extends FormRequest
+class UpdatePersonRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->is_enabled;
+        return auth()->check();
     }
 
     /**
@@ -22,7 +22,7 @@ class StorePersonRequest extends FormRequest
      */
     public function rules(): array
     {
-        $personId = $this->route('person') ? $this->route('person')->id : null;
+        $personId = $this->route('person')->id;
 
         return [
             'first_name' => 'required|string|max:255',
@@ -30,10 +30,10 @@ class StorePersonRequest extends FormRequest
             'rut' => [
                 'required',
                 'string',
-                'unique:people,rut' . ($personId ? ',' . $personId : ''),
+                'unique:people,rut,' . $personId,
                 new ValidChileanRut()
             ],
-            'email' => 'required|email|unique:people,email' . ($personId ? ',' . $personId : ''),
+            'email' => 'required|email|unique:people,email,' . $personId,
             'phone' => 'nullable|string|max:20',
             'role_type' => 'required|in:tesorero,trabajador',
             'bank_name' => 'nullable|string|max:255',
