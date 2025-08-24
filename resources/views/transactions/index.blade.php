@@ -12,9 +12,9 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="h4">Transacciones</h3>
-                        <a href="{{ route('transactions.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTransactionModal">
                             <i class="fas fa-plus"></i> Nueva Transacción
-                        </a>
+                        </button>
                     </div>
 
                     <div class="table-responsive">
@@ -203,6 +203,184 @@
             });
         }
     }
+
+    function clearTransactionForm() {
+        $('#createTransactionForm')[0].reset();
+        $('.form-control, .form-select').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+    }
+
+    function saveTransaction() {
+        // Limpiar errores previos
+        $('.form-control, .form-select').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+        
+        const formData = new FormData($('#createTransactionForm')[0]);
+        
+        fetch('/transactions', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="_token"]').val(),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                toastr.success('Transacción creada exitosamente');
+                $('#createTransactionModal').modal('hide');
+                clearTransactionForm();
+                $('#transactions-table').DataTable().ajax.reload();
+            } else {
+                toastr.error(data.message || 'Error al crear la transacción');
+            }
+        })
+        .catch(error => {
+            if (error.errors) {
+                // Mostrar errores de validación
+                Object.keys(error.errors).forEach(field => {
+                    const input = $(`#create_${field}`);
+                    input.addClass('is-invalid');
+                    input.siblings('.invalid-feedback').text(error.errors[field][0]);
+                });
+            } else {
+                toastr.error(error.message || 'Error al crear la transacción');
+            }
+        });
+    }
+
+    // Document ready para eventos
+    $(document).ready(function() {
+        // Limpiar formulario al abrir el modal
+        $('#createTransactionModal').on('show.bs.modal', function() {
+            clearTransactionForm();
+        });
+
+        // Validar que las cuentas origen y destino sean diferentes
+        $('#create_from_account_id, #create_to_account_id').change(function() {
+            const fromAccount = $('#create_from_account_id').val();
+            const toAccount = $('#create_to_account_id').val();
+            
+            if (fromAccount && toAccount && fromAccount === toAccount) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').text('La cuenta de destino debe ser diferente a la de origen');
+            } else {
+                $(this).removeClass('is-invalid');
+                $(this).siblings('.invalid-feedback').text('');
+            }
+        });
+    });
     </script>
     @endpush
+
+    <!-- Modal para crear transacción -->
+    <div class="modal fade" id="createTransactionModal" tabindex="-1" aria-labelledby="createTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTransactionModalLabel">Nueva Transacción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTransactionForm">
+                        @csrf
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_type" class="form-label">Tipo de Transacción *</label>
+                                    <select class="form-select" id="create_type" name="type" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="transfer">Transferencia</option>
+                                        <option value="payment">Pago</option>
+                                        <option value="adjustment">Ajuste</option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_amount" class="form-label">Monto *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="create_amount" name="amount" 
+                                               step="0.01" min="0.01" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_from_account_id" class="form-label">Cuenta Origen *</label>
+                                    <select class="form-select" id="create_from_account_id" name="from_account_id" required>
+                                        <option value="">Seleccionar cuenta origen...</option>
+                                        @php
+                                            $accounts = \App\Models\Account::where('is_enabled', true)->with('person')->get();
+                                        @endphp
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account->id }}">
+                                                {{ $account->name }} 
+                                                @if($account->person)
+                                                    ({{ $account->person->first_name }} {{ $account->person->last_name }})
+                                                @endif
+                                                - ${{ number_format($account->balance, 0, ',', '.') }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_to_account_id" class="form-label">Cuenta Destino *</label>
+                                    <select class="form-select" id="create_to_account_id" name="to_account_id" required>
+                                        <option value="">Seleccionar cuenta destino...</option>
+                                        @foreach($accounts as $account)
+                                            <option value="{{ $account->id }}">
+                                                {{ $account->name }}
+                                                @if($account->person)
+                                                    ({{ $account->person->first_name }} {{ $account->person->last_name }})
+                                                @endif
+                                                - ${{ number_format($account->balance, 0, ',', '.') }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="create_description" class="form-label">Descripción *</label>
+                            <textarea class="form-control" id="create_description" name="description" 
+                                      rows="3" maxlength="500" required></textarea>
+                            <div class="form-text">Máximo 500 caracteres</div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="create_notes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="create_notes" name="notes" rows="2"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTransaction()">Crear Transacción</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>

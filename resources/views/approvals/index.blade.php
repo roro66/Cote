@@ -238,7 +238,24 @@
                 ],
                 order: [[1, 'desc']],
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                    "decimal": "",
+                    "emptyTable": "No hay datos disponibles en la tabla",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
+                    "infoFiltered": "(filtrado de _MAX_ entradas totales)",
+                    "infoPostFix": "",
+                    "thousands": ".",
+                    "lengthMenu": "Mostrar _MENU_ entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros coincidentes",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
                 },
                 dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
@@ -376,7 +393,24 @@
                 ],
                 order: [[0, 'desc']],
                 language: {
-                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+                    "decimal": "",
+                    "emptyTable": "No hay datos disponibles en la tabla",
+                    "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
+                    "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
+                    "infoFiltered": "(filtrado de _MAX_ entradas totales)",
+                    "infoPostFix": "",
+                    "thousands": ".",
+                    "lengthMenu": "Mostrar _MENU_ entradas",
+                    "loadingRecords": "Cargando...",
+                    "processing": "Procesando...",
+                    "search": "Buscar:",
+                    "zeroRecords": "No se encontraron registros coincidentes",
+                    "paginate": {
+                        "first": "Primero",
+                        "last": "Último",
+                        "next": "Siguiente",
+                        "previous": "Anterior"
+                    }
                 },
                 dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
@@ -466,7 +500,7 @@
                 return;
             }
 
-            fetch(`/approvals/transaction/${transactionId}/approve`, {
+            fetch(`/approvals/transactions/${transactionId}/approve`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -476,16 +510,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showAlert('success', data.message);
+                    toastr.success(data.message);
                     transactionsTable.row((idx, rowData) => rowData.id === transactionId).remove().draw();
                     updateTransactionBadge();
                 } else {
-                    showAlert('error', data.message || 'Error al aprobar la transferencia');
+                    toastr.error(data.message || 'Error al aprobar la transferencia');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('error', 'Error de conexión al aprobar la transferencia');
+                toastr.error('Error de conexión al aprobar la transferencia');
             });
         }
 
@@ -518,16 +552,16 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showAlert('success', data.message);
+                    toastr.success(data.message);
                     expensesTable.row((idx, rowData) => rowData.id === expenseId).remove().draw();
                     updateExpenseBadge();
                 } else {
-                    showAlert('error', data.message || 'Error al aprobar la rendición');
+                    toastr.error(data.message || 'Error al aprobar la rendición');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('error', 'Error de conexión al aprobar la rendición');
+                toastr.error('Error de conexión al aprobar la rendición');
             });
         }
 
@@ -549,13 +583,13 @@
             const reason = document.getElementById('rejectReason').value.trim();
             
             if (!reason) {
-                showAlert('error', 'Debe ingresar un motivo para el rechazo');
+                toastr.error('Debe ingresar un motivo para el rechazo');
                 return;
             }
 
             const url = currentRejectType === 'transaction' 
-                ? `/approvals/transaction/${currentRejectId}/reject`
-                : `/approvals/expense/${currentRejectId}/reject`;
+                ? `/approvals/transactions/${currentRejectId}/reject`
+                : `/approvals/expenses/${currentRejectId}/reject`;
 
             fetch(url, {
                 method: 'POST',
@@ -570,7 +604,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    showAlert('success', data.message);
+                    toastr.success(data.message);
                     
                     if (currentRejectType === 'transaction') {
                         transactionsTable.row((idx, rowData) => rowData.id === currentRejectId).remove().draw();
@@ -585,12 +619,12 @@
                     modal.hide();
                     document.getElementById('rejectReason').value = '';
                 } else {
-                    showAlert('error', data.message || `Error al rechazar la ${currentRejectType === 'transaction' ? 'transferencia' : 'rendición'}`);
+                    toastr.error(data.message || `Error al rechazar la ${currentRejectType === 'transaction' ? 'transferencia' : 'rendición'}`);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('error', 'Error de conexión al rechazar la solicitud');
+                toastr.error('Error de conexión al rechazar la solicitud');
             });
         }
 
@@ -606,40 +640,13 @@
                     const modal = new bootstrap.Modal(document.getElementById('expenseDetailsModal'));
                     modal.show();
                 } else {
-                    showAlert('error', 'Error al cargar los detalles de la rendición');
+                    toastr.error('Error al cargar los detalles de la rendición');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                showAlert('error', 'Error de conexión al cargar los detalles');
+                toastr.error('Error de conexión al cargar los detalles');
             });
-        }
-
-        /**
-         * Muestra alertas en la interfaz
-         */
-        function showAlert(type, message) {
-            const alertContainer = document.getElementById('approval-alerts');
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-            const alertIcon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-            
-            const alertHtml = `
-                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
-                    <i class="fas ${alertIcon} me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-            
-            alertContainer.innerHTML = alertHtml;
-            
-            // Auto-ocultar después de 5 segundos
-            setTimeout(() => {
-                const alert = alertContainer.querySelector('.alert');
-                if (alert) {
-                    alert.remove();
-                }
-            }, 5000);
         }
 
         /**

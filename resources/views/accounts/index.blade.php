@@ -10,11 +10,25 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     
+                    @if(session('success'))
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+                    
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
+                    
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="h4">Cuentas Registradas</h3>
-                        <a href="{{ route('accounts.create') }}" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAccountModal">
                             <i class="fas fa-plus"></i> Nueva Cuenta
-                        </a>
+                        </button>
                     </div>
 
                     <div class="table-responsive">
@@ -160,6 +174,20 @@
         window.location.href = '/transactions?account_id=' + id;
     }
 
+    // Mostrar/ocultar campo persona según el tipo de cuenta
+    $(document).ready(function() {
+        $('#create_type').change(function() {
+            if ($(this).val() === 'person') {
+                $('#create-person-field').show();
+                $('#create_person_id').attr('required', true);
+            } else {
+                $('#create-person-field').hide();
+                $('#create_person_id').attr('required', false);
+                $('#create_person_id').val('');
+            }
+        });
+    });
+
     function deleteAccount(id) {
         if (confirm('¿Está seguro de que desea eliminar esta cuenta?')) {
             $.ajax({
@@ -169,15 +197,171 @@
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
-                    $('#accounts-table').DataTable().ajax.reload();
-                    toastr.success('Cuenta eliminada exitosamente');
+                    if (response.success) {
+                        $('#accounts-table').DataTable().ajax.reload();
+                        toastr.success(response.message || 'Cuenta eliminada exitosamente');
+                    } else {
+                        toastr.error(response.message || 'Error al eliminar la cuenta');
+                    }
                 },
-                error: function() {
-                    toastr.error('Error al eliminar la cuenta');
+                error: function(xhr) {
+                    let message = 'Error al eliminar la cuenta';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+                    toastr.error(message);
                 }
             });
         }
     }
+
+    function clearForm() {
+        $('#createAccountForm')[0].reset();
+        $('#create-person-field').hide();
+        $('#create_person_id').attr('required', false);
+        $('.form-control, .form-select').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+    }
+
+    function saveAccount() {
+        // Limpiar errores previos
+        $('.form-control, .form-select').removeClass('is-invalid');
+        $('.invalid-feedback').text('');
+        
+        const formData = new FormData($('#createAccountForm')[0]);
+        
+        fetch('/accounts', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('input[name="_token"]').val(),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => Promise.reject(data));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                toastr.success('Cuenta creada exitosamente');
+                $('#createAccountModal').modal('hide');
+                clearForm();
+                $('#accounts-table').DataTable().ajax.reload();
+            } else {
+                toastr.error(data.message || 'Error al crear la cuenta');
+            }
+        })
+        .catch(error => {
+            if (error.errors) {
+                // Mostrar errores de validación
+                Object.keys(error.errors).forEach(field => {
+                    const input = $(`#create_${field}`);
+                    input.addClass('is-invalid');
+                    input.siblings('.invalid-feedback').text(error.errors[field][0]);
+                });
+            } else {
+                toastr.error(error.message || 'Error al crear la cuenta');
+            }
+        });
+    }
+
+    // Limpiar formulario al abrir el modal
+    $('#createAccountModal').on('show.bs.modal', function() {
+        clearForm();
+    });
     </script>
     @endpush
+
+    <!-- Modal para crear/editar cuenta -->
+    <div class="modal fade" id="createAccountModal" tabindex="-1" aria-labelledby="createAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createAccountModalLabel">Nueva Cuenta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createAccountForm">
+                        @csrf
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_name" class="form-label">Nombre de la Cuenta *</label>
+                                    <input type="text" class="form-control" id="create_name" name="name" required>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_type" class="form-label">Tipo de Cuenta *</label>
+                                    <select class="form-select" id="create_type" name="type" required>
+                                        <option value="">Seleccionar tipo...</option>
+                                        <option value="treasury">Tesorería</option>
+                                        <option value="person">Personal</option>
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6" id="create-person-field" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="create_person_id" class="form-label">Persona Propietaria</label>
+                                    <select class="form-select" id="create_person_id" name="person_id">
+                                        <option value="">Seleccionar persona...</option>
+                                        @php
+                                            $people = \App\Models\Person::where('is_enabled', true)->get();
+                                        @endphp
+                                        @foreach($people as $person)
+                                            <option value="{{ $person->id }}">
+                                                {{ $person->first_name }} {{ $person->last_name }} - {{ $person->rut }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_balance" class="form-label">Saldo Inicial *</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="create_balance" name="balance" 
+                                               value="0" step="0.01" min="0" required>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="create_notes" class="form-label">Notas</label>
+                            <textarea class="form-control" id="create_notes" name="notes" rows="3"></textarea>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="hidden" name="is_enabled" value="0">
+                            <input type="checkbox" class="form-check-input" id="create_is_enabled" name="is_enabled" 
+                                   value="1" checked>
+                            <label class="form-check-label" for="create_is_enabled">
+                                Cuenta habilitada
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAccount()">Crear Cuenta</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </x-app-layout>
