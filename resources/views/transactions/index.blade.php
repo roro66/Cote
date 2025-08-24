@@ -165,16 +165,16 @@
     }
 
     function approveTransaction(id) {
-        if (confirm('¿Está seguro de que desea aprobar esta transacción?')) {
+        if (confirm('¿Está seguro de aprobar esta transacción?')) {
             $.ajax({
-                url: '/transactions/' + id + '/approve',
+                url: '/approvals/transactions/' + id + '/approve',
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}'
                 },
                 success: function(response) {
                     $('#transactions-table').DataTable().ajax.reload();
-                    toastr.success('Transacción aprobada exitosamente');
+                    toastr.success('Transacción aprobada');
                 },
                 error: function() {
                     toastr.error('Error al aprobar la transacción');
@@ -187,11 +187,11 @@
         let reason = prompt('¿Cuál es el motivo del rechazo?');
         if (reason !== null) {
             $.ajax({
-                url: '/transactions/' + id + '/reject',
+                url: '/approvals/transactions/' + id + '/reject',
                 method: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
-                    reason: reason
+                    rejection_reason: reason
                 },
                 success: function(response) {
                     $('#transactions-table').DataTable().ajax.reload();
