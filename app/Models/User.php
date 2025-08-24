@@ -104,9 +104,4 @@ class User extends Authenticatable
     {
         return $this->hasRole('boss');
     }
-
-    public function isTeamLeader(): bool
-    {
-        return $this->hasRole('team_leader');
-    }
 }

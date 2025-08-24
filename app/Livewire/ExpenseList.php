@@ -3,7 +3,6 @@
 namespace App\Livewire;
 
 use App\Models\Expense;
-use App\Models\Team;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,14 +15,12 @@ class ExpenseList extends Component
     public $sortDirection = 'desc';
     public $perPage = 10;
     public $statusFilter = '';
-    public $teamFilter = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
         'sortField' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
         'statusFilter' => ['except' => ''],
-        'teamFilter' => ['except' => ''],
     ];
 
     public function updatingSearch()
@@ -60,25 +57,17 @@ class ExpenseList extends Component
     public function render()
     {
         $expenses = Expense::query()
-            ->with(['team', 'expenseItems'])
+            ->with(['expenseItems'])
             ->when($this->search, function ($query) {
                 $query->where('description', 'like', '%' . $this->search . '%')
-                      ->orWhere('reference', 'like', '%' . $this->search . '%')
-                      ->orWhereHas('team', function ($q) {
-                          $q->where('name', 'like', '%' . $this->search . '%');
-                      });
+                      ->orWhere('reference', 'like', '%' . $this->search . '%');
             })
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
             })
-            ->when($this->teamFilter, function ($query) {
-                $query->where('team_id', $this->teamFilter);
-            })
             ->orderBy($this->sortField, $this->sortDirection)
             ->paginate($this->perPage);
 
-        $teams = Team::where('is_enabled', true)->orderBy('name')->get();
-
-        return view('livewire.expense-list', compact('expenses', 'teams'));
+        return view('livewire.expense-list', compact('expenses'));
     }
 }

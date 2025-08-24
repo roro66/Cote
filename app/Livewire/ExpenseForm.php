@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Models\Expense;
 use App\Models\ExpenseItem;
-use App\Models\Team;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -13,7 +12,6 @@ class ExpenseForm extends Component
     use WithFileUploads;
 
     public $expenseId = null;
-    public $team_id = '';
     public $description = '';
     public $reference = '';
     public $currency = 'PEN';
@@ -29,7 +27,6 @@ class ExpenseForm extends Component
     ];
 
     protected $rules = [
-        'team_id' => 'required|exists:teams,id',
         'description' => 'required|string|max:500',
         'reference' => 'nullable|string|max:255',
         'currency' => 'required|in:PEN,USD,EUR',
@@ -41,7 +38,6 @@ class ExpenseForm extends Component
     ];
 
     protected $messages = [
-        'team_id.required' => 'Debe seleccionar un equipo.',
         'description.required' => 'La descripción es obligatoria.',
         'items.*.description.required' => 'La descripción del item es obligatoria.',
         'items.*.amount.required' => 'El monto del item es obligatorio.',
@@ -54,7 +50,6 @@ class ExpenseForm extends Component
         if ($expenseId) {
             $this->expenseId = $expenseId;
             $expense = Expense::with('expenseItems')->findOrFail($expenseId);
-            $this->team_id = $expense->team_id;
             $this->description = $expense->description;
             $this->reference = $expense->reference;
             $this->currency = $expense->currency;
@@ -116,7 +111,6 @@ class ExpenseForm extends Component
             // Update existing expense
             $expense = Expense::findOrFail($this->expenseId);
             $expense->update([
-                'team_id' => $this->team_id,
                 'description' => $this->description,
                 'reference' => $this->reference,
                 'total_amount' => $totalAmount,
@@ -129,7 +123,6 @@ class ExpenseForm extends Component
         } else {
             // Create new expense
             $expense = Expense::create([
-                'team_id' => $this->team_id,
                 'description' => $this->description,
                 'reference' => $this->reference,
                 'total_amount' => $totalAmount,
@@ -155,8 +148,6 @@ class ExpenseForm extends Component
 
     public function render()
     {
-        $teams = Team::where('is_enabled', true)->orderBy('name')->get();
-
-        return view('livewire.expense-form', compact('teams'));
+        return view('livewire.expense-form');
     }
 }

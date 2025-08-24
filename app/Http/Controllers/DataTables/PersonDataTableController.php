@@ -12,7 +12,7 @@ class PersonDataTableController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Person::select('*');
+            $data = Person::with(['bank', 'accountType'])->select('*');
             
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -30,21 +30,37 @@ class PersonDataTableController extends Controller
                     }
                     return $row->rut;
                 })
+                ->addColumn('bank_info', function($row) {
+                    if ($row->bank) {
+                        $badge = match($row->bank->type) {
+                            'banco' => 'bg-primary',
+                            'tarjeta_prepago' => 'bg-info',
+                            'cooperativa' => 'bg-warning',
+                            default => 'bg-secondary'
+                        };
+                        return '<span class="badge '.$badge.'">'.$row->bank->name.'</span>';
+                    }
+                    return '<span class="text-muted">Sin banco</span>';
+                })
+                ->addColumn('account_info', function($row) {
+                    if ($row->accountType) {
+                        return '<span class="badge bg-secondary">'.$row->accountType->name.'</span>';
+                    }
+                    return '<span class="text-muted">Sin tipo</span>';
+                })
                 ->addColumn('status', function($row) {
                     $status = $row->is_enabled ? 'Activo' : 'Inactivo';
                     $class = $row->is_enabled ? 'bg-success' : 'bg-danger';
                     return '<span class="badge '.$class.'">'.$status.'</span>';
                 })
                 ->addColumn('action', function($row) {
-                    $actionBtn = '<div class="btn-group" role="group">
-                        <button type="button" class="btn btn-primary btn-sm edit-btn" onclick="editPerson('.$row->id.')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="deletePerson('.$row->id.')">
-                            <i class="fas fa-trash"></i> Eliminar
-                        </button>
-                    </div>';
-                    return $actionBtn;
+                    $btn = '<button type="button" class="btn btn-primary btn-sm me-1" onclick="editPerson('.$row->id.')" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>';
+                    $btn .= '<button type="button" class="btn btn-danger btn-sm" onclick="deletePerson('.$row->id.')" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>';
+                    return $btn;
                 })
                 ->filterColumn('full_name', function($query, $keyword) {
                     $query->whereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$keyword}%"]);
@@ -58,11 +74,17 @@ class PersonDataTableController extends Controller
                               ->orWhere('rut', 'like', "%{$searchValue}%")
                               ->orWhere('email', 'like', "%{$searchValue}%")
                               ->orWhere('phone', 'like', "%{$searchValue}%")
-                              ->orWhereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$searchValue}%"]);
+                              ->orWhereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$searchValue}%"])
+                              ->orWhereHas('bank', function($bankQuery) use ($searchValue) {
+                                  $bankQuery->where('name', 'like', "%{$searchValue}%");
+                              })
+                              ->orWhereHas('accountType', function($typeQuery) use ($searchValue) {
+                                  $typeQuery->where('name', 'like', "%{$searchValue}%");
+                              });
                         });
                     }
                 })
-                ->rawColumns(['action', 'status', 'rut'])
+                ->rawColumns(['action', 'status', 'rut', 'bank_info', 'account_info'])
                 ->make(true);
         }
         

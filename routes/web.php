@@ -5,13 +5,17 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\PersonController;
-use App\Http\Controllers\TeamController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\AccountTypeController;
+// use App\Http\Controllers\TeamController; // Comentado - controlador eliminado
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\DataTables\PersonDataTableController;
-use App\Http\Controllers\DataTables\TeamDataTableController;
+// use App\Http\Controllers\DataTables\TeamDataTableController; // Comentado - controlador eliminado
 use App\Http\Controllers\DataTables\AccountDataTableController;
 use App\Http\Controllers\DataTables\TransactionDataTableController;
 use App\Http\Controllers\DataTables\ExpenseDataTableController;
+use App\Http\Controllers\DataTables\BankDataTableController;
+use App\Http\Controllers\DataTables\AccountTypeDataTableController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
 use App\Livewire\ExpenseList;
@@ -39,8 +43,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('people', PersonController::class);
     Route::get('people-export', [PersonController::class, 'export'])->name('people.export');
     
-    // Rutas de Equipos (mantenemos solo para no romper referencias existentes)
-    Route::resource('teams', TeamController::class);
+    // Rutas de Bancos
+    Route::resource('banks', BankController::class);
+    
+    // Rutas de Tipos de Cuenta
+    Route::resource('account-types', AccountTypeController::class);
+    
+    // Rutas de Equipos (comentado - controlador eliminado)
+    // Route::resource('teams', TeamController::class);
     
     // Rutas para Aprobaciones
     Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
@@ -51,10 +61,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rutas DataTables AJAX
     Route::get('datatables/people', [PersonDataTableController::class, 'index'])->name('datatables.people');
-    Route::get('datatables/teams', [TeamDataTableController::class, 'index'])->name('datatables.teams');
+    // Route::get('datatables/teams', [TeamDataTableController::class, 'index'])->name('datatables.teams'); // Comentado - controlador eliminado
     Route::get('datatables/accounts', [AccountDataTableController::class, 'index'])->name('datatables.accounts');
     Route::get('datatables/transactions', [TransactionDataTableController::class, 'index'])->name('datatables.transactions');
     Route::get('datatables/expenses', [ExpenseDataTableController::class, 'index'])->name('datatables.expenses');
+    Route::get('datatables/banks', [BankDataTableController::class, 'index'])->name('datatables.banks');
+    Route::get('datatables/account-types', [AccountTypeDataTableController::class, 'index'])->name('datatables.account-types');
     
     // Rutas de Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -20,8 +20,10 @@ class DatabaseSeeder extends Seeder
 
         // Ejecutar seeders en orden correcto
         $this->call([
-            TeamSeeder::class,      // Crea personas y equipos
-            AccountSeeder::class,   // Crea cuentas (depende de personas y equipos)
+            BankSeeder::class,      // Crea bancos
+            AccountTypeSeeder::class, // Crea tipos de cuenta
+            PersonSeeder::class,    // Crea personas (sin teams)
+            AccountSeeder::class,   // Crea cuentas (depende de personas)
             TransactionSeeder::class, // Crea transacciones (depende de cuentas y usuarios)
             ExpenseSeeder::class,   // Crea gastos (depende de cuentas y usuarios)
         ]);

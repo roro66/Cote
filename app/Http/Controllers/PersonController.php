@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Person;
+use App\Models\Bank;
+use App\Models\AccountType;
 use App\Http\Requests\StorePersonRequest;
 use App\Http\Requests\UpdatePersonRequest;
 use App\Http\Resources\PersonResource;
@@ -34,7 +36,9 @@ class PersonController extends Controller
         }
         
         return view('people.index', [
-            'stats' => $stats
+            'stats' => $stats,
+            'banks' => Bank::active()->orderBy('name')->get(),
+            'accountTypes' => AccountType::active()->orderBy('name')->get()
         ]);
     }
 

@@ -22,8 +22,8 @@ class Person extends Model
         'rut',
         'email',
         'phone',
-        'bank_name',
-        'account_type',
+        'bank_id',
+        'account_type_id',
         'account_number',
         'address',
         'role_type',
@@ -79,16 +79,6 @@ class Person extends Model
         return $this->hasOne(User::class);
     }
 
-    public function teams(): BelongsToMany
-    {
-        return $this->belongsToMany(Team::class)->withPivot('role_in_team', 'is_active')->withTimestamps();
-    }
-
-    public function ledTeams(): HasMany
-    {
-        return $this->hasMany(Team::class, 'leader_id');
-    }
-
     public function accounts(): HasMany
     {
         return $this->hasMany(Account::class);
@@ -136,5 +126,21 @@ class Person extends Model
             'trabajador' => 'Trabajador',
             default => 'Sin Rol'
         };
+    }
+
+    /**
+     * Relación con banco
+     */
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
+    /**
+     * Relación con tipo de cuenta
+     */
+    public function accountType()
+    {
+        return $this->belongsTo(AccountType::class);
     }
 }

@@ -174,14 +174,12 @@ class PersonList extends Component
             
             // Verificar si tiene relaciones que impedirían la eliminación
             $hasAccounts = $person->accounts()->count() > 0;
-            $hasLedTeams = $person->ledTeams()->count() > 0;
             $hasSubmittedExpenses = $person->submittedExpenses()->count() > 0;
             $hasUser = $person->user()->exists();
             
-            if ($hasAccounts || $hasLedTeams || $hasSubmittedExpenses || $hasUser) {
+            if ($hasAccounts || $hasSubmittedExpenses || $hasUser) {
                 $dependencies = [];
                 if ($hasAccounts) $dependencies[] = 'cuentas';
-                if ($hasLedTeams) $dependencies[] = 'equipos como líder';
                 if ($hasSubmittedExpenses) $dependencies[] = 'gastos';
                 if ($hasUser) $dependencies[] = 'usuario del sistema';
                 

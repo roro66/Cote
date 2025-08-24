@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table id="people-table" class="table table-striped table-bordered" style="width:100%">
+                        <table id="people-table" class="table table-striped table-hover" style="width:100%">
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -63,6 +63,8 @@
                                     <th>RUT</th>
                                     <th>Email</th>
                                     <th>Teléfono</th>
+                                    <th>Banco</th>
+                                    <th>Tipo Cuenta</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
@@ -144,15 +146,31 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="create_bank_name" class="form-label">Banco</label>
-                                    <input type="text" class="form-control" id="create_bank_name" name="bank_name">
+                                    <label for="create_bank_id" class="form-label">Banco</label>
+                                    <select class="form-select" id="create_bank_id" name="bank_id">
+                                        <option value="">Seleccionar banco...</option>
+                                        @foreach($banks as $bank)
+                                            <option value="{{ $bank->id }}" data-type="{{ $bank->type }}">
+                                                {{ $bank->name }}
+                                                @if($bank->type === 'tarjeta_prepago') (Prepago) @endif
+                                                @if($bank->type === 'cooperativa') (Cooperativa) @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="create_account_type" class="form-label">Tipo de Cuenta</label>
-                                    <input type="text" class="form-control" id="create_account_type" name="account_type">
+                                    <label for="create_account_type_id" class="form-label">Tipo de Cuenta</label>
+                                    <select class="form-select" id="create_account_type_id" name="account_type_id">
+                                        <option value="">Seleccionar tipo de cuenta...</option>
+                                        @foreach($accountTypes as $accountType)
+                                            <option value="{{ $accountType->id }}" title="{{ $accountType->description }}">
+                                                {{ $accountType->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -259,15 +277,31 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="edit_bank_name" class="form-label">Banco</label>
-                                    <input type="text" class="form-control" id="edit_bank_name" name="bank_name">
+                                    <label for="edit_bank_id" class="form-label">Banco</label>
+                                    <select class="form-select" id="edit_bank_id" name="bank_id">
+                                        <option value="">Seleccionar banco...</option>
+                                        @foreach($banks as $bank)
+                                            <option value="{{ $bank->id }}" data-type="{{ $bank->type }}">
+                                                {{ $bank->name }}
+                                                @if($bank->type === 'tarjeta_prepago') (Prepago) @endif
+                                                @if($bank->type === 'cooperativa') (Cooperativa) @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    <label for="edit_account_type" class="form-label">Tipo de Cuenta</label>
-                                    <input type="text" class="form-control" id="edit_account_type" name="account_type">
+                                    <label for="edit_account_type_id" class="form-label">Tipo de Cuenta</label>
+                                    <select class="form-select" id="edit_account_type_id" name="account_type_id">
+                                        <option value="">Seleccionar tipo de cuenta...</option>
+                                        @foreach($accountTypes as $accountType)
+                                            <option value="{{ $accountType->id }}" title="{{ $accountType->description }}">
+                                                {{ $accountType->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -316,6 +350,8 @@
                 {data: 'rut', name: 'rut'},
                 {data: 'email', name: 'email'},
                 {data: 'phone', name: 'phone'},
+                {data: 'bank_info', name: 'bank_info', title: 'Banco', orderable: false},
+                {data: 'account_info', name: 'account_info', title: 'Tipo Cuenta', orderable: false},
                 {data: 'status', name: 'is_enabled', orderable: false},
                 {data: 'action', name: 'action', orderable: false, searchable: false}
             ],
@@ -339,54 +375,39 @@
                     "previous": "Anterior"
                 }
             },
-            dom: '<"row mb-3"<"col-sm-4"B><"col-sm-4"f><"col-sm-4"l>>rtip',
+            dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
             pageLength: 10,
             buttons: [
                 {
                     extend: 'copy',
                     text: '<i class="fas fa-copy"></i> Copiar',
-                    className: 'btn btn-secondary btn-sm',
-                    action: function(e, dt, button, config) {
-                        exportAllData('copy');
-                    }
+                    className: 'btn btn-sm btn-secondary'
                 },
                 {
                     extend: 'csv',
                     text: '<i class="fas fa-file-csv"></i> CSV',
-                    className: 'btn btn-secondary btn-sm',
-                    filename: 'personas_' + new Date().toISOString().split('T')[0],
-                    action: function(e, dt, button, config) {
-                        exportAllData('csv');
-                    }
+                    className: 'btn btn-sm btn-secondary'
                 },
                 {
                     extend: 'excel',
                     text: '<i class="fas fa-file-excel"></i> Excel',
-                    className: 'btn btn-secondary btn-sm',
-                    filename: 'personas_' + new Date().toISOString().split('T')[0],
-                    action: function(e, dt, button, config) {
-                        exportAllData('excel');
-                    }
+                    className: 'btn btn-sm btn-secondary'
                 },
                 {
                     extend: 'pdf',
                     text: '<i class="fas fa-file-pdf"></i> PDF',
-                    className: 'btn btn-secondary btn-sm',
-                    filename: 'personas_' + new Date().toISOString().split('T')[0],
-                    title: 'Lista de Personas - COTESO',
-                    action: function(e, dt, button, config) {
-                        exportAllData('pdf');
-                    }
+                    className: 'btn btn-sm btn-secondary'
                 },
                 {
                     extend: 'print',
                     text: '<i class="fas fa-print"></i> Imprimir',
-                    className: 'btn btn-secondary btn-sm',
-                    title: 'Lista de Personas - COTESO',
-                    action: function(e, dt, button, config) {
-                        exportAllData('print');
-                    }
+                    className: 'btn btn-sm btn-secondary'
+                },
+                {
+                    extend: 'colvis',
+                    text: '<i class="fas fa-columns"></i> Columnas',
+                    className: 'btn btn-sm btn-secondary'
                 }
             ],
             responsive: true,
@@ -412,7 +433,7 @@
             $('.dt-length select').addClass('form-select form-select-sm');
             
             // Asegurar alineación vertical
-            $('.dt-buttons, .dt-search, .dt-length').css('min-height', '50px');
+            $('.dt-buttons, .dt-search, .dt-length').addClass('d-flex align-items-center');
         }, 100);
     });
 
@@ -480,6 +501,9 @@
                         { data: 'rut', title: 'RUT' },
                         { data: 'email', title: 'Email' },
                         { data: 'phone', title: 'Teléfono' },
+                        { data: 'bank_name', title: 'Banco' },
+                        { data: 'account_type_name', title: 'Tipo Cuenta' },
+                        { data: 'account_number', title: 'Número Cuenta' },
                         { data: 'status', title: 'Estado' }
                     ],
                     dom: 'Brt',
@@ -521,8 +545,8 @@
                 document.getElementById('edit_email').value = person.email;
                 document.getElementById('edit_phone').value = person.phone || '';
                 document.getElementById('edit_role_type').value = person.role_type;
-                document.getElementById('edit_bank_name').value = person.bank_name || '';
-                document.getElementById('edit_account_type').value = person.account_type || '';
+                document.getElementById('edit_bank_id').value = person.bank_id || '';
+                document.getElementById('edit_account_type_id').value = person.account_type_id || '';
                 document.getElementById('edit_account_number').value = person.account_number || '';
                 document.getElementById('edit_address').value = person.address || '';
                 document.getElementById('edit_is_enabled').checked = person.is_enabled;
