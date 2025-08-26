@@ -28,13 +28,13 @@ class PersonController extends Controller
     public function index(Request $request)
     {
         $stats = $this->personService->getStats();
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'statistics' => $stats
             ]);
         }
-        
+
         return view('people.index', [
             'stats' => $stats,
             'banks' => Bank::active()->orderBy('name')->get(),
@@ -69,7 +69,6 @@ class PersonController extends Controller
 
             // Si es petición normal, redirigir con mensaje de éxito
             return redirect()->route('people.index')->with('success', 'Persona creada exitosamente');
-
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -116,7 +115,6 @@ class PersonController extends Controller
 
             // Si es petición normal, redirigir con mensaje de éxito
             return redirect()->route('people.index')->with('success', 'Persona actualizada exitosamente');
-
         } catch (\Exception $e) {
             if ($request->ajax()) {
                 return response()->json([
@@ -135,9 +133,8 @@ class PersonController extends Controller
     {
         try {
             $result = $this->personService->delete($person);
-            
-            return response()->json($result, $result['success'] ? 200 : 400);
 
+            return response()->json($result, $result['success'] ? 200 : 400);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -149,14 +146,14 @@ class PersonController extends Controller
     /**
      * Export all people for DataTables
      */
-    public function export(): JsonResponse
+    public function export(Request $request): JsonResponse
     {
         try {
-            $people = $this->personService->getAllForExport();
+            $search = $request->get('search');
+            $people = $this->personService->getAllForExport($search);
             $data = $this->personService->formatForExport($people);
 
             return response()->json(['data' => $data]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Error al exportar los datos: ' . $e->getMessage()

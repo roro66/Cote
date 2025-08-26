@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Account;
 use App\Services\TransactionService;
 use Illuminate\Http\Request;
 
@@ -28,7 +29,7 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|in:transfer,payment,adjustment',
+            'type' => 'required|in:transfer',
             'from_account_id' => 'required|exists:accounts,id',
             'to_account_id' => 'required|exists:accounts,id|different:from_account_id',
             'amount' => 'required|numeric|min:0.01',
@@ -37,6 +38,22 @@ class TransactionController extends Controller
         ]);
 
         try {
+            // Restringir transferencias sólo entre Tesorería y Persona (ambos sentidos)
+            $from = Account::find($request->from_account_id);
+            $to = Account::find($request->to_account_id);
+            if (!($from && $to)) {
+                return back()->withErrors(['from_account_id' => 'Cuentas inválidas.']);
+            }
+            $isTreasuryToPerson = $from->type === 'treasury' && $to->type === 'person';
+            $isPersonToTreasury = $from->type === 'person' && $to->type === 'treasury';
+            if (!($isTreasuryToPerson || $isPersonToTreasury)) {
+                $msg = 'Solo se permiten transferencias entre Tesorería y cuentas personales.';
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => $msg], 422);
+                }
+                return back()->withErrors(['to_account_id' => $msg]);
+            }
+
             // Verificar fondos suficientes para transferencias
             if ($request->type === 'transfer' && !$this->transactionService->hasSufficientFunds($request->from_account_id, $request->amount)) {
                 if ($request->expectsJson()) {
@@ -70,7 +87,6 @@ class TransactionController extends Controller
             }
 
             return redirect()->route('transactions.index')->with('success', 'Transacción creada exitosamente');
-
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([
@@ -86,7 +102,7 @@ class TransactionController extends Controller
     {
         // Cargar las relaciones necesarias
         $transaction->load(['fromAccount', 'toAccount', 'createdBy', 'approvedBy']);
-        
+
         return view('transactions.show', compact('transaction'));
     }
 

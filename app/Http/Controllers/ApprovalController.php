@@ -5,17 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use App\Models\Expense;
 use App\Services\TransactionService;
+use App\Services\ExpenseService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class ApprovalController extends Controller
 {
     private TransactionService $transactionService;
+    private ExpenseService $expenseService;
 
-    public function __construct(TransactionService $transactionService)
+    public function __construct(TransactionService $transactionService, ExpenseService $expenseService)
     {
         $this->transactionService = $transactionService;
+        $this->expenseService = $expenseService;
     }
 
     /**
@@ -23,23 +27,7 @@ class ApprovalController extends Controller
      */
     public function index(): View
     {
-        $pendingTransactions = Transaction::with([
-                'fromAccount.person', 
-                'toAccount.person', 
-                'createdBy'
-            ])
-            ->where('status', 'pending')
-            ->where('is_enabled', true)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $pendingExpenses = Expense::with(['account.person', 'submittedBy', 'items'])
-            ->where('status', 'submitted')
-            ->where('is_enabled', true)
-            ->orderBy('submitted_at', 'desc')
-            ->get();
-
-        return view('approvals.index', compact('pendingTransactions', 'pendingExpenses'));
+        return view('approvals.index');
     }
 
     /**
@@ -65,13 +53,12 @@ class ApprovalController extends Controller
                 }
             }
 
-            $this->transactionService->approveTransaction($transaction, auth()->id());
+            $this->transactionService->approveTransaction($transaction, Auth::id());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Transacción aprobada correctamente.'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -98,8 +85,8 @@ class ApprovalController extends Controller
             }
 
             $this->transactionService->rejectTransaction(
-                $transaction, 
-                auth()->id(), 
+                $transaction,
+                Auth::id(),
                 $request->rejection_reason
             );
 
@@ -107,7 +94,6 @@ class ApprovalController extends Controller
                 'success' => true,
                 'message' => 'Transacción rechazada correctamente.'
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -119,41 +105,49 @@ class ApprovalController extends Controller
     /**
      * Aprobar una rendición de gastos
      */
-    public function approveExpense(Request $request, Expense $expense): JsonResponse
+    public function approveExpense(Request $request, Expense $expense)
     {
         try {
             if ($expense->status !== 'submitted') {
-                return response()->json([
+                $payload = [
                     'success' => false,
                     'message' => 'Solo se pueden aprobar rendiciones enviadas.'
-                ], 400);
+                ];
+                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                    return response()->json($payload, 400);
+                }
+                return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $payload['message']]);
             }
 
-            $expense->update([
-                'status' => 'approved',
-                'reviewed_by' => auth()->id(),
-                'reviewed_at' => now()
-            ]);
+            $this->expenseService->approveExpense($expense, Auth::id());
 
-            // TODO: Aquí se implementará el rebajo de deuda automático
-            
-            return response()->json([
+            $payload = [
                 'success' => true,
                 'message' => 'Rendición aprobada correctamente.'
-            ]);
+            ];
 
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json($payload);
+            }
+
+            return redirect()->route('expenses.show', $expense)
+                ->with('toastr', ['type' => 'success', 'message' => $payload['message']]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al aprobar la rendición: ' . $e->getMessage()
-            ], 500);
+            $message = 'Error al aprobar la rendición: ' . $e->getMessage();
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 500);
+            }
+            return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message]);
         }
     }
 
     /**
      * Rechazar una rendición de gastos
      */
-    public function rejectExpense(Request $request, Expense $expense): JsonResponse
+    public function rejectExpense(Request $request, Expense $expense)
     {
         $request->validate([
             'rejection_reason' => 'required|string|max:500'
@@ -161,29 +155,41 @@ class ApprovalController extends Controller
 
         try {
             if ($expense->status !== 'submitted') {
-                return response()->json([
+                $payload = [
                     'success' => false,
                     'message' => 'Solo se pueden rechazar rendiciones enviadas.'
-                ], 400);
+                ];
+                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                    return response()->json($payload, 400);
+                }
+                return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $payload['message']]);
             }
 
             $expense->update([
                 'status' => 'rejected',
-                'reviewed_by' => auth()->id(),
+                'reviewed_by' => Auth::id(),
                 'reviewed_at' => now(),
                 'rejection_reason' => $request->rejection_reason
             ]);
 
-            return response()->json([
+            $payload = [
                 'success' => true,
                 'message' => 'Rendición rechazada correctamente.'
-            ]);
-
+            ];
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json($payload);
+            }
+            return redirect()->route('expenses.show', $expense)
+                ->with('toastr', ['type' => 'success', 'message' => $payload['message']]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al rechazar la rendición: ' . $e->getMessage()
-            ], 500);
+            $message = 'Error al rechazar la rendición: ' . $e->getMessage();
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 500);
+            }
+            return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message]);
         }
     }
 }

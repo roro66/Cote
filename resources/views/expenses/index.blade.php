@@ -35,6 +35,12 @@
                         </table>
                     </div>
 
+                    <!-- Formulario oculto para eliminación -->
+                    <form id="deleteForm" method="POST" style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -43,6 +49,12 @@
     @push('scripts')
     <script>
     $(document).ready(function() {
+        // Mostrar mensajes toastr desde la sesión
+        @if(session('toastr'))
+            @php $toastr = session('toastr'); @endphp
+            toastr.{{ $toastr['type'] }}('{{ $toastr['message'] }}');
+        @endif
+        
         // Inicializar DataTable para Gastos
         let table = $('#expenses-table').DataTable({
             processing: true,
@@ -157,50 +169,12 @@
         }, 100);
     });
 
-    // Funciones globales para las acciones
-    function viewExpense(id) {
-        window.location.href = '/expenses/' + id;
-    }
-
-    function editExpense(id) {
-        window.location.href = '/expenses/' + id + '/edit';
-    }
-
-    function approveExpense(id) {
-        if (confirm('¿Está seguro de que desea aprobar esta rendición?')) {
-            $.ajax({
-                url: '/expenses/' + id + '/approve',
-                method: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    $('#expenses-table').DataTable().ajax.reload();
-                    toastr.success('Rendición aprobada exitosamente');
-                },
-                error: function() {
-                    toastr.error('Error al aprobar la rendición');
-                }
-            });
-        }
-    }
-
+    // Función para eliminar expense
     function deleteExpense(id) {
         if (confirm('¿Está seguro de que desea eliminar esta rendición?')) {
-            $.ajax({
-                url: '/expenses/' + id,
-                method: 'DELETE',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
-                success: function(response) {
-                    $('#expenses-table').DataTable().ajax.reload();
-                    toastr.success('Rendición eliminada exitosamente');
-                },
-                error: function() {
-                    toastr.error('Error al eliminar la rendición');
-                }
-            });
+            const form = document.getElementById('deleteForm');
+            form.action = '/expenses/' + id;
+            form.submit();
         }
     }
     </script>

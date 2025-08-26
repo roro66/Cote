@@ -1,22 +1,388 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Nueva Rendición
-            </h2>
-            <a href="{{ route('expenses.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                Volver
-            </a>
-        </div>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Nueva Rendición
+        </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    @livewire('expense-form')
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900 dark:text-gray-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <a href="{{ route('expenses.index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Volver
+                        </a>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <form id="createExpenseForm">
+                                @csrf
+
+                                <!-- Cuenta -->
+                                <div class="mb-3">
+                                    <label for="account_id" class="form-label">
+                                        Cuenta <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="account_id" name="account_id" required>
+                                        <option value="">Seleccionar cuenta...</option>
+                                        @foreach ($accounts as $account)
+                                            <option value="{{ $account->id }}">
+                                                {{ $account->name }} -
+                                                {{ $account->person->first_name ?? 'Sin asignar' }}
+                                                {{ $account->person->last_name ?? '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Resumen de Cuenta Seleccionada -->
+                                <div id="accountSummary" class="row g-3 mb-4" style="display:none;">
+                                    <div class="col-md-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="text-muted small mb-1">Propietario</div>
+                                                <div id="accountOwner" class="fw-semibold">—</div>
+                                                <div id="accountType" class="text-muted small">—</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="text-muted small mb-1">Saldo actual</div>
+                                                <div id="currentBalance" class="fs-5 fw-bold">$0 CLP</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <div class="text-muted small">Saldo proyectado</div>
+                                                    <span class="badge bg-info"
+                                                        title="Saldo tras aprobar esta rendición">Proyección</span>
+                                                </div>
+                                                <div id="projectedBalance" class="fs-5 fw-bold">$0 CLP</div>
+                                                <div id="projectedHint" class="small mt-1 text-muted"
+                                                    style="display:none">Quedará en negativo; Tesorería debe
+                                                    regularizar.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Descripción -->
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">
+                                        Descripción General <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="3" required
+                                        placeholder="Descripción general de la rendición"></textarea>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Referencia -->
+                                <div class="mb-3">
+                                    <label for="reference" class="form-label">Referencia</label>
+                                    <input type="text" class="form-control" id="reference" name="reference"
+                                        placeholder="Número de referencia o código interno">
+                                    <div class="invalid-feedback"></div>
+                                </div>
+
+                                <!-- Campo oculto para moneda -->
+                                <input type="hidden" id="currency" name="currency" value="CLP">
+
+                                <!-- Items de Gasto -->
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0">Items de Gasto</h5>
+                                    </div>
+
+                                    <div id="expenseItems">
+                                        <!-- Items will be added dynamically -->
+                                    </div>
+
+                                    <!-- Botón para agregar items - después de los items existentes -->
+                                    <div class="text-center mb-3">
+                                        <button type="button" class="btn btn-success" onclick="addExpenseItem()">
+                                            <i class="fas fa-plus me-1"></i>Agregar Item
+                                        </button>
+                                    </div>
+
+                                    <div class="alert alert-info mt-3">
+                                        <strong>Total:</strong> <span id="totalAmount">0.00</span> <span
+                                            id="totalCurrency">CLP</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>Crear Rendición
+                                    </button>
+                                    <a href="{{ route('expenses.index') }}" class="btn btn-secondary">Cancelar</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Template for expense items -->
+    <template id="expenseItemTemplate">
+        <div class="expense-item card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="card-title mb-0">Item de Gasto</h6>
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeExpenseItem(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Descripción <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control item-description" name="items[][description]"
+                            placeholder="Descripción del gasto" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Monto (CLP) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control item-amount" name="items[][amount]" step="0.01"
+                            min="0.01" placeholder="0.00" required onchange="calculateTotal()">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de Documento <span class="text-danger">*</span></label>
+                        <select class="form-select" name="items[][document_type]" required>
+                            <option value="ticket">Ticket</option>
+                            <option value="boleta">Boleta</option>
+                            <option value="factura">Factura</option>
+                            <option value="guia_despacho">Guía de Despacho</option>
+                            <option value="vale">Vale</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+
+                <!-- Campo oculto para moneda del item -->
+                <input type="hidden" class="item-currency" name="items[][currency]" value="CLP">
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" name="items[][vendor_name]"
+                            placeholder="Nombre del proveedor" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Número de Recibo</label>
+                        <input type="text" class="form-control" name="items[][receipt_number]"
+                            placeholder="Número de recibo o factura">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        let itemCounter = 0;
+        let selectedAccount = null;
+        let currentBalanceValue = 0;
+
+        function formatCLP(value) {
+            const n = Number(value || 0);
+            return '$' + new Intl.NumberFormat('es-CL').format(n) + ' CLP';
+        }
+
+        function updateProjectedBalance() {
+            const total = parseFloat(document.getElementById('totalAmount').textContent) || 0;
+            const projected = currentBalanceValue - total;
+            const projectedEl = document.getElementById('projectedBalance');
+            projectedEl.textContent = formatCLP(projected);
+            projectedEl.classList.toggle('text-danger', projected < 0);
+            projectedEl.classList.toggle('text-success', projected >= 0);
+            const hint = document.getElementById('projectedHint');
+            hint.style.display = projected < 0 ? 'block' : 'none';
+        }
+
+        function addExpenseItem() {
+            const template = document.getElementById('expenseItemTemplate');
+            const clone = template.content.cloneNode(true);
+
+            // Update name attributes to include index
+            clone.querySelectorAll('input, select').forEach(input => {
+                if (input.name && input.name.includes('[]')) {
+                    input.name = input.name.replace('[]', `[${itemCounter}]`);
+                }
+            });
+
+            document.getElementById('expenseItems').appendChild(clone);
+            itemCounter++;
+            calculateTotal();
+        }
+
+        function removeExpenseItem(button) {
+            if (document.querySelectorAll('.expense-item').length > 1) {
+                button.closest('.expense-item').remove();
+                calculateTotal();
+            } else {
+                toastr.warning('Debe mantener al menos un item de gasto');
+            }
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            document.querySelectorAll('.item-amount').forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+            document.getElementById('totalCurrency').textContent = document.getElementById('currency').value;
+            updateProjectedBalance();
+        }
+
+        // Update total currency when main currency changes
+        document.getElementById('currency').addEventListener('change', function() {
+            calculateTotal();
+        });
+
+        // Manejar selección de cuenta
+        document.getElementById('account_id').addEventListener('change', function() {
+            const accountId = this.value;
+            const summary = document.getElementById('accountSummary');
+            if (!accountId) {
+                selectedAccount = null;
+                currentBalanceValue = 0;
+                summary.style.display = 'none';
+                updateProjectedBalance();
+                return;
+            }
+
+            fetch(`/accounts/${accountId}`)
+                .then(res => res.json())
+                .then(acc => {
+                    selectedAccount = acc;
+                    currentBalanceValue = parseFloat(acc.balance) || 0;
+                    document.getElementById('accountOwner').textContent = acc.person ?
+                        `${acc.person.first_name} ${acc.person.last_name}` : '—';
+                    document.getElementById('accountType').textContent = acc.type === 'treasury' ? 'Tesorería' :
+                        'Personal';
+                    const currentEl = document.getElementById('currentBalance');
+                    currentEl.textContent = formatCLP(currentBalanceValue);
+                    currentEl.classList.toggle('text-danger', currentBalanceValue < 0);
+                    currentEl.classList.toggle('text-success', currentBalanceValue >= 0);
+                    summary.style.display = 'flex';
+                    updateProjectedBalance();
+                })
+                .catch(() => {
+                    selectedAccount = null;
+                    currentBalanceValue = 0;
+                    summary.style.display = 'none';
+                    updateProjectedBalance();
+                });
+        });
+
+        // Add initial item
+        document.addEventListener('DOMContentLoaded', function() {
+            addExpenseItem();
+
+            // Form submission
+            document.getElementById('createExpenseForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                if (document.querySelectorAll('.expense-item').length === 0) {
+                    toastr.error('Debe agregar al menos un item de gasto');
+                    return;
+                }
+
+                const formData = new FormData(this);
+
+                // Convert FormData to regular object for items
+                const items = [];
+                const itemElements = document.querySelectorAll('.expense-item');
+
+                itemElements.forEach((item, index) => {
+                    items.push({
+                        description: item.querySelector('.item-description').value,
+                        amount: item.querySelector('.item-amount').value,
+                        currency: item.querySelector('.item-currency').value,
+                        document_type: item.querySelector('select[name*="document_type"]')
+                            .value,
+                        vendor_name: item.querySelector('input[name*="vendor_name"]').value,
+                        receipt_number: item.querySelector('input[name*="receipt_number"]')
+                            .value || null
+                    });
+                });
+
+                const data = {
+                    _token: formData.get('_token'),
+                    account_id: formData.get('account_id'),
+                    description: formData.get('description'),
+                    reference: formData.get('reference'),
+                    currency: formData.get('currency'),
+                    items: items
+                };
+
+                fetch('{{ route('expenses.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        console.log('Response headers:', response.headers);
+
+                        // Check if response is JSON
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            return response.text().then(text => {
+                                console.error('Non-JSON response:', text);
+                                throw new Error('Response is not JSON');
+                            });
+                        }
+
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            toastr.success(data.message);
+                            window.location.href = '{{ route('expenses.index') }}';
+                        } else {
+                            toastr.error(data.message);
+
+                            // Handle validation errors
+                            if (data.errors) {
+                                Object.keys(data.errors).forEach(field => {
+                                    const input = document.querySelector(`[name="${field}"]`);
+                                    if (input) {
+                                        input.classList.add('is-invalid');
+                                        const feedback = input.parentNode.querySelector(
+                                            '.invalid-feedback');
+                                        if (feedback) {
+                                            feedback.textContent = data.errors[field][0];
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error creando rendición:', error);
+                        toastr.error('Error al crear la rendición: ' + (error?.message ||
+                            'Desconocido'));
+                    });
+            });
+        });
+    </script>
 </x-app-layout>

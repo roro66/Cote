@@ -21,7 +21,7 @@ class TransactionForm extends Component
     public $status = 'pending';
 
     protected $rules = [
-        'type' => 'required|in:transfer,payment,adjustment',
+        'type' => 'required|in:transfer',
         'from_account_id' => 'required|exists:accounts,id',
         'to_account_id' => 'required|exists:accounts,id|different:from_account_id',
         'amount' => 'required|numeric|min:0.01',
@@ -50,7 +50,7 @@ class TransactionForm extends Component
             $this->transactionId = $transactionId;
             $transaction = Transaction::findOrFail($transactionId);
             $this->transaction_number = $transaction->transaction_number;
-            $this->type = $transaction->type;
+            $this->type = 'transfer';
             $this->from_account_id = $transaction->from_account_id;
             $this->to_account_id = $transaction->to_account_id;
             $this->amount = $transaction->amount;
@@ -60,6 +60,7 @@ class TransactionForm extends Component
         } else {
             // Generate transaction number for new transactions
             $this->transaction_number = 'TXN-' . date('Ymd') . '-' . Str::upper(Str::random(6));
+            $this->type = 'transfer';
         }
     }
 
@@ -73,12 +74,12 @@ class TransactionForm extends Component
             if ($this->transactionId) {
                 // Update existing transaction
                 $transaction = Transaction::findOrFail($this->transactionId);
-                
+
                 if ($transaction->status !== 'pending') {
                     session()->flash('error', 'Solo se pueden editar transacciones pendientes.');
                     return;
                 }
-                
+
                 $transaction->update([
                     'type' => $this->type,
                     'from_account_id' => $this->from_account_id,
@@ -112,7 +113,6 @@ class TransactionForm extends Component
             }
 
             return redirect()->route('transactions.index');
-            
         } catch (\Exception $e) {
             session()->flash('error', 'Error al procesar la transacción: ' . $e->getMessage());
         }

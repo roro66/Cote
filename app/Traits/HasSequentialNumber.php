@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Support\Facades\DB;
+
 trait HasSequentialNumber
 {
     /**
@@ -34,18 +36,34 @@ trait HasSequentialNumber
         $field = $this->getSequentialNumberField();
         $prefix = $this->getSequentialNumberPrefix();
         $year = date('Y');
-        
-        $lastRecord = static::where($field, 'like', "{$prefix}-{$year}-%")
-            ->orderBy($field, 'desc')
-            ->first();
-        
-        if ($lastRecord) {
-            $lastNumber = intval(substr($lastRecord->{$field}, -3));
-            $newNumber = $lastNumber + 1;
+
+        // Obtener el máximo numérico del sufijo para evitar problemas de orden lexicográfico
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            $max = static::where($field, 'like', "{$prefix}-{$year}-%")
+                ->select(DB::raw("MAX(CAST(split_part({$field}, '-', 3) AS INTEGER)) AS max_suffix"))
+                ->value('max_suffix');
+        } elseif ($driver === 'mysql') {
+            $max = static::where($field, 'like', "{$prefix}-{$year}-%")
+                ->select(DB::raw("MAX(CAST(SUBSTRING_INDEX({$field}, '-', -1) AS UNSIGNED)) AS max_suffix"))
+                ->value('max_suffix');
         } else {
-            $newNumber = 1;
+            // Fallback: obtener todos y calcular en PHP (para sqlite u otros)
+            $max = static::where($field, 'like', "{$prefix}-{$year}-%")
+                ->pluck($field)
+                ->map(function ($val) {
+                    $parts = explode('-', $val);
+                    $suffix = end($parts);
+                    return ctype_digit($suffix) ? intval($suffix) : 0;
+                })
+                ->max();
         }
-        
-        return sprintf('%s-%s-%03d', $prefix, $year, $newNumber);
+
+        $lastNumber = intval($max ?? 0);
+
+        $newNumber = $lastNumber + 1;
+
+        // Use 6-digit padding to preserve lexicographic ordering and avoid early collisions
+        return sprintf('%s-%s-%06d', $prefix, $year, $newNumber);
     }
 }
