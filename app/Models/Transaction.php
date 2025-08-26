@@ -88,17 +88,15 @@ class Transaction extends Model
     // Accessors
     public function getTypeSpanishAttribute(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'transfer' => 'Transferencia',
-            'payment' => 'Pago',
-            'adjustment' => 'Ajuste',
             default => 'Desconocido'
         };
     }
 
     public function getStatusSpanishAttribute(): string
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'Pendiente',
             'approved' => 'Aprobado',
             'rejected' => 'Rechazado',
@@ -116,7 +114,7 @@ class Transaction extends Model
     protected static function boot()
     {
         parent::boot();
-        
+
         static::creating(function ($transaction) {
             if (empty($transaction->transaction_number)) {
                 $transaction->transaction_number = $transaction->generateSequentialNumber();

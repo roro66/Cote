@@ -13,24 +13,25 @@ class ExpenseDataTableController extends Controller
     {
         if ($request->ajax()) {
             $data = Expense::with(['account', 'submitter', 'reviewedBy'])
+                ->where('is_enabled', true)
                 ->select('expenses.*');
-            
+
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('title', function($row) {
+                ->addColumn('title', function ($row) {
                     return $row->description;
                 })
-                ->addColumn('submitter_name', function($row) {
+                ->addColumn('submitter_name', function ($row) {
                     return $row->submitter ? $row->submitter->full_name : 'N/A';
                 })
-                ->addColumn('account_name', function($row) {
+                ->addColumn('account_name', function ($row) {
                     return $row->account ? $row->account->name : 'N/A';
                 })
-                ->addColumn('total_amount_formatted', function($row) {
+                ->addColumn('total_amount_formatted', function ($row) {
                     return '$' . number_format($row->total_amount, 0, ',', '.');
                 })
-                ->addColumn('status_spanish', function($row) {
-                    $statusText = match($row->status) {
+                ->addColumn('status_spanish', function ($row) {
+                    $statusText = match ($row->status) {
                         'draft' => 'Borrador',
                         'submitted' => 'Enviado',
                         'reviewed' => 'Revisado',
@@ -39,7 +40,7 @@ class ExpenseDataTableController extends Controller
                         'paid' => 'Pagado',
                         default => ucfirst($row->status)
                     };
-                    $class = match($row->status) {
+                    $class = match ($row->status) {
                         'draft' => 'bg-secondary',
                         'submitted' => 'bg-warning text-dark',
                         'reviewed' => 'bg-info',
@@ -48,28 +49,31 @@ class ExpenseDataTableController extends Controller
                         'paid' => 'bg-primary',
                         default => 'bg-secondary'
                     };
-                    return '<span class="badge '.$class.'">'.$statusText.'</span>';
+                    return '<span class="badge ' . $class . '">' . $statusText . '</span>';
                 })
-                ->addColumn('submitted_at_formatted', function($row) {
+                ->addColumn('submitted_at_formatted', function ($row) {
                     return $row->submitted_at ? $row->submitted_at->format('d/m/Y H:i') : '-';
                 })
-                ->addColumn('action', function($row) {
+                ->addColumn('action', function ($row) {
                     $actionBtn = '<div class="btn-group" role="group">
-                        <button type="button" class="btn btn-info btn-sm" onclick="viewExpense('.$row->id.')">
-                            <i class="fas fa-eye"></i> Ver
-                        </button>
-                        <button type="button" class="btn btn-primary btn-sm" onclick="editExpense('.$row->id.')">
-                            <i class="fas fa-edit"></i> Editar
-                        </button>';
-                    
+                        <a href="' . route('expenses.show', $row->id) . '" class="btn btn-info btn-sm" title="Ver" aria-label="Ver">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="' . route('expenses.edit', $row->id) . '" class="btn btn-primary btn-sm" title="Editar" aria-label="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>';
+
                     if ($row->status === 'submitted') {
-                        $actionBtn .= '<button type="button" class="btn btn-success btn-sm" onclick="approveExpense('.$row->id.')">
-                            <i class="fas fa-check"></i> Aprobar
-                        </button>';
+                        $actionBtn .= '<form action="' . route('approvals.expenses.approve', $row->id) . '" method="POST" style="display:inline;">
+                            <input type="hidden" name="_token" value="' . csrf_token() . '">
+                            <button type="submit" class="btn btn-success btn-sm" title="Aprobar" aria-label="Aprobar" onclick="return confirm(\'¿Aprobar esta rendición?\')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </form>';
                     }
-                    
-                    $actionBtn .= '<button type="button" class="btn btn-danger btn-sm" onclick="deleteExpense('.$row->id.')">
-                        <i class="fas fa-trash"></i> Eliminar
+
+                    $actionBtn .= '<button type="button" class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="deleteExpense(' . $row->id . ')">
+                        <i class="fas fa-trash"></i>
                     </button>
                     </div>';
                     return $actionBtn;
@@ -77,7 +81,7 @@ class ExpenseDataTableController extends Controller
                 ->rawColumns(['action', 'status_spanish'])
                 ->make(true);
         }
-        
+
         return response()->json(['error' => 'Not an AJAX request'], 400);
     }
 }

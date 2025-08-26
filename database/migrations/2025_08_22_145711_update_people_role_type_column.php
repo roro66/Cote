@@ -23,10 +23,18 @@ return new class extends Migration
         DB::table('people')->where('role_type', 'supervisor')->update(['role_type' => 'tesorero']);
         DB::table('people')->where('role_type', 'admin')->update(['role_type' => 'tesorero']);
 
-        // Finalmente cambiar a ENUM con los nuevos valores
-        Schema::table('people', function (Blueprint $table) {
-            $table->enum('role_type', ['tesorero', 'trabajador'])->change();
-        });
+        // En PostgreSQL, aplicar restricción CHECK explícita para emular enum
+        if (DB::getDriverName() === 'pgsql') {
+            // Eliminar la restricción CHECK previa si existe
+            DB::statement('ALTER TABLE people DROP CONSTRAINT IF EXISTS people_role_type_check');
+            // Añadir la nueva restricción con los valores permitidos
+            DB::statement("ALTER TABLE people ADD CONSTRAINT people_role_type_check CHECK (role_type IN ('tesorero','trabajador'))");
+        } else {
+            // En otros motores, mantener enum
+            Schema::table('people', function (Blueprint $table) {
+                $table->enum('role_type', ['tesorero', 'trabajador'])->change();
+            });
+        }
     }
 
     /**
@@ -34,10 +42,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Restaurar la columna anterior
-        Schema::table('people', function (Blueprint $table) {
-            $table->enum('role_type', ['team_leader', 'team_member', 'supervisor', 'admin'])->change();
-        });
+        // Restaurar la restricción/enum anterior
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE people DROP CONSTRAINT IF EXISTS people_role_type_check');
+            DB::statement("ALTER TABLE people ADD CONSTRAINT people_role_type_check CHECK (role_type IN ('team_leader','team_member','supervisor','admin'))");
+        } else {
+            Schema::table('people', function (Blueprint $table) {
+                $table->enum('role_type', ['team_leader', 'team_member', 'supervisor', 'admin'])->change();
+            });
+        }
 
         // Restaurar los valores anteriores
         DB::table('people')->where('role_type', 'tesorero')->update(['role_type' => 'team_leader']);

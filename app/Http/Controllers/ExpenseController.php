@@ -2,22 +2,234 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Expense;
+use App\Models\ExpenseItem;
+use App\Models\Account;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class ExpenseController extends Controller
 {
-    public function index()
+    /**
+     * Display a listing of expenses
+     */
+    public function index(): View
     {
         return view('expenses.index');
     }
 
-    public function create()
+    /**
+     * Show the form for creating a new expense
+     */
+    public function create(): View
     {
-        return view('expenses.create');
+        // Solo cuentas personales para rendiciones (se rebajará saldo de la persona)
+        $accounts = Account::where('is_enabled', true)->where('type', 'person')->get();
+        return view('expenses.create', compact('accounts'));
     }
 
-    public function edit($id)
+    /**
+     * Store a newly created expense
+     */
+    public function store(Request $request)
     {
-        return view('expenses.edit', compact('id'));
+        $request->validate([
+            'account_id' => 'required|exists:accounts,id',
+            'description' => 'required|string|max:500',
+            'reference' => 'nullable|string|max:255',
+            'currency' => 'required|in:CLP',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string|max:255',
+            'items.*.amount' => 'required|numeric|min:0.01',
+            'items.*.currency' => 'required|in:CLP',
+            'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
+            'items.*.vendor_name' => 'required|string|max:255',
+            'items.*.receipt_number' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            // Calculate total amount
+            $totalAmount = collect($request->items)->sum('amount');
+
+            // Derivar la persona desde la cuenta seleccionada (propietario de la cuenta)
+            $account = Account::with('person')->findOrFail($request->account_id);
+            $person = $account->person;
+
+            if (!$person) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La cuenta seleccionada no tiene una persona asociada.'
+                ], 400);
+            }
+
+            // Create expense
+            $expense = Expense::create([
+                'account_id' => $request->account_id,
+                'description' => $request->description,
+                'reference' => $request->reference,
+                'total_amount' => $totalAmount,
+                'currency' => $request->currency,
+                'status' => 'submitted',
+                'submitted_by' => $person->id,
+                'submitted_at' => now(),
+                'expense_date' => now()->toDateString(),
+            ]);
+
+            // Create expense items
+            foreach ($request->items as $item) {
+                $expense->expenseItems()->create([
+                    'description' => $item['description'],
+                    'amount' => $item['amount'],
+                    'document_type' => $item['document_type'],
+                    'vendor_name' => $item['vendor_name'],
+                    'expense_date' => now()->toDateString(), // Fecha del gasto
+                    'document_number' => $item['receipt_number'] ?? null,
+                    'category' => null, // Campo opcional
+                ]);
+            }
+
+            $payload = [
+                'success' => true,
+                'message' => 'Rendición creada correctamente.',
+                'expense' => $expense,
+            ];
+
+            // Si la petición espera JSON (AJAX/Fetch), devolvemos JSON; de lo contrario redirigimos
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json($payload);
+            }
+
+            return redirect()->route('expenses.index')
+                ->with('toastr', [
+                    'type' => 'success',
+                    'message' => $payload['message'],
+                ]);
+        } catch (\Exception $e) {
+            $message = 'Error al crear la rendición: ' . $e->getMessage();
+
+            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message,
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('toastr', [
+                    'type' => 'error',
+                    'message' => $message,
+                ])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Display the specified expense
+     */
+    public function show(Expense $expense): View
+    {
+        $expense->load(['account.person', 'submittedBy', 'items']);
+        return view('expenses.show', compact('expense'));
+    }
+
+    /**
+     * Show the form for editing the specified expense
+     */
+    public function edit(Expense $expense): View
+    {
+        $accounts = Account::where('is_enabled', true)->get();
+        $expense->load(['items']);
+        return view('expenses.edit', compact('expense', 'accounts'));
+    }
+
+    /**
+     * Update the specified expense
+     */
+    public function update(Request $request, Expense $expense)
+    {
+        $request->validate([
+            'account_id' => 'required|exists:accounts,id',
+            'description' => 'required|string|max:500',
+            'reference' => 'nullable|string|max:255',
+            'currency' => 'required|in:CLP',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string|max:255',
+            'items.*.amount' => 'required|numeric|min:0.01',
+            'items.*.currency' => 'required|in:CLP',
+            'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
+            'items.*.vendor_name' => 'required|string|max:255',
+            'items.*.receipt_number' => 'nullable|string|max:100',
+        ]);
+
+        try {
+            // Calculate total amount
+            $totalAmount = collect($request->items)->sum('amount');
+
+            // Update expense
+            $expense->update([
+                'account_id' => $request->account_id,
+                'description' => $request->description,
+                'reference' => $request->reference,
+                'total_amount' => $totalAmount,
+            ]);
+
+            // Delete existing items and create new ones
+            $expense->expenseItems()->delete();
+
+            foreach ($request->items as $item) {
+                $expense->expenseItems()->create([
+                    'description' => $item['description'],
+                    'amount' => $item['amount'],
+                    'document_type' => $item['document_type'],
+                    'vendor_name' => $item['vendor_name'],
+                    'expense_date' => now()->toDateString(),
+                    'document_number' => $item['receipt_number'] ?? null,
+                    'category' => null,
+                ]);
+            }
+
+            return redirect()->route('expenses.index')
+                ->with('toastr', [
+                    'type' => 'success',
+                    'message' => 'Rendición actualizada correctamente.'
+                ]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('toastr', [
+                    'type' => 'error',
+                    'message' => 'Error al actualizar la rendición: ' . $e->getMessage()
+                ])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Remove the specified expense
+     */
+    public function destroy(Expense $expense)
+    {
+        try {
+            Log::info('Intentando eliminar expense ID: ' . $expense->id);
+
+            $expense->update(['is_enabled' => false]);
+
+            Log::info('Expense eliminado exitosamente: ' . $expense->id);
+
+            return redirect()->route('expenses.index')
+                ->with('toastr', [
+                    'type' => 'success',
+                    'message' => 'Rendición eliminada correctamente.'
+                ]);
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar expense: ' . $e->getMessage());
+
+            return redirect()->route('expenses.index')
+                ->with('toastr', [
+                    'type' => 'error',
+                    'message' => 'Error al eliminar la rendición: ' . $e->getMessage()
+                ]);
+        }
     }
 }

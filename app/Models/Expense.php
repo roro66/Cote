@@ -66,6 +66,11 @@ class Expense extends Model
     }
 
     // Alias para compatibilidad
+    public function expenseItems(): HasMany
+    {
+        return $this->items();
+    }
+
     public function submitter(): BelongsTo
     {
         return $this->submittedBy();
@@ -140,6 +145,25 @@ class Expense extends Model
             'status' => 'submitted',
             'submitted_at' => now(),
             'total_amount' => $this->calculateTotal()
+        ]);
+    }
+
+    public function approve($userId = null): void
+    {
+        $this->update([
+            'status' => 'approved',
+            'reviewed_by' => $userId ?? auth()->id(),
+            'reviewed_at' => now()
+        ]);
+    }
+
+    public function reject($reason, $userId = null): void
+    {
+        $this->update([
+            'status' => 'rejected',
+            'reviewed_by' => $userId ?? auth()->id(),
+            'reviewed_at' => now(),
+            'rejection_reason' => $reason
         ]);
     }
 }
