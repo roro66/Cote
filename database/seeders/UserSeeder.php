@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
         User::firstOrCreate([
             'email' => 'admin@coteso.com'
         ], [
-            'name' => 'Administrador Coteso',
+            'name' => 'Administrador',
             'email' => 'admin@coteso.com',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),

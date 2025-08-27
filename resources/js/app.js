@@ -1,4 +1,6 @@
 import './bootstrap';
 
-// Alpine.js es cargado automáticamente por Livewire
-// No necesitamos cargarlo manualmente
+// Inicializar Alpine.js para menús desplegables (Jetstream/Blade components)
+import Alpine from 'alpinejs'
+window.Alpine = Alpine
+Alpine.start()

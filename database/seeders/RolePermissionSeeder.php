@@ -56,14 +56,14 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            \Spatie\Permission\Models\Permission::create(['name' => $permission]);
+            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Crear roles
-        $boss = \Spatie\Permission\Models\Role::create(['name' => 'boss']);
-        $treasurer = \Spatie\Permission\Models\Role::create(['name' => 'treasurer']);
-        $teamLeader = \Spatie\Permission\Models\Role::create(['name' => 'team_leader']);
-        $teamMember = \Spatie\Permission\Models\Role::create(['name' => 'team_member']);
+    $boss = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'boss']);
+    $treasurer = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'treasurer']);
+    $teamLeader = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'team_leader']);
+    $teamMember = \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'team_member']);
 
         // Asignar permisos al jefe (todos los permisos)
         $boss->givePermissionTo(\Spatie\Permission\Models\Permission::all());
