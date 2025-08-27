@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Account;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -47,6 +49,8 @@ class ExpenseController extends Controller
             'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
             'items.*.vendor_name' => 'required|string|max:255',
             'items.*.receipt_number' => 'nullable|string|max:100',
+            'items.*.files' => 'nullable|array',
+            'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
 
         try {
@@ -78,8 +82,8 @@ class ExpenseController extends Controller
             ]);
 
             // Create expense items
-            foreach ($request->items as $item) {
-                $expense->expenseItems()->create([
+            foreach ($request->items as $index => $item) {
+                $expenseItem = $expense->expenseItems()->create([
                     'description' => $item['description'],
                     'amount' => $item['amount'],
                     'document_type' => $item['document_type'],
@@ -88,6 +92,32 @@ class ExpenseController extends Controller
                     'document_number' => $item['receipt_number'] ?? null,
                     'category' => null, // Campo opcional
                 ]);
+
+                // Handle attached files for this item (if any)
+                $files = $request->file("items.$index.files", []);
+                if ($files && is_array($files)) {
+                    foreach ($files as $file) {
+                        if (!$file) { continue; }
+                        $originalName = $file->getClientOriginalName();
+                        $mime = $file->getClientMimeType();
+                        $size = $file->getSize();
+                        // Build storage path keeping human-readable name, avoid overwriting
+                        $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
+                        $fileName = $this->uniqueFileName($baseDir, $originalName);
+                        $storedPath = $file->storeAs($baseDir, $fileName, 'public');
+
+                        Document::create([
+                            'name' => $originalName, // keep user's original name
+                            'file_path' => $storedPath,
+                            'mime_type' => $mime,
+                            'file_size' => $size,
+                            'document_type' => $expenseItem->document_type,
+                            'expense_item_id' => $expenseItem->id,
+                            'uploaded_by' => auth()->id(),
+                            'is_enabled' => true,
+                        ]);
+                    }
+                }
             }
 
             $payload = [
@@ -130,7 +160,7 @@ class ExpenseController extends Controller
      */
     public function show(Expense $expense): View
     {
-        $expense->load(['account.person', 'submittedBy', 'items']);
+    $expense->load(['account.person', 'submittedBy', 'items.documents']);
         return view('expenses.show', compact('expense'));
     }
 
@@ -161,6 +191,8 @@ class ExpenseController extends Controller
             'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
             'items.*.vendor_name' => 'required|string|max:255',
             'items.*.receipt_number' => 'nullable|string|max:100',
+            'items.*.files' => 'nullable|array',
+            'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
 
         try {
@@ -175,11 +207,14 @@ class ExpenseController extends Controller
                 'total_amount' => $totalAmount,
             ]);
 
-            // Delete existing items and create new ones
+            // Delete existing items and documents, then recreate
+            foreach ($expense->expenseItems as $oldItem) {
+                $oldItem->documents()->delete();
+            }
             $expense->expenseItems()->delete();
 
-            foreach ($request->items as $item) {
-                $expense->expenseItems()->create([
+            foreach ($request->items as $index => $item) {
+                $expenseItem = $expense->expenseItems()->create([
                     'description' => $item['description'],
                     'amount' => $item['amount'],
                     'document_type' => $item['document_type'],
@@ -188,6 +223,30 @@ class ExpenseController extends Controller
                     'document_number' => $item['receipt_number'] ?? null,
                     'category' => null,
                 ]);
+
+                $files = $request->file("items.$index.files", []);
+                if ($files && is_array($files)) {
+                    foreach ($files as $file) {
+                        if (!$file) { continue; }
+                        $originalName = $file->getClientOriginalName();
+                        $mime = $file->getClientMimeType();
+                        $size = $file->getSize();
+                        $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
+                        $fileName = $this->uniqueFileName($baseDir, $originalName);
+                        $storedPath = $file->storeAs($baseDir, $fileName, 'public');
+
+                        Document::create([
+                            'name' => $originalName,
+                            'file_path' => $storedPath,
+                            'mime_type' => $mime,
+                            'file_size' => $size,
+                            'document_type' => $expenseItem->document_type,
+                            'expense_item_id' => $expenseItem->id,
+                            'uploaded_by' => auth()->id(),
+                            'is_enabled' => true,
+                        ]);
+                    }
+                }
             }
 
             return redirect()->route('expenses.index')
@@ -232,4 +291,20 @@ class ExpenseController extends Controller
                 ]);
         }
     }
+}
+
+// Helper methods
+private function uniqueFileName(string $baseDir, string $originalName): string
+{
+    $disk = Storage::disk('public');
+    $name = pathinfo($originalName, PATHINFO_FILENAME);
+    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+    $candidate = $originalName;
+    $counter = 1;
+    while ($disk->exists("$baseDir/$candidate")) {
+        $suffix = " ($counter)";
+        $candidate = $name . $suffix . ($ext ? ".$ext" : '');
+        $counter++;
+    }
+    return $candidate;
 }
