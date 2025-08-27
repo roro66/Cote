@@ -17,7 +17,7 @@
 
                     <div class="card">
                         <div class="card-body">
-                            <form id="createExpenseForm">
+                            <form id="createExpenseForm" enctype="multipart/form-data">
                                 @csrf
 
                                 <!-- Cuenta -->
@@ -185,6 +185,14 @@
                             placeholder="Número de recibo o factura">
                     </div>
                 </div>
+                <div class="row mt-2">
+                    <div class="col-md-12">
+                        <label class="form-label">Adjuntos (fotos / PDF)</label>
+                        <input type="file" class="form-control" name="items[][files][]" multiple accept="image/*,application/pdf">
+                        <div class="form-text">Puedes subir varias imágenes de tickets, boletas, facturas, etc. Se conservará el nombre original del archivo.</div>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -300,44 +308,16 @@
                     return;
                 }
 
-                const formData = new FormData(this);
-
-                // Convert FormData to regular object for items
-                const items = [];
-                const itemElements = document.querySelectorAll('.expense-item');
-
-                itemElements.forEach((item, index) => {
-                    items.push({
-                        description: item.querySelector('.item-description').value,
-                        amount: item.querySelector('.item-amount').value,
-                        currency: item.querySelector('.item-currency').value,
-                        document_type: item.querySelector('select[name*="document_type"]')
-                            .value,
-                        vendor_name: item.querySelector('input[name*="vendor_name"]').value,
-                        receipt_number: item.querySelector('input[name*="receipt_number"]')
-                            .value || null
-                    });
-                });
-
-                const data = {
-                    _token: formData.get('_token'),
-                    account_id: formData.get('account_id'),
-                    description: formData.get('description'),
-                    reference: formData.get('reference'),
-                    currency: formData.get('currency'),
-                    items: items
-                };
+                const formEl = document.getElementById('createExpenseForm');
+                const formData = new FormData(formEl);
 
                 fetch('{{ route('expenses.store') }}', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                .getAttribute('content')
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
-                        body: JSON.stringify(data)
+                        body: formData
                     })
                     .then(response => {
                         console.log('Response status:', response.status);

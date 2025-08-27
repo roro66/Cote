@@ -114,6 +114,7 @@
                                                 <th>Proveedor</th>
                                                 <th>N° Documento</th>
                                                 <th>Monto</th>
+                                                <th>Adjuntos</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -137,6 +138,27 @@
                                                     <td>{{ $item->vendor_name }}</td>
                                                     <td>{{ $item->document_number ?: '-' }}</td>
                                                     <td class="text-end">${{ number_format($item->amount, 0, ',', '.') }} CLP</td>
+                                                    <td>
+                                                        @if($item->documents && $item->documents->count())
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                @foreach($item->documents as $doc)
+                                                                    @php
+                                                                        $url = Storage::disk('public')->url($doc->file_path);
+                                                                        $isImage = str_starts_with($doc->mime_type, 'image/');
+                                                                    @endphp
+                                                                    <a href="{{ $url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver {{ $doc->name }}">
+                                                                        @if($isImage)
+                                                                            <img src="{{ $url }}" alt="{{ $doc->name }}" style="height:40px;width:auto;border-radius:4px;object-fit:cover;" />
+                                                                        @else
+                                                                            <i class="fas fa-file me-1"></i> {{ \Illuminate\Support\Str::limit($doc->name, 24) }}
+                                                                        @endif
+                                                                    </a>
+                                                                @endforeach
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             @endforeach
                                             <tr class="table-info">
