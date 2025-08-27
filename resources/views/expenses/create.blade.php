@@ -330,6 +330,28 @@
                     return;
                 }
 
+                // Quick client-side duplicate detection by (tipo, proveedor, número)
+                const combos = new Map();
+                let hasDup = false;
+                document.querySelectorAll('.expense-item').forEach((itemEl, idx) => {
+                    const type = itemEl.querySelector('select[name^="items"][name$="[document_type]"]').value;
+                    const vendor = (itemEl.querySelector('input[name^="items"][name$="[vendor_name]"]').value || '')
+                        .trim().toLowerCase().replace(/\s+/g, ' ');
+                    const number = (itemEl.querySelector('input[name^="items"][name$="[receipt_number]"]').value || '')
+                        .trim().toLowerCase();
+                    if (!number) return; // Only check when number present
+                    const key = `${type}|${vendor}|${number}`;
+                    if (combos.has(key)) {
+                        hasDup = true;
+                    }
+                    combos.set(key, true);
+                });
+
+                if (hasDup) {
+                    toastr.error('Hay documentos duplicados dentro de la rendición (tipo + proveedor + número).');
+                    return;
+                }
+
                 const formEl = document.getElementById('createExpenseForm');
                 const formData = new FormData(formEl);
 
