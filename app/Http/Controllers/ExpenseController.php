@@ -54,6 +54,20 @@ class ExpenseController extends Controller
         ]);
 
         try {
+            // Duplicate document validation (in-request and against DB)
+            $dupErrors = $this->validateDuplicateDocuments($request->items);
+            if (!empty($dupErrors)) {
+                $payload = [
+                    'success' => false,
+                    'message' => 'Se encontraron documentos duplicados (tipo + proveedor + número).',
+                    'errors' => $dupErrors,
+                ];
+                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+                    return response()->json($payload, 422);
+                }
+                return redirect()->back()->withErrors($dupErrors)->withInput();
+            }
+
             // Calculate total amount
             $totalAmount = collect($request->items)->sum('amount');
 
@@ -196,6 +210,12 @@ class ExpenseController extends Controller
         ]);
 
         try {
+            // Duplicate document validation (in-request and against DB, excluding current expense)
+            $dupErrors = $this->validateDuplicateDocuments($request->items, $expense->id);
+            if (!empty($dupErrors)) {
+                return redirect()->back()->withErrors($dupErrors)->withInput();
+            }
+
             // Calculate total amount
             $totalAmount = collect($request->items)->sum('amount');
 
@@ -306,5 +326,82 @@ class ExpenseController extends Controller
             $counter++;
         }
         return $candidate;
+    }
+
+    /**
+     * Validate duplicate documents by (document_type, vendor_name, receipt_number)
+     * - Detects duplicates inside the current payload
+     * - Detects duplicates already stored in DB (globally), optionally excluding an expense ID
+     * Returns an array of field errors keyed by dot-notation (items.X.receipt_number)
+     */
+    private function validateDuplicateDocuments(array $items, ?int $excludeExpenseId = null): array
+    {
+        $errors = [];
+
+        // Normalize and track in-request duplicates
+        $seen = [];
+        $comboToIndices = [];
+        foreach ($items as $idx => $item) {
+            $number = trim((string)($item['receipt_number'] ?? ''));
+            if ($number === '') { continue; } // No number -> no duplicate check
+            $type = (string)$item['document_type'];
+            $vendor = (string)$item['vendor_name'];
+            $key = $this->docKey($type, $vendor, $number);
+            $comboToIndices[$key] = $comboToIndices[$key] ?? [];
+            $comboToIndices[$key][] = (int)$idx;
+            if (isset($seen[$key])) {
+                // Duplicate within the same request
+                $errors["items.$idx.receipt_number"] = [
+                    'Documento duplicado dentro de la rendición (mismo tipo, proveedor y número).',
+                ];
+                // Also mark the first occurrence to guide the user
+                $firstIdx = $seen[$key];
+                $errors["items.$firstIdx.receipt_number"] = $errors["items.$firstIdx.receipt_number"] ?? [
+                    'Documento duplicado dentro de la rendición.',
+                ];
+            } else {
+                $seen[$key] = (int)$idx;
+            }
+        }
+
+        // Check against DB only if we have any combos
+        if (!empty($comboToIndices)) {
+            $existing = ExpenseItem::query()
+                ->select(['document_type', 'vendor_name', 'document_number', 'expense_id'])
+                ->whereNotNull('document_number')
+                ->when($excludeExpenseId !== null, function ($q) use ($excludeExpenseId) {
+                    $q->where('expense_id', '!=', $excludeExpenseId);
+                })
+                ->where(function ($q) use ($comboToIndices) {
+                    foreach (array_keys($comboToIndices) as $key) {
+                        [$type, $vendorNorm, $numberNorm] = explode('|', $key);
+                        $q->orWhere(function ($qq) use ($type, $vendorNorm, $numberNorm) {
+                            $qq->where('document_type', $type)
+                                ->whereRaw('LOWER(TRIM(vendor_name)) = ?', [$vendorNorm])
+                                ->whereRaw('LOWER(TRIM(document_number)) = ?', [$numberNorm]);
+                        });
+                    }
+                })
+                ->limit(50)
+                ->get();
+
+            foreach ($existing as $row) {
+                $key = $this->docKey($row->document_type, $row->vendor_name, $row->document_number);
+                if (!isset($comboToIndices[$key])) { continue; }
+                foreach ($comboToIndices[$key] as $idx) {
+                    $errors["items.$idx.receipt_number"] = $errors["items.$idx.receipt_number"] ?? [];
+                    $errors["items.$idx.receipt_number"][] = 'Documento ya registrado en otra rendición (mismo tipo, proveedor y número).';
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    private function docKey(string $type, string $vendor, string $number): string
+    {
+        $normVendor = mb_strtolower(trim(preg_replace('/\s+/', ' ', $vendor)), 'UTF-8');
+        $normNumber = mb_strtolower(trim($number), 'UTF-8');
+        return $type . '|' . $normVendor . '|' . $normNumber;
     }
 }

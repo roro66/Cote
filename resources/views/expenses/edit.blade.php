@@ -215,9 +215,31 @@
                 toastr.error('Debe agregar al menos un item de gasto');
                 return false;
             }
-            
-            // Los datos se enviarán automáticamente con el formulario tradicional
-            // No necesitamos preventDefault() ni AJAX
+
+            // Chequeo rápido de duplicados en cliente: (tipo, proveedor, número)
+            const combos = new Map();
+            let hasDup = false;
+            document.querySelectorAll('.expense-item').forEach((itemEl) => {
+                const type = itemEl.querySelector('select[name^="items"][name$="[document_type]"]').value;
+                const vendor = (itemEl.querySelector('input[name^="items"][name$="[vendor_name]"]').value || '')
+                    .trim().toLowerCase().replace(/\s+/g, ' ');
+                const number = (itemEl.querySelector('input[name^="items"][name$="[receipt_number]"]').value || '')
+                    .trim().toLowerCase();
+                if (!number) return; // sólo chequeamos cuando hay número
+                const key = `${type}|${vendor}|${number}`;
+                if (combos.has(key)) {
+                    hasDup = true;
+                }
+                combos.set(key, true);
+            });
+
+            if (hasDup) {
+                e.preventDefault();
+                toastr.error('Hay documentos duplicados dentro de la rendición (tipo + proveedor + número).');
+                return false;
+            }
+
+            // Envío normal del form
         });
     });
     </script>
