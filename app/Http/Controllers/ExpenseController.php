@@ -291,20 +291,20 @@ class ExpenseController extends Controller
                 ]);
         }
     }
-}
 
-// Helper methods
-private function uniqueFileName(string $baseDir, string $originalName): string
-{
-    $disk = Storage::disk('public');
-    $name = pathinfo($originalName, PATHINFO_FILENAME);
-    $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-    $candidate = $originalName;
-    $counter = 1;
-    while ($disk->exists("$baseDir/$candidate")) {
-        $suffix = " ($counter)";
-        $candidate = $name . $suffix . ($ext ? ".$ext" : '');
-        $counter++;
+    // Helper methods
+    private function uniqueFileName(string $baseDir, string $originalName): string
+    {
+        $disk = Storage::disk('public');
+        $name = pathinfo($originalName, PATHINFO_FILENAME);
+        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
+        $candidate = $originalName;
+        $counter = 1;
+        while ($disk->exists("$baseDir/$candidate")) {
+            $suffix = " ($counter)";
+            $candidate = $name . $suffix . ($ext ? ".$ext" : '');
+            $counter++;
+        }
+        return $candidate;
     }
-    return $candidate;
 }
