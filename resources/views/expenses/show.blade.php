@@ -143,10 +143,10 @@
                                                             <div class="d-flex flex-wrap gap-2">
                                                                 @foreach($item->documents as $doc)
                                                                     @php
-                                                                        $url = Storage::disk('public')->url($doc->file_path);
+                                                                        $url = asset('storage/' . $doc->file_path);
                                                                         $isImage = str_starts_with($doc->mime_type, 'image/');
                                                                     @endphp
-                                                                    <a href="{{ $url }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Ver {{ $doc->name }}">
+                                                                    <a href="{{ $url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary" title="Ver {{ $doc->name }}">
                                                                         @if($isImage)
                                                                             <img src="{{ $url }}" alt="{{ $doc->name }}" style="height:40px;width:auto;border-radius:4px;object-fit:cover;" />
                                                                         @else

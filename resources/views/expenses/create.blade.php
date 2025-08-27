@@ -1,4 +1,10 @@
 <x-app-layout>
+    <style>
+        /* Asegura que el input de archivo quede por encima de overlays fijos */
+        .file-input-zone { position: relative; z-index: 5000; }
+    /* Contenedor para botón de adjuntar y nombres seleccionados */
+    .file-upload { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    </style>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Nueva Rendición
@@ -185,10 +191,16 @@
                             placeholder="Número de recibo o factura">
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="row mt-2 file-input-zone">
                     <div class="col-md-12">
                         <label class="form-label">Adjuntos (fotos / PDF)</label>
-                        <input type="file" class="form-control" name="items[][files][]" multiple accept="image/*,application/pdf">
+                        <div class="file-upload">
+                            <label class="btn btn-outline-primary btn-sm mb-0" for="item_files__INDEX__">
+                                <i class="fas fa-paperclip me-1"></i> Elegir archivos
+                            </label>
+                            <span class="small text-muted selected-files">Ningún archivo seleccionado</span>
+                        </div>
+                        <input type="file" class="visually-hidden item-files" id="item_files__INDEX__" name="items[][files][]" multiple accept="image/*,application/pdf">
                         <div class="form-text">Puedes subir varias imágenes de tickets, boletas, facturas, etc. Se conservará el nombre original del archivo.</div>
                         <div class="invalid-feedback"></div>
                     </div>
@@ -228,6 +240,16 @@
                     input.name = input.name.replace('[]', `[${itemCounter}]`);
                 }
             });
+
+            // Ensure unique id for file input and label-for association
+            const fileInput = clone.querySelector('.item-files');
+            if (fileInput) {
+                const newId = `item_files_${itemCounter}`;
+                fileInput.id = newId;
+                // Sync the custom button label 'for' attribute with the generated id
+                const triggerLabel = clone.querySelector('label[for="item_files__INDEX__"]');
+                if (triggerLabel) triggerLabel.setAttribute('for', newId);
+            }
 
             document.getElementById('expenseItems').appendChild(clone);
             itemCounter++;
@@ -364,5 +386,25 @@
                     });
             });
         });
+
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('item-files')) {
+                const files = Array.from(e.target.files || []);
+                const names = files.length ? files.map(f => f.name).join(', ') : 'Ningún archivo seleccionado';
+                const info = e.target.closest('.card-body')?.querySelector('.selected-files');
+                if (info) info.textContent = names;
+            }
+        });
+
+        // Evitar que algún listener global bloquee el click al input file
+        document.addEventListener('click', function(e) {
+            const isFileLabel = e.target.closest && e.target.closest('.file-input-zone');
+            if (isFileLabel) {
+                // No cancelar el evento, solo marcar explícitamente que es un gesto de usuario
+                // Algunos plugins pueden hacer preventDefault en clicks genéricos; aseguramos burbujeo limpio
+            }
+        }, { capture: true });
+
+    // no-op
     </script>
 </x-app-layout>
