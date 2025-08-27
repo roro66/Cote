@@ -11,15 +11,41 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuario admin por defecto
-        \App\Models\User::factory()->create([
-            'name' => 'Administrador',
-            'email' => 'admin@coteso.com',
-            'is_enabled' => true,
-        ]);
+        // Asegurar roles y permisos base
+        $this->call([RolePermissionSeeder::class]);
+
+        // Crear/actualizar usuario admin por defecto y asignar rol 'boss'
+        $admin = \App\Models\User::firstOrCreate(
+            ['email' => 'admin@coteso.com'],
+            [
+                'name' => 'Administrador',
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                'email_verified_at' => now(),
+                'is_enabled' => true,
+            ]
+        );
+        if (!$admin->hasRole('boss')) {
+            $admin->assignRole('boss');
+        }
+
+        // Crear/actualizar usuario tesorero por defecto y asignar rol 'treasurer'
+        $treasurer = \App\Models\User::firstOrCreate(
+            ['email' => 'tesorero@coteso.com'],
+            [
+                'name' => 'Tesorero Principal',
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                'email_verified_at' => now(),
+                'is_enabled' => true,
+            ]
+        );
+        if (!$treasurer->hasRole('treasurer')) {
+            $treasurer->assignRole('treasurer');
+        }
 
         // Ejecutar seeders en orden correcto
-        $this->call([
+    $this->call([
+            TreasuryAccountSeeder::class, // Asegura cuenta Tesorería
+            FundingAccountSeeder::class, // Cuenta institucional de fondeo para pruebas
             BankSeeder::class,      // Crea bancos
             AccountTypeSeeder::class, // Crea tipos de cuenta
             PersonSeeder::class,    // Crea personas (sin teams)

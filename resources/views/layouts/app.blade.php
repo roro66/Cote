@@ -46,15 +46,13 @@
             .fixed-header-content {
                 position: fixed;
                 top: 64px; /* altura del nav */
-                left: 0;
-                right: 0;
                 z-index: 1020;
             }
-            
+
             .main-content {
                 margin-top: 128px; /* nav (64px) + header (64px) */
             }
-            
+
             /* Para móviles */
             @media (max-width: 640px) {
                 .main-content {
@@ -94,6 +92,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Alpine.js (CDN) para dropdowns y UI reactiva sin compilar -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
         
         <!-- Inicialización del modo oscuro -->
         <script>

@@ -18,6 +18,8 @@ use App\Http\Controllers\DataTables\BankDataTableController;
 use App\Http\Controllers\DataTables\AccountTypeDataTableController;
 use App\Http\Controllers\DataTables\ApprovalDataTableController;
 use App\Http\Controllers\Admin\ToolsController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DataTables\UserDataTableController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
 use App\Livewire\ExpenseList;
@@ -50,6 +52,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Tipos de Cuenta
     Route::resource('account-types', AccountTypeController::class);
+
+    // Rutas de Usuarios (solo admin/boss)
+    Route::resource('users', UserController::class)->middleware('role:boss');
+    Route::get('datatables/users', [UserDataTableController::class, 'index'])->name('datatables.users')->middleware('role:boss');
 
     // Rutas de Equipos (comentado - controlador eliminado)
     // Route::resource('teams', TeamController::class);

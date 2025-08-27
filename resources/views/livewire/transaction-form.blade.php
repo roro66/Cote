@@ -21,15 +21,36 @@
                     id="type"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="transfer">Transferencia</option>
-                <option value="payment">Pago</option>
-                <option value="adjustment">Ajuste</option>
+                @if($canAdjust ?? false)
+                    <option value="adjustment">Ajuste</option>
+                @endif
             </select>
             @error('type') 
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
             @enderror
         </div>
 
+    @if(($canAdjust ?? false) && $type === 'adjustment')
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Dirección del ajuste</label>
+            <div class="mt-2 flex gap-4">
+                <label class="inline-flex items-center">
+                    <input type="radio" wire:model="adjustment_direction" value="credit" class="text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                    <span class="ml-2">Crédito (agregar dinero a una cuenta)</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" wire:model="adjustment_direction" value="debit" class="text-indigo-600 border-gray-300 focus:ring-indigo-500">
+                    <span class="ml-2">Débito (descontar dinero de una cuenta)</span>
+                </label>
+            </div>
+            @error('adjustment_direction') 
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
+            @enderror
+        </div>
+        @endif
+
         <!-- From Account -->
+    @if($type === 'transfer' || (($canAdjust ?? false) && $type === 'adjustment' && $adjustment_direction === 'debit'))
         <div>
             <label for="from_account_id" class="block text-sm font-medium text-gray-700">
                 Cuenta de Origen
@@ -38,7 +59,16 @@
                     id="from_account_id"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Seleccionar cuenta de origen</option>
+                @if(isset($treasury) && ($isBoss ?? false))
+                    <option value="{{ $treasury->id }}" style="background-color:#eef2ff;color:#3730a3;font-weight:600;">
+                        ⭐ Tesorería - {{ $treasury->balance_formatted }}
+                    </option>
+                    <option disabled>──────────</option>
+                @endif
                 @foreach($accounts as $account)
+                    @if(isset($treasury) && $account->id === $treasury->id)
+                        @continue
+                    @endif
                     <option value="{{ $account->id }}">
                         {{ $account->name }}
                         @if($account->person)
@@ -52,8 +82,10 @@
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
             @enderror
         </div>
+        @endif
 
         <!-- To Account -->
+    @if($type === 'transfer' || (($canAdjust ?? false) && $type === 'adjustment' && $adjustment_direction === 'credit'))
         <div>
             <label for="to_account_id" class="block text-sm font-medium text-gray-700">
                 Cuenta de Destino
@@ -62,7 +94,16 @@
                     id="to_account_id"
                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Seleccionar cuenta de destino</option>
+                @if(isset($treasury) && ($isBoss ?? false))
+                    <option value="{{ $treasury->id }}" style="background-color:#eef2ff;color:#3730a3;font-weight:600;">
+                        ⭐ Tesorería - {{ $treasury->balance_formatted }}
+                    </option>
+                    <option disabled>──────────</option>
+                @endif
                 @foreach($accounts as $account)
+                    @if(isset($treasury) && $account->id === $treasury->id)
+                        @continue
+                    @endif
                     <option value="{{ $account->id }}">
                         {{ $account->name }}
                         @if($account->person)
@@ -76,6 +117,7 @@
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
             @enderror
         </div>
+        @endif
 
         <!-- Amount -->
         <div>
