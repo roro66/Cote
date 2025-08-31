@@ -13,6 +13,8 @@
 
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Dark 5 (theme for dark mode) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
         
         <!-- DataTables CSS - versiones estables -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
@@ -27,7 +29,7 @@
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-        <!-- Dark Mode Styles -->
+    <!-- Dark Mode Styles (project-specific tweaks; loaded after Bootstrap Dark) -->
         <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
         
         <!-- Toastr CSS -->
