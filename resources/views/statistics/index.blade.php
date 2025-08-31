@@ -137,7 +137,7 @@
                                     autoSkip: false, // mostrar los 12 meses
                                     maxRotation: 45,
                                     minRotation: 45, // diagonal
-                                    callback: (val, idx) => monthLabels[idx] ?? String(val),
+                                    callback: function(value) { return this.getLabelForValue(value); },
                                 },
                                 grid: { color: colors.grid }
                             },
