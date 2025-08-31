@@ -103,48 +103,12 @@
                 }];
             }
 
-            function abbreviateMonthLabel(raw) {
-                const parts = String(raw).split(/\s+/);
-                if (parts.length >= 2) {
-                    const m = parts[0];
-                    const y = parts[1];
-                    const map = {
-                        'enero': 'Ene', 'febrero': 'Feb', 'marzo': 'Mar', 'abril': 'Abr', 'mayo': 'May', 'junio': 'Jun',
-                        'julio': 'Jul', 'agosto': 'Ago', 'septiembre': 'Sep', 'setiembre': 'Sep', 'octubre': 'Oct', 'noviembre': 'Nov', 'diciembre': 'Dic',
-                        'ene': 'Ene', 'feb': 'Feb', 'mar': 'Mar', 'abr': 'Abr', 'may': 'May', 'jun': 'Jun', 'jul': 'Jul', 'ago': 'Ago', 'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dic'
-                    };
-                    const key = m.toLowerCase().replace('.', '');
-                    const shortM = map[key] ?? m;
-                    return `${shortM} ${y}`;
-                }
-                return raw;
-            }
-
-            // Plugin para forzar las etiquetas del eje X a nuestras labels y evitar dobles renders
-            let fixCategoryTicksRegistered = false;
-            function ensureFixCategoryTicksPlugin() {
-                if (fixCategoryTicksRegistered || typeof Chart === 'undefined') return;
-                const fixCategoryTicks = {
-                    id: 'fixCategoryTicks',
-                    afterBuildTicks: (scale) => {
-                        if (scale.axis === 'x' && scale.type === 'category') {
-                            scale.ticks = scale.ticks.map((t, i) => ({
-                                ...t,
-                                label: abbreviateMonthLabel(monthLabels[i] ?? t.label),
-                                major: false
-                            }));
-                        }
-                    }
-                };
-                Chart.register(fixCategoryTicks);
-                fixCategoryTicksRegistered = true;
-            }
+            // Etiquetas de meses: usaremos nuestras labels de servidor directamente
 
             let perPersonMonthlyChart, categoryBarChart;
 
             function renderCharts() {
                 const colors = getThemeColors();
-                ensureFixCategoryTicksPlugin();
 
                 // Line chart: per-person monthly
                 const lineCtx = document.getElementById('perPersonMonthlyChart').getContext('2d');
@@ -170,11 +134,10 @@
                                 type: 'category',
                                 ticks: {
                                     color: colors.ticks,
-                                    autoSkip: true,
-                                    maxTicksLimit: 12,
-                                    maxRotation: 0,
-                                    minRotation: 0,
-                                    callback: (val, idx) => abbreviateMonthLabel(monthLabels[idx] ?? String(val)),
+                                    autoSkip: false, // mostrar los 12 meses
+                                    maxRotation: 45,
+                                    minRotation: 45, // diagonal
+                                    callback: (val, idx) => monthLabels[idx] ?? String(val),
                                 },
                                 grid: { color: colors.grid }
                             },
