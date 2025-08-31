@@ -93,7 +93,17 @@
                             }
                         },
                         scales: {
-                            x: { ticks: { color: colors.ticks }, grid: { color: colors.grid } },
+                            x: {
+                                type: 'category',
+                                ticks: {
+                                    color: colors.ticks,
+                                    autoSkip: true,
+                                    maxTicksLimit: 12,
+                                    maxRotation: 0,
+                                    minRotation: 0,
+                                },
+                                grid: { color: colors.grid }
+                            },
                             y: { ticks: { color: colors.ticks, callback: v => new Intl.NumberFormat('es-CL').format(v) }, grid: { color: colors.grid } }
                         }
                     }
