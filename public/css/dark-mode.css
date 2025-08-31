@@ -1,37 +1,4 @@
-/* Dark Mode Styles for Bootstrap Components */
-
-/* Variables globales para dark mode */
-:root {
-    --bs-body-bg: #ffffff;
-    --bs-body-color: #212529;
-    --bs-card-bg: #ffffff;
-    --bs-card-border-color: rgba(0, 0, 0, 0.125);
-    --bs-table-bg: transparent;
-    --bs-table-striped-bg: rgba(0, 0, 0, 0.05);
-    --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
-    --bs-navbar-bg: #f8f9fa;
-    --bs-form-control-bg: #ffffff;
-    --bs-form-control-border-color: #ced4da;
-    --bs-btn-bg: #ffffff;
-    --bs-modal-bg: #ffffff;
-    --bs-dropdown-bg: #ffffff;
-}
-
-.dark {
-    --bs-body-bg: #111827;
-    --bs-body-color: #f9fafb;
-    --bs-card-bg: #1f2937;
-    --bs-card-border-color: #374151;
-    --bs-table-bg: transparent;
-    --bs-table-striped-bg: rgba(255, 255, 255, 0.02);
-    --bs-table-hover-bg: rgba(255, 255, 255, 0.05);
-    --bs-navbar-bg: #1f2937;
-    --bs-form-control-bg: #374151;
-    --bs-form-control-border-color: #4b5563;
-    --bs-btn-bg: #374151;
-    --bs-modal-bg: #1f2937;
-    --bs-dropdown-bg: #1f2937;
-}
+/* Dark Mode tweaks layered on top of Bootstrap Dark 5 */
 
 /* Body dark mode */
 .dark body {
@@ -47,12 +14,8 @@
 }
 
 /* Cards */
-.dark .card {
-    background-color: #1f2937 !important;
-    border-color: #374151 !important;
-    color: var(--bs-body-color) !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2) !important;
-}
+/* Keep a subtle card shadow */
+.dark .card { box-shadow: 0 4px 6px -1px rgba(0,0,0,.3), 0 2px 4px -1px rgba(0,0,0,.2) !important; }
 
 .dark .card-header {
     background-color: #111827 !important;
@@ -96,12 +59,8 @@
 }
 
 /* Headers de tabla mantienen su estilo actual (blanco sobre gris) */
-.dark .table thead th {
-    color: #ffffff !important;
-    border-color: var(--bs-card-border-color) !important;
-    background-color: #4b5563 !important;
-    font-weight: 600 !important;
-}
+/* Keep stronger table header weight */
+.dark .table thead th { font-weight: 600 !important; }
 
 .dark .table td,
 .dark .table th {
@@ -109,13 +68,9 @@
 }
 
 /* DataTables headers específico - mantiene estilo actual */
+/* DataTables header emphasis */
 .dark .dataTables_wrapper .dataTable thead th,
-.dark .dataTables_wrapper .dataTable thead td {
-    background-color: #4b5563 !important;
-    color: #ffffff !important;
-    font-weight: 600 !important;
-    border-color: #6b7280 !important;
-}
+.dark .dataTables_wrapper .dataTable thead td { font-weight: 600 !important; }
 
 .dark .dataTables_wrapper .dataTable thead .sorting,
 .dark .dataTables_wrapper .dataTable thead .sorting_asc,
@@ -210,9 +165,7 @@
     border-color: var(--bs-card-border-color) !important;
 }
 
-.dark .btn-close {
-    filter: invert(1) grayscale(100%) brightness(200%) !important;
-}
+/* Close button contrast already handled by Bootstrap Dark */
 
 /* Dropdowns */
 .dark .dropdown-menu {
