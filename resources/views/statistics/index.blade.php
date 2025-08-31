@@ -31,6 +31,12 @@
                                     <i class="fa fa-file-excel"></i> Exportar CSV
                                 </a>
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-transparent"> </label>
+                                <button type="button" id="downloadMonthlyPngBtn" class="btn btn-sm btn-outline-secondary" onclick="downloadMonthlyPng()">
+                                    <i class="fa fa-image"></i> Descargar PNG
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <canvas id="perPersonMonthlyChart" height="120"></canvas>
@@ -104,6 +110,16 @@
             }
 
             // Etiquetas de meses: usaremos nuestras labels de servidor directamente
+            function normalizeMonthLabel(raw) {
+                if (!raw) return '';
+                const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+                let out = String(raw);
+                for (const m of months) {
+                    const re = new RegExp(`(${m})+`, 'gi');
+                    out = out.replace(re, (match) => m);
+                }
+                return out;
+            }
 
             let perPersonMonthlyChart, categoryBarChart;
 
@@ -137,7 +153,7 @@
                                     autoSkip: false, // mostrar los 12 meses
                                     maxRotation: 45,
                                     minRotation: 45, // diagonal
-                                    callback: function(value) { return this.getLabelForValue(value); },
+                                    callback: function(value) { return normalizeMonthLabel(this.getLabelForValue(value)); },
                                 },
                                 grid: { color: colors.grid }
                             },
@@ -205,6 +221,20 @@
                 }
                 window.addEventListener('theme-changed', () => { renderCharts(); });
             });
+
+            function downloadMonthlyPng() {
+                if (!perPersonMonthlyChart) return;
+                const select = document.getElementById('personSelect');
+                const name = select ? (select.options[select.selectedIndex]?.text || 'persona') : 'persona';
+                const safe = name.toLowerCase().replace(/[^a-z0-9-_]+/g, '-');
+                const link = document.createElement('a');
+                link.download = `gasto-mensual-${safe}.png`;
+                // Chart.js 4: toBase64Image() retorna dataURL del canvas
+                link.href = perPersonMonthlyChart.toBase64Image('image/png', 1);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            }
         </script>
     @endpush
 </x-app-layout>
