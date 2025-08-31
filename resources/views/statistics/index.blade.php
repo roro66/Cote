@@ -101,6 +101,27 @@
                                     maxTicksLimit: 12,
                                     maxRotation: 0,
                                     minRotation: 0,
+                                    callback: (val, idx) => {
+                                        // Fuerza el uso de nuestras etiquetas tal cual y evita formateos implícitos
+                                        const raw = monthLabels[idx] ?? '';
+                                        // Opcional: abreviar meses muy largos para evitar solape
+                                        // p.ej., "septiembre 2024" -> "Sep 2024"
+                                        const parts = String(raw).split(/\s+/);
+                                        if (parts.length >= 2) {
+                                            const m = parts[0];
+                                            const y = parts[1];
+                                            const map = {
+                                                'enero': 'Ene', 'febrero': 'Feb', 'marzo': 'Mar', 'abril': 'Abr', 'mayo': 'May', 'junio': 'Jun',
+                                                'julio': 'Jul', 'agosto': 'Ago', 'septiembre': 'Sep', 'setiembre': 'Sep', 'octubre': 'Oct', 'noviembre': 'Nov', 'diciembre': 'Dic',
+                                                'ene': 'Ene', 'feb': 'Feb', 'mar': 'Mar', 'abr': 'Abr', 'may': 'May', 'jun': 'Jun',
+                                                'jul': 'Jul', 'ago': 'Ago', 'sep': 'Sep', 'oct': 'Oct', 'nov': 'Nov', 'dic': 'Dic'
+                                            };
+                                            const key = m.toLowerCase();
+                                            const shortM = map[key] ?? m;
+                                            return `${shortM} ${y}`;
+                                        }
+                                        return raw;
+                                    },
                                 },
                                 grid: { color: colors.grid }
                             },
