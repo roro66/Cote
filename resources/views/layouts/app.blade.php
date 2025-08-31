@@ -76,17 +76,22 @@
 
         <!-- Dark Mode Toggle Script -->
         <script>
+            function applyTheme(isDark) {
+                const html = document.documentElement;
+                if (isDark) {
+                    html.classList.add('dark');
+                    html.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    html.classList.remove('dark');
+                    html.setAttribute('data-bs-theme', 'light');
+                }
+            }
+
             function toggleTheme() {
                 const html = document.documentElement;
                 const isDark = html.classList.contains('dark');
-                
-                if (isDark) {
-                    html.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                } else {
-                    html.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                }
+                applyTheme(!isDark);
+                localStorage.setItem('theme', !isDark ? 'dark' : 'light');
             }
         </script>
 
@@ -97,12 +102,11 @@
         
         <!-- Inicialización del modo oscuro -->
         <script>
-            // Verificar tema guardado o preferencia del sistema
-            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+            // Verificar tema guardado o preferencia del sistema y aplicarlo (Tailwind + Bootstrap 5.3)
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const storedTheme = localStorage.getItem('theme');
+            const useDark = storedTheme ? storedTheme === 'dark' : prefersDark;
+            (function() { applyTheme(useDark); })();
         </script>
     </head>
     <body class="font-sans antialiased">
