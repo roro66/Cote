@@ -121,6 +121,22 @@
                 return out;
             }
 
+            // Paleta pastel por barra (mejor contraste para light/dark)
+            function hsl(h, s, l, a = 1) { return `hsla(${h}, ${s}%, ${l}%, ${a})`; }
+            function getPastelPalette(count) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const backgrounds = [], borders = [];
+                for (let i = 0; i < count; i++) {
+                    const hue = Math.round(360 * (i / Math.max(1, count)));
+                    const sat = 60;
+                    const light = isDark ? 60 : 78; // un poco más oscuro en dark
+                    const borderLight = isDark ? light - 12 : light - 18;
+                    backgrounds.push(hsl(hue, sat, light, 0.7));
+                    borders.push(hsl(hue, sat, Math.max(30, borderLight), 1));
+                }
+                return { backgrounds, borders };
+            }
+
             let perPersonMonthlyChart, categoryBarChart;
 
             function renderCharts() {
@@ -165,6 +181,7 @@
                 // Bar chart: category totals
                 const barCtx = document.getElementById('categoryBarChart').getContext('2d');
                 if (categoryBarChart) categoryBarChart.destroy();
+                const pastel = getPastelPalette(categoryTotals.length);
                 categoryBarChart = new Chart(barCtx, {
                     type: 'bar',
                     data: {
@@ -172,9 +189,9 @@
                         datasets: [{
                             label: 'Total por categoría',
                             data: categoryTotals,
-                            backgroundColor: getThemeColors().palette[0] + '99',
-                            borderColor: getThemeColors().palette[0],
-                            borderWidth: 1
+                            backgroundColor: pastel.backgrounds,
+                            borderColor: pastel.borders,
+                            borderWidth: 1.25
                         }]
                     },
                     options: {
