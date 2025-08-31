@@ -39,6 +39,13 @@
     color: var(--bs-body-color) !important;
 }
 
+/* Texto base para evitar negro sobre negro */
+.dark, .dark body, .dark p, .dark span, .dark li, .dark div, .dark label, .dark dt, .dark dd,
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6,
+.dark .modal, .dark .card, .dark .table, .dark .dropdown-menu {
+    color: var(--bs-body-color) !important;
+}
+
 /* Cards */
 .dark .card {
     background-color: #1f2937 !important;
@@ -72,20 +79,20 @@
 /* Contenido de las tablas - texto gris oscuro, fondo sin cambiar */
 .dark .table tbody td,
 .dark table tbody td {
-    color: #374151 !important; /* Gris oscuro para buena legibilidad */
-    background-color: inherit !important; /* Mantiene el fondo original */
+    color: var(--bs-body-color) !important;
+    background-color: inherit !important;
 }
 
 .dark .table-striped > tbody > tr:nth-of-type(odd) > td,
 .dark .table-striped > tbody > tr:nth-of-type(odd) > th {
     background-color: var(--bs-table-striped-bg) !important;
-    color: #374151 !important; /* Texto gris oscuro también en filas alternas */
+    color: var(--bs-body-color) !important;
 }
 
 .dark .table-hover > tbody > tr:hover > td,
 .dark .table-hover > tbody > tr:hover > th {
     background-color: var(--bs-table-hover-bg) !important;
-    color: #374151 !important; /* Texto gris oscuro en hover */
+    color: var(--bs-body-color) !important;
 }
 
 /* Headers de tabla mantienen su estilo actual (blanco sobre gris) */
@@ -121,7 +128,7 @@
 
 /* Contenido DataTables - texto gris oscuro */
 .dark .dataTables_wrapper .dataTable tbody td {
-    color: #374151 !important;
+    color: var(--bs-body-color) !important;
 }
 
 /* Forms */
@@ -148,7 +155,8 @@
     color: var(--bs-body-color) !important;
 }
 
-.dark .form-label {
+.dark .form-label,
+.dark label {
     color: var(--bs-body-color) !important;
 }
 
@@ -224,60 +232,60 @@
 
 /* DataTables específico - MEJORADO */
 .dark .dataTables_wrapper {
-    color: #374151 !important; /* Gris oscuro como el texto del menú */
+    color: var(--bs-body-color) !important;
 }
 
 .dark .dataTables_length label,
 .dark .dataTables_filter label,
 .dark .dataTables_info {
-    color: #374151 !important; /* Gris oscuro para "Buscar", "Mostrar X entradas", etc. */
+    color: var(--bs-body-color) !important;
 }
 
 .dark .dataTables_length select,
 .dark .dataTables_filter input {
     background-color: var(--bs-form-control-bg) !important;
     border-color: var(--bs-form-control-border-color) !important;
-    color: #374151 !important; /* Texto gris oscuro también en los campos */
+    color: var(--bs-body-color) !important;
 }
 
 /* Fix específico para el campo de búsqueda */
 .dark .dataTables_filter input[type="search"] {
-    background-color: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #374151 !important; /* Texto gris oscuro consistente */
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
     padding: 6px 12px !important;
 }
 
 .dark .dataTables_filter input[type="search"]:focus {
-    background-color: #374151 !important;
+    background-color: var(--bs-form-control-bg) !important;
     border-color: #3b82f6 !important;
-    color: #374151 !important; /* Mantener gris oscuro al hacer focus */
+    color: var(--bs-body-color) !important;
     box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
     outline: none !important;
 }
 
 .dark .dataTables_filter input[type="search"]::placeholder {
-    color: #6b7280 !important; /* Placeholder más claro que el texto */
+    color: #9ca3af !important;
 }
 
 /* Fix para el select de "Show entries" */
 .dark .dataTables_length select {
-    background-color: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #374151 !important; /* Texto gris oscuro consistente */
+    background-color: var(--bs-form-control-bg) !important;
+    border-color: var(--bs-form-control-border-color) !important;
+    color: var(--bs-body-color) !important;
     padding: 6px 12px !important;
 }
 
 .dark .dataTables_length select:focus {
-    background-color: #374151 !important;
+    background-color: var(--bs-form-control-bg) !important;
     border-color: #3b82f6 !important;
-    color: #374151 !important;
+    color: var(--bs-body-color) !important;
     box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25) !important;
 }
 
 .dark .dataTables_length select option {
-    background-color: #374151 !important;
-    color: #374151 !important; /* Opciones también gris oscuro */
+    background-color: var(--bs-form-control-bg) !important;
+    color: var(--bs-body-color) !important;
 }
 
 /* Paginación MEJORADA */
