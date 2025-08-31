@@ -20,6 +20,7 @@ use App\Http\Controllers\DataTables\ApprovalDataTableController;
 use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DataTables\UserDataTableController;
+use App\Http\Controllers\PersonBankAccountController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
 use App\Livewire\ExpenseList;
@@ -46,6 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rutas de Personas
     Route::resource('people', PersonController::class);
     Route::get('people-export', [PersonController::class, 'export'])->name('people.export');
+    // Cuentas bancarias personales por persona (AJAX)
+    Route::get('people/{person}/personal-accounts', [PersonBankAccountController::class, 'index'])->name('people.personal-accounts.index');
+    Route::post('people/{person}/personal-accounts', [PersonBankAccountController::class, 'store'])->name('people.personal-accounts.store');
+    Route::put('people/{person}/personal-accounts/{account}', [PersonBankAccountController::class, 'update'])->name('people.personal-accounts.update');
+    Route::delete('people/{person}/personal-accounts/{account}', [PersonBankAccountController::class, 'destroy'])->name('people.personal-accounts.destroy');
 
     // Rutas de Bancos
     Route::resource('banks', BankController::class);
