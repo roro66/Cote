@@ -38,6 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Estadísticas
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
+    Route::get('/statistics/person/{person}/monthly', [StatisticsController::class, 'personMonthly'])->name('statistics.person.monthly');
+    Route::get('/statistics/person/{person}/monthly/export', [StatisticsController::class, 'exportPersonMonthly'])->name('statistics.person.monthly.export');
 
     // Rutas de Cuentas
     Route::resource('accounts', AccountController::class);

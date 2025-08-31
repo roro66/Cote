@@ -9,7 +9,30 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mb-6">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Gasto mensual por persona (Top 5)</h3>
+                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto mensual por persona</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Últimos 12 meses</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <div>
+                                <label for="personSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
+                                <select id="personSelect" class="form-select form-select-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                                    @foreach($people as $p)
+                                        <option value="{{ $p->id }}" @selected($p->id === $selectedPersonId)>
+                                            {{ trim($p->first_name.' '.$p->last_name) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-transparent">Exportar</label>
+                                <a id="exportMonthlyBtn" href="{{ $selectedPersonId ? route('statistics.person.monthly.export', $selectedPersonId) : '#' }}" class="btn btn-sm btn-outline-primary disabled:opacity-60">
+                                    <i class="fa fa-file-excel"></i> Exportar CSV
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                     <canvas id="perPersonMonthlyChart" height="120"></canvas>
                 </div>
             </div>
@@ -39,7 +62,8 @@
         <script>
             // Datos del servidor
             const monthLabels = @json($monthLabels);
-            const personDatasetsRaw = @json($personDatasets);
+            const selectedPersonId = @json($selectedPersonId);
+            const initialMonthlyData = @json($selectedPersonMonthly);
             const categoryLabels = @json($categoryLabels);
             const categoryTotals = @json($categoryTotals);
 
@@ -66,6 +90,17 @@
                     backgroundColor: colors[idx % colors.length] + '33',
                     tension: 0.25,
                 }));
+            }
+            function buildSingleLineDataset(data) {
+                const colors = getThemeColors().palette;
+                const c = colors[0];
+                return [{
+                    label: 'Total mensual',
+                    data,
+                    borderColor: c,
+                    backgroundColor: c + '33',
+                    tension: 0.25,
+                }];
             }
 
             function abbreviateMonthLabel(raw) {
@@ -114,11 +149,11 @@
                 // Line chart: per-person monthly
                 const lineCtx = document.getElementById('perPersonMonthlyChart').getContext('2d');
                 if (perPersonMonthlyChart) perPersonMonthlyChart.destroy();
-                perPersonMonthlyChart = new Chart(lineCtx, {
+        perPersonMonthlyChart = new Chart(lineCtx, {
                     type: 'line',
                     data: {
-                        labels: monthLabels,
-                        datasets: buildLineDatasets(personDatasetsRaw),
+            labels: monthLabels,
+            datasets: buildSingleLineDataset(initialMonthlyData),
                     },
                     options: {
                         responsive: true,
@@ -182,11 +217,30 @@
                 });
             }
 
+            async function reloadPersonMonthly(personId) {
+                const url = `{{ url('/statistics/person') }}/${personId}/monthly`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const json = await res.json();
+                // Actualizamos labels y dataset
+                monthLabels.length = 0; json.monthLabels.forEach(l => monthLabels.push(l));
+                perPersonMonthlyChart.data.labels = monthLabels;
+                perPersonMonthlyChart.data.datasets = buildSingleLineDataset(json.data);
+                perPersonMonthlyChart.update();
+
+                // Actualiza link de exportación
+                const exportBtn = document.getElementById('exportMonthlyBtn');
+                exportBtn.href = `{{ url('/statistics/person') }}/${personId}/monthly/export`;
+                exportBtn.classList.remove('disabled');
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 renderCharts();
-                window.addEventListener('theme-changed', () => {
-                    renderCharts();
-                });
+                const select = document.getElementById('personSelect');
+                if (select) {
+                    select.addEventListener('change', (e) => reloadPersonMonthly(e.target.value));
+                }
+                window.addEventListener('theme-changed', () => { renderCharts(); });
             });
         </script>
     @endpush
