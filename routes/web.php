@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\ToolsController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\DataTables\UserDataTableController;
 use App\Http\Controllers\PersonBankAccountController;
+use App\Http\Controllers\StatisticsController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
 use App\Livewire\ExpenseList;
@@ -34,6 +35,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    // Estadísticas
+    Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
 
     // Rutas de Cuentas
     Route::resource('accounts', AccountController::class);
