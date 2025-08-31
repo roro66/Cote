@@ -359,6 +359,48 @@
     color: #fca5a5 !important;
 }
 
+/* ===== Personas: tarjetas de estadísticas ===== */
+.dark .card.bg-primary,
+.dark .card.bg-success,
+.dark .card.bg-info,
+.dark .card.bg-warning {
+    color: #ffffff !important; /* texto blanco forzado */
+}
+.dark .card.bg-primary .card-title,
+.dark .card.bg-primary h1,
+.dark .card.bg-primary h2,
+.dark .card.bg_primary small,
+.dark .card.bg-success .card-title,
+.dark .card.bg-success h1,
+.dark .card.bg-success h2,
+.dark .card.bg-success small,
+.dark .card.bg-info .card-title,
+.dark .card.bg-info h1,
+.dark .card.bg-info h2,
+.dark .card.bg-info small,
+.dark .card.bg-warning .card-title,
+.dark .card.bg-warning h1,
+.dark .card.bg-warning h2,
+.dark .card.bg-warning small {
+    color: #ffffff !important;
+}
+
+/* ===== DataTables: botones de exportación con alto contraste ===== */
+.dark .dt-buttons .btn,
+.dark .dt-buttons .btn.btn-secondary,
+.dark .dt-buttons .btn.btn-outline-secondary {
+    background-color: #2f3a4a !important; /* tono oscuro neutral */
+    border-color: #445268 !important;
+    color: #ffffff !important;
+}
+.dark .dt-buttons .btn:hover {
+    background-color: #3c4a60 !important;
+    border-color: #566682 !important;
+    color: #ffffff !important;
+}
+.dark .dt-buttons .btn .fa,
+.dark .dt-buttons .btn i { color: #ffffff !important; }
+
 /* Toastr dark mode */
 .dark #toast-container > .toast {
     background-color: #1f2937 !important;
