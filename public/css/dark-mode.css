@@ -387,19 +387,34 @@
 
 /* ===== DataTables: botones de exportación con alto contraste ===== */
 .dark .dt-buttons .btn,
+.dark .dt-buttons a.btn,
 .dark .dt-buttons .btn.btn-secondary,
-.dark .dt-buttons .btn.btn-outline-secondary {
-    background-color: #2f3a4a !important; /* tono oscuro neutral */
+.dark .dt-buttons .btn.btn-outline-secondary,
+.dark .dt-buttons .dt-button, /* por si se cuela estilo base */
+.dark .dt-buttons .dt-button.buttons-html5,
+.dark .dt-buttons .dt-button.buttons-print,
+.dark .dt-buttons .dt-button.buttons-colvis {
+    background-color: #2f3a4a !important;
     border-color: #445268 !important;
     color: #ffffff !important;
 }
-.dark .dt-buttons .btn:hover {
+.dark .dt-buttons .btn:hover,
+.dark .dt-buttons a.btn:hover,
+.dark .dt-buttons .dt-button:hover {
     background-color: #3c4a60 !important;
     border-color: #566682 !important;
     color: #ffffff !important;
 }
 .dark .dt-buttons .btn .fa,
-.dark .dt-buttons .btn i { color: #ffffff !important; }
+.dark .dt-buttons .btn i,
+.dark .dt-buttons a.btn .fa,
+.dark .dt-buttons a.btn i { color: #ffffff !important; }
+.dark .dt-buttons .btn span,
+.dark .dt-buttons a.btn span,
+.dark .dt-buttons .btn .dt-button-text,
+.dark .dt-buttons a.btn .dt-button-text {
+    color: #ffffff !important;
+}
 
 /* Toastr dark mode */
 .dark #toast-container > .toast {
