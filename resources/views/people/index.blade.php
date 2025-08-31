@@ -256,6 +256,12 @@
 
                         <dt class="col-sm-4">Estado</dt>
                         <dd class="col-sm-8" id="view_status">-</dd>
+                        <dt class="col-sm-4">Cuentas personales</dt>
+                        <dd class="col-sm-8">
+                            <ul class="list-unstyled mb-0" id="view_personal_accounts">
+                                <li class="text-muted">—</li>
+                            </ul>
+                        </dd>
                     </dl>
                 </div>
                 <div class="modal-footer">
@@ -397,7 +403,91 @@
                                 Usuario Activo
                             </label>
                         </div>
+                        <hr class="my-4" />
+                        <h6 class="mb-2">Cuentas personales para transferencias</h6>
+                        <div id="personal_accounts_container" class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <small class="text-muted">Estas cuentas no reemplazan la cuenta interna. Son destinos posibles de transferencia.</small>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="openAddPersonalAccount()">
+                                    <i class="fas fa-plus"></i> Agregar cuenta
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped" id="personal_accounts_table">
+                                    <thead>
+                                        <tr>
+                                            <th>Alias</th>
+                                            <th>Banco</th>
+                                            <th>Tipo</th>
+                                            <th>N° Cuenta</th>
+                                            <th>Predet.</th>
+                                            <th>Activa</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </form>
+                    <!-- Modal simple para agregar/editar cuenta personal -->
+                    <div class="modal fade" id="personalAccountModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="personalAccountModalLabel">Cuenta personal</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="personalAccountForm">
+                                        <input type="hidden" name="id" id="pa_id">
+                                        <div class="mb-2">
+                                            <label class="form-label">Alias</label>
+                                            <input type="text" class="form-control" name="alias" id="pa_alias" />
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Banco</label>
+                                                <select class="form-select" name="bank_id" id="pa_bank_id">
+                                                    <option value="">—</option>
+                                                    @foreach ($banks as $bank)
+                                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6 mb-2">
+                                                <label class="form-label">Tipo de Cuenta</label>
+                                                <select class="form-select" name="account_type_id" id="pa_account_type_id">
+                                                    <option value="">—</option>
+                                                    @foreach ($accountTypes as $accountType)
+                                                        <option value="{{ $accountType->id }}">{{ $accountType->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label">Número de Cuenta</label>
+                                            <input type="text" class="form-control" name="account_number" id="pa_account_number" />
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="pa_is_default">
+                                            <label class="form-check-label" for="pa_is_default">Predeterminada</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="pa_is_active" checked>
+                                            <label class="form-check-label" for="pa_is_active">Activa</label>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" class="btn btn-primary" onclick="savePersonalAccount()">Guardar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -701,6 +791,22 @@
                             '<span class="badge bg-success">Activo</span>' :
                             '<span class="badge bg-danger">Inactivo</span>';
 
+                        // Render cuentas personales
+                        const ul = document.getElementById('view_personal_accounts');
+                        ul.innerHTML = '';
+                        if (Array.isArray(p.personal_bank_accounts) && p.personal_bank_accounts.length) {
+                            p.personal_bank_accounts.forEach(acc => {
+                                const li = document.createElement('li');
+                                li.textContent = `${acc.alias ? acc.alias + ' — ' : ''}${acc.bank_name || '—'} · ${acc.account_type_name || '—'} · ${acc.account_number || '—'}${acc.is_default ? ' (Predet.)' : ''}`;
+                                ul.appendChild(li);
+                            });
+                        } else {
+                            const li = document.createElement('li');
+                            li.className = 'text-muted';
+                            li.textContent = 'Sin cuentas personales';
+                            ul.appendChild(li);
+                        }
+
                         new bootstrap.Modal(document.getElementById('viewPersonModal')).show();
                     })
                     .catch(() => toastr.error('No se pudo cargar la persona'));
@@ -729,6 +835,10 @@
                         document.getElementById('edit_address').value = person.address || '';
                         document.getElementById('edit_is_enabled').checked = person.is_enabled;
 
+                        // Cargar y mostrar cuentas personales
+                        window.currentPersonId = person.id;
+                        loadPersonalAccounts(person.id);
+
                         // Mostrar el modal
                         new bootstrap.Modal(document.getElementById('editPersonModal')).show();
                     })
@@ -736,6 +846,122 @@
                         console.error('Error:', error);
                         toastr.error('Error al cargar los datos de la persona');
                     });
+            }
+
+            // Gestión de cuentas personales
+            function loadPersonalAccounts(personId) {
+                fetch(`/people/${personId}/personal-accounts`)
+                    .then(r => r.json())
+                    .then(({data}) => {
+                        const tbody = document.querySelector('#personal_accounts_table tbody');
+                        tbody.innerHTML = '';
+                        data.forEach(acc => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${acc.alias ?? ''}</td>
+                                <td>${acc.bank?.name ?? ''}</td>
+                                <td>${acc.account_type?.name ?? ''}</td>
+                                <td>${acc.account_number ?? ''}</td>
+                                <td>${acc.is_default ? '<span class="badge bg-primary">Sí</span>' : ''}</td>
+                                <td>${acc.is_active ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-secondary">No</span>'}</td>
+                                <td class="text-end">
+                                    <button class="btn btn-sm btn-outline-secondary me-1" data-action="edit"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" data-action="delete"><i class="fas fa-trash"></i></button>
+                                </td>`;
+                            tr.querySelector('button[data-action="edit"]').addEventListener('click', () => openEditPersonalAccount(acc));
+                            tr.querySelector('button[data-action="delete"]').addEventListener('click', () => deletePersonalAccount(acc.id));
+                            tbody.appendChild(tr);
+                        });
+                    })
+                    .catch(() => toastr.error('No se pudieron cargar las cuentas personales'));
+            }
+
+            function openAddPersonalAccount() {
+                document.getElementById('pa_id').value = '';
+                document.getElementById('personalAccountModalLabel').textContent = 'Agregar cuenta personal';
+                document.getElementById('pa_alias').value = '';
+                document.getElementById('pa_bank_id').value = '';
+                document.getElementById('pa_account_type_id').value = '';
+                document.getElementById('pa_account_number').value = '';
+                document.getElementById('pa_is_default').checked = false;
+                document.getElementById('pa_is_active').checked = true;
+                new bootstrap.Modal(document.getElementById('personalAccountModal')).show();
+            }
+
+            function openEditPersonalAccount(acc) {
+                document.getElementById('pa_id').value = acc.id;
+                document.getElementById('personalAccountModalLabel').textContent = 'Editar cuenta personal';
+                document.getElementById('pa_alias').value = acc.alias ?? '';
+                document.getElementById('pa_bank_id').value = acc.bank_id ?? (acc.bank?.id ?? '');
+                document.getElementById('pa_account_type_id').value = acc.account_type_id ?? (acc.account_type?.id ?? '');
+                document.getElementById('pa_account_number').value = acc.account_number ?? '';
+                document.getElementById('pa_is_default').checked = !!acc.is_default;
+                document.getElementById('pa_is_active').checked = acc.is_active !== false;
+                new bootstrap.Modal(document.getElementById('personalAccountModal')).show();
+            }
+
+            function savePersonalAccount() {
+                const personId = window.currentPersonId;
+                const id = document.getElementById('pa_id').value;
+                const payload = {
+                    alias: document.getElementById('pa_alias').value || null,
+                    bank_id: document.getElementById('pa_bank_id').value || null,
+                    account_type_id: document.getElementById('pa_account_type_id').value || null,
+                    account_number: document.getElementById('pa_account_number').value || null,
+                    is_default: document.getElementById('pa_is_default').checked,
+                    is_active: document.getElementById('pa_is_active').checked,
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `/people/${personId}/personal-accounts/${id}` : `/people/${personId}/personal-accounts`;
+
+                fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(r => {
+                    if (!r.ok) return r.json().then(d => { throw {status: r.status, data: d}; });
+                    return r.json();
+                })
+                .then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('personalAccountModal')).hide();
+                    loadPersonalAccounts(personId);
+                    toastr.success('Cuenta guardada');
+                })
+                .catch(err => {
+                    const msg = err?.data?.message || 'Error al guardar la cuenta';
+                    toastr.error(msg);
+                });
+            }
+
+            function deletePersonalAccount(id) {
+                const personId = window.currentPersonId;
+                if (!confirm('¿Eliminar esta cuenta personal?')) return;
+                fetch(`/people/${personId}/personal-accounts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                .then(r => {
+                    if (!r.ok) return r.json().then(d => { throw {status: r.status, data: d}; });
+                    return r.json();
+                })
+                .then(() => {
+                    loadPersonalAccounts(personId);
+                    toastr.success('Cuenta eliminada');
+                })
+                .catch(err => {
+                    toastr.error(err?.data?.message || 'Error al eliminar la cuenta');
+                });
             }
 
             function deletePerson(id) {

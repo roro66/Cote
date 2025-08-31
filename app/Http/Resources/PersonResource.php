@@ -14,7 +14,7 @@ class PersonResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+    return [
             'id' => $this->id,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
@@ -36,6 +36,21 @@ class PersonResource extends JsonResource
             'status' => $this->is_enabled ? 'Activo' : 'Inactivo',
             'created_at' => $this->created_at?->format('d/m/Y H:i'),
             'updated_at' => $this->updated_at?->format('d/m/Y H:i'),
+            'personal_bank_accounts' => $this->whenLoaded('personalBankAccounts', function () {
+                return $this->personalBankAccounts->map(function ($acc) {
+                    return [
+                        'id' => $acc->id,
+                        'bank_id' => $acc->bank_id,
+                        'bank_name' => $acc->bank?->name,
+                        'account_type_id' => $acc->account_type_id,
+                        'account_type_name' => $acc->accountType?->name,
+                        'account_number' => $acc->account_number,
+                        'alias' => $acc->alias,
+                        'is_default' => (bool) $acc->is_default,
+                        'is_active' => (bool) $acc->is_active,
+                    ];
+                });
+            }),
         ];
     }
 }

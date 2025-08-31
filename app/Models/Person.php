@@ -84,6 +84,14 @@ class Person extends Model
         return $this->hasMany(Account::class);
     }
 
+    /**
+     * Cuentas bancarias personales (destinos de transferencia)
+     */
+    public function personalBankAccounts(): HasMany
+    {
+        return $this->hasMany(PersonBankAccount::class);
+    }
+
     public function submittedExpenses(): HasMany
     {
         return $this->hasMany(Expense::class, 'submitted_by');

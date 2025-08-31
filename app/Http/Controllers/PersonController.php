@@ -85,6 +85,7 @@ class PersonController extends Controller
      */
     public function show(Person $person): JsonResponse
     {
+        $person->load(['bank', 'accountType', 'personalBankAccounts.bank', 'personalBankAccounts.accountType']);
         return response()->json(new PersonResource($person));
     }
 
