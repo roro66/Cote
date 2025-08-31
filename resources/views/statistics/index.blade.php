@@ -137,6 +137,47 @@
                 return { backgrounds, borders };
             }
 
+            // Plugin: escribe el valor de cada barra encima/delante de la barra
+            let valueLabelsRegistered = false;
+            function ensureValueLabelsPlugin() {
+                if (valueLabelsRegistered || typeof Chart === 'undefined') return;
+                const valueLabels = {
+                    id: 'barValueLabels',
+                    afterDatasetsDraw(chart) {
+                        const { ctx, chartArea, data } = chart;
+                        const meta = chart.getDatasetMeta(0);
+                        if (!meta || !meta.data) return;
+                        const colors = getThemeColors();
+                        ctx.save();
+                        ctx.fillStyle = colors.text;
+                        ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+                        ctx.textBaseline = 'middle';
+                        const fmt = new Intl.NumberFormat('es-CL', { maximumFractionDigits: 0 });
+                        for (let i = 0; i < meta.data.length; i++) {
+                            const el = meta.data[i];
+                            const val = data.datasets[0].data[i];
+                            if (val == null) continue;
+                            const pos = el.tooltipPosition();
+                            const text = fmt.format(val);
+                            let x = pos.x + 6;
+                            const y = pos.y;
+                            // Evitar que el texto se salga a la derecha
+                            const w = ctx.measureText(text).width + 4;
+                            if (x + w > chartArea.right) {
+                                x = chartArea.right - 4;
+                                ctx.textAlign = 'right';
+                            } else {
+                                ctx.textAlign = 'left';
+                            }
+                            ctx.fillText(text, x, y);
+                        }
+                        ctx.restore();
+                    }
+                };
+                Chart.register(valueLabels);
+                valueLabelsRegistered = true;
+            }
+
             let perPersonMonthlyChart, categoryBarChart;
 
             function renderCharts() {
@@ -182,6 +223,7 @@
                 const barCtx = document.getElementById('categoryBarChart').getContext('2d');
                 if (categoryBarChart) categoryBarChart.destroy();
                 const pastel = getPastelPalette(categoryTotals.length);
+                ensureValueLabelsPlugin();
                 categoryBarChart = new Chart(barCtx, {
                     type: 'bar',
                     data: {
@@ -197,8 +239,9 @@
                     options: {
                         indexAxis: 'y',
                         responsive: true,
+                        layout: { padding: { right: 36 } },
                         plugins: {
-                            legend: { labels: { color: colors.text } },
+                            legend: { display: false },
                             tooltip: {
                                 callbacks: {
                                     label: (ctx) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(ctx.parsed.x)
