@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ExpenseItem;
 use App\Models\Person;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -31,8 +32,9 @@ class StatisticsController extends Controller
 
         [$data] = $selectedId ? [$this->monthlyTotalsForPerson($selectedId, $start, $end, $months)] : [[/* empty */]];
 
-        // Gastos por categoría (últimos 90 días)
-        $catStart = now()->subDays(90)->startOfDay();
+        // Gastos por categoría (últimos N días; por defecto 90)
+        $defaultCategoryDays = 90;
+        $catStart = now()->subDays($defaultCategoryDays)->startOfDay();
         $byCategory = ExpenseItem::query()
             ->select(['category', DB::raw('SUM(amount) as total')])
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
@@ -49,6 +51,7 @@ class StatisticsController extends Controller
             'selectedPersonId' => $selectedId,
             'monthLabels' => $labels->values(),
             'selectedPersonMonthly' => $data,
+            'categoryDays' => $defaultCategoryDays,
             'categoryLabels' => $byCategory->pluck('category'),
             'categoryTotals' => $byCategory->pluck('total')->map(fn ($v) => (float) $v),
         ]);
@@ -118,5 +121,31 @@ class StatisticsController extends Controller
             $match = $raw->first(fn ($r) => (new Carbon($r->month))->isSameMonth($m));
             return $match ? (float) $match->total : 0.0;
         })->values()->all();
+    }
+
+    public function categories(Request $request)
+    {
+        $days = (int) $request->query('days', 90);
+        if ($days < 7) $days = 7;
+        if ($days > 3650) $days = 3650; // límite razonable ~10 años
+
+        $start = now()->subDays($days)->startOfDay();
+
+        $byCategory = ExpenseItem::query()
+            ->select(['category', DB::raw('SUM(amount) as total')])
+            ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
+            ->where('expenses.status', 'approved')
+            ->whereNotNull('expense_items.category')
+            ->where('expense_items.expense_date', '>=', $start)
+            ->groupBy('category')
+            ->orderByDesc(DB::raw('SUM(amount)'))
+            ->limit(10)
+            ->get();
+
+        return response()->json([
+            'labels' => $byCategory->pluck('category'),
+            'totals' => $byCategory->pluck('total')->map(fn ($v) => (float) $v),
+            'days' => $days,
+        ]);
     }
 }

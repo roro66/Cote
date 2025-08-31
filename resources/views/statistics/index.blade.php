@@ -45,13 +45,28 @@
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Gasto por categoría (últimos 90 días)</h3>
+                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-2">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto por categoría</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Últimos <span id="categoryDaysSpan">{{ $categoryDays }}</span> días</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <div>
+                                <label for="categoryDaysInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Días</label>
+                                <input id="categoryDaysInput" type="number" min="7" max="3650" step="1" value="{{ $categoryDays }}" class="form-control form-control-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-transparent"> </label>
+                                <button type="button" id="applyCategoryDaysBtn" class="btn btn-sm btn-primary">Aplicar</button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         <div class="lg:col-span-2">
                             <canvas id="categoryBarChart" height="160"></canvas>
                         </div>
                         <div class="text-sm text-gray-600 dark:text-gray-300">
-                            <p class="mb-2">Incluye rendiciones aprobadas en los últimos 90 días.</p>
+                            <p class="mb-2">Incluye rendiciones aprobadas en el período seleccionado.</p>
                             <ul class="list-disc ms-5">
                                 <li>Máx. 10 categorías más altas.</li>
                                 <li>Las cifras están en CLP.</li>
@@ -72,6 +87,7 @@
             const initialMonthlyData = @json($selectedPersonMonthly);
             const categoryLabels = @json($categoryLabels);
             const categoryTotals = @json($categoryTotals);
+            let categoryDays = @json($categoryDays);
 
             // Utilidades de color según tema
             function getThemeColors() {
@@ -273,11 +289,37 @@
                 exportBtn.classList.remove('disabled');
             }
 
+            async function reloadCategories(days) {
+                const url = `{{ route('statistics.categories') }}?days=${encodeURIComponent(days)}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const json = await res.json();
+                categoryDays = json.days;
+                document.getElementById('categoryDaysSpan').textContent = String(categoryDays);
+                // Recalcular paleta
+                const pastel = getPastelPalette(json.totals.length);
+                // Actualizar datos
+                categoryBarChart.data.labels = json.labels;
+                categoryBarChart.data.datasets[0].data = json.totals;
+                categoryBarChart.data.datasets[0].backgroundColor = pastel.backgrounds;
+                categoryBarChart.data.datasets[0].borderColor = pastel.borders;
+                categoryBarChart.update();
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 renderCharts();
                 const select = document.getElementById('personSelect');
                 if (select) {
                     select.addEventListener('change', (e) => reloadPersonMonthly(e.target.value));
+                }
+                // Categories controls
+                const applyBtn = document.getElementById('applyCategoryDaysBtn');
+                const daysInput = document.getElementById('categoryDaysInput');
+                if (applyBtn && daysInput) {
+                    applyBtn.addEventListener('click', () => {
+                        const val = parseInt(daysInput.value, 10);
+                        if (!isNaN(val)) reloadCategories(val);
+                    });
                 }
                 window.addEventListener('theme-changed', () => { renderCharts(); });
             });
