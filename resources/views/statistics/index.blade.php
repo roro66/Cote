@@ -135,10 +135,11 @@
                                 type: 'category',
                                 ticks: {
                                     color: colors.ticks,
-                                    autoSkip: false,
+                                    autoSkip: true,
+                                    maxTicksLimit: 12,
                                     maxRotation: 0,
                                     minRotation: 0,
-                                    callback: (val, idx, ticks) => ticks[idx]?.label ?? val,
+                                    callback: (val, idx) => abbreviateMonthLabel(monthLabels[idx] ?? String(val)),
                                 },
                                 grid: { color: colors.grid }
                             },
