@@ -5,6 +5,21 @@
         </h2>
     </x-slot>
 
+    <style>
+        /* Estilos para diferenciar y posicionar el modal de cuentas personales */
+        .modal.personal-account-modal .modal-dialog {
+            margin-top: 72px; /* un poco más abajo del borde superior */
+        }
+        .modal.personal-account-modal .modal-content {
+            background-color: #fff7cc; /* amarillo pálido */
+            border: 1px solid #ffe08a;
+        }
+        .modal.personal-account-modal .modal-header {
+            background-color: #fff2b3; /* más suave para el encabezado */
+            border-bottom-color: #ffe08a;
+        }
+    </style>
+
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -433,7 +448,7 @@
                         </div>
                     </form>
                     <!-- Modal simple para agregar/editar cuenta personal -->
-                    <div class="modal fade" id="personalAccountModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal fade personal-account-modal" id="personalAccountModal" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
