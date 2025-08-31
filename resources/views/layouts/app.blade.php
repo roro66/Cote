@@ -87,6 +87,8 @@
                     html.classList.remove('dark');
                     html.setAttribute('data-bs-theme', 'light');
                 }
+                // Notificar a la app que el tema cambió (p.ej., para re-renderizar charts)
+                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { isDark } }));
             }
 
             function toggleTheme() {
