@@ -7,6 +7,27 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Early theme application: apply stored or system preference BEFORE CSS loads to avoid flash -->
+        <script>
+            (function() {
+                try {
+                    const stored = localStorage.getItem('theme');
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    const useDark = stored ? stored === 'dark' : prefersDark;
+                    const html = document.documentElement;
+                    if (useDark) {
+                        html.classList.add('dark');
+                        html.setAttribute('data-bs-theme', 'dark');
+                    } else {
+                        html.classList.remove('dark');
+                        html.setAttribute('data-bs-theme', 'light');
+                    }
+                } catch (e) {
+                    // ignore
+                }
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

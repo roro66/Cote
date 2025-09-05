@@ -53,5 +53,11 @@ class DatabaseSeeder extends Seeder
             TransactionSeeder::class, // Crea transacciones (depende de cuentas y usuarios)
             ExpenseSeeder::class,   // Crea gastos (depende de cuentas y usuarios)
         ]);
+
+        // Opcional: sembrar datos amplios para estadísticas (24 meses por persona)
+        // Actívalo exportando STATS_DEMO=1 para evitar sobrecargar entornos por defecto
+        if (env('STATS_DEMO', false)) {
+            $this->call([StatisticsDataSeeder::class]);
+        }
     }
 }

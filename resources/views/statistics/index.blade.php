@@ -28,7 +28,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-transparent">Exportar</label>
                                 <a id="exportMonthlyBtn" href="{{ $selectedPersonId ? route('statistics.person.monthly.export', $selectedPersonId) : '#' }}" class="btn btn-sm btn-outline-primary disabled:opacity-60">
-                                    <i class="fa fa-file-excel"></i> Exportar CSV
+                                    <i class="fa fa-file-excel"></i> Exportar Excel
                                 </a>
                             </div>
                             <div>
@@ -91,14 +91,26 @@
 
             // Utilidades de color según tema
             function getThemeColors() {
-                const isDark = document.documentElement.classList.contains('dark');
+                const html = document.documentElement;
+                const isDark = html.getAttribute('data-bs-theme') === 'dark' || html.classList.contains('dark');
+                const styles = getComputedStyle(html);
+                const textVar = styles.getPropertyValue('--bs-body-color').trim();
+                const gridVar = styles.getPropertyValue('--bs-border-color').trim();
+                const bgVar = styles.getPropertyValue('--bs-body-bg').trim();
+                const text = textVar || (isDark ? '#e5e7eb' : '#111827');
+                const grid = gridVar || (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)');
+                const tooltipBg = isDark ? 'rgba(20,20,20,0.9)' : 'rgba(255,255,255,0.95)';
+                const tooltipText = isDark ? '#f3f4f6' : '#111827';
                 return {
-                    grid: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-                    ticks: isDark ? '#e5e7eb' : '#374151',
-                    text: isDark ? '#f9fafb' : '#111827',
+                    grid,
+                    ticks: text,
+                    text,
+                    bg: bgVar || 'transparent',
+                    tooltipBg,
+                    tooltipText,
                     palette: [
-                        '#4f46e5', '#16a34a', '#dc2626', '#f59e0b', '#0ea5e9',
-                        '#84cc16', '#a21caf', '#ea580c', '#22c55e', '#ef4444'
+                        '#7c8cff', '#5fd0a3', '#ff7b7b', '#ffcd70', '#5fc7ff',
+                        '#b8f171', '#cf70ff', '#ff995f', '#5fe089', '#ff8aa0'
                     ]
                 };
             }
@@ -120,8 +132,14 @@
                     label: 'Total mensual',
                     data,
                     borderColor: c,
-                    backgroundColor: c + '33',
+                    backgroundColor: c + '1A', // leve relleno
+                    borderWidth: 3,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: c,
+                    pointBorderColor: c,
                     tension: 0.25,
+                    fill: false,
                 }];
             }
 
@@ -213,6 +231,12 @@
                         plugins: {
                             legend: { labels: { color: colors.text } },
                             tooltip: {
+                                backgroundColor: colors.tooltipBg,
+                                titleColor: colors.tooltipText,
+                                bodyColor: colors.tooltipText,
+                                borderColor: colors.grid,
+                                borderWidth: 1,
+                                displayColors: false,
                                 callbacks: {
                                     label: (ctx) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(ctx.parsed.y)
                                 }
@@ -259,6 +283,12 @@
                         plugins: {
                             legend: { display: false },
                             tooltip: {
+                                backgroundColor: colors.tooltipBg,
+                                titleColor: colors.tooltipText,
+                                bodyColor: colors.tooltipText,
+                                borderColor: colors.grid,
+                                borderWidth: 1,
+                                displayColors: false,
                                 callbacks: {
                                     label: (ctx) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(ctx.parsed.x)
                                 }

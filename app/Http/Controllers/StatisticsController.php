@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Services\ExcelExportService;
+use Illuminate\Support\Str;
 
 class StatisticsController extends Controller
 {
@@ -64,8 +66,8 @@ class StatisticsController extends Controller
         $start = $months->first()->copy();
         $end = now()->endOfMonth();
 
-        $labels = $months->map(fn ($d) => $d->translatedFormat('MMMM Y'));
-        $data = $this->monthlyTotalsForPerson($person->id, $start, $end, $months);
+    $labels = $months->map(fn ($d) => $d->translatedFormat('MMMM Y'));
+    $data = $this->monthlyTotalsForPerson($person->id, $start, $end, $months);
 
         return response()->json([
             'monthLabels' => $labels->values(),
@@ -80,24 +82,22 @@ class StatisticsController extends Controller
         $start = $months->first()->copy();
         $end = now()->endOfMonth();
 
-        $labels = $months->map(fn ($d) => $d->translatedFormat('MMMM Y'));
         $data = $this->monthlyTotalsForPerson($person->id, $start, $end, $months);
 
-        $filename = 'gasto-mensual-' . str_replace(' ', '-', strtolower($person->first_name . '-' . $person->last_name)) . '.csv';
-
-        $response = new StreamedResponse(function () use ($labels, $data) {
-            $handle = fopen('php://output', 'w');
-            // Cabecera
-            fputcsv($handle, ['Mes', 'Total (CLP)']);
-            foreach ($labels as $i => $label) {
-                fputcsv($handle, [$label, (int) round($data[$i] ?? 0)]);
-            }
-            fclose($handle);
-        });
-        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
-        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
-        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate');
-        return $response;
+    $safe = Str::slug($person->first_name . ' ' . $person->last_name);
+        $filename = 'gasto-mensual-' . $safe . '.xlsx';
+        $headings = ['Mes', 'Total (CLP)'];
+        $rows = [];
+        $mesesEs = [
+            1 => 'enero', 2 => 'febrero', 3 => 'marzo', 4 => 'abril', 5 => 'mayo', 6 => 'junio',
+            7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre',
+        ];
+        foreach ($months as $i => $date) {
+            /** @var \Illuminate\Support\Carbon $date */
+            $label = ($mesesEs[$date->month] ?? strtolower($date->format('F'))) . ' ' . $date->year;
+            $rows[] = [$label, (int) round($data[$i] ?? 0)];
+        }
+        return ExcelExportService::streamXlsx($filename, $headings, $rows);
     }
 
     /**
