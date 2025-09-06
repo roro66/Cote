@@ -302,8 +302,18 @@
                             $('#transactions-table').DataTable().ajax.reload();
                             toastr.success('Transacción aprobada');
                         },
-                        error: function() {
-                            toastr.error('Error al aprobar la transacción');
+                        error: function(xhr) {
+                            // Try to surface server message when available (e.g. insufficient funds)
+                            var msg = 'Error al aprobar la transacción';
+                            try {
+                                var json = xhr && xhr.responseText ? JSON.parse(xhr.responseText) : null;
+                                if (json && json.message) {
+                                    msg = json.message;
+                                }
+                            } catch (e) {
+                                // ignore parse errors and keep generic message
+                            }
+                            toastr.error(msg);
                         }
                     });
                 }
