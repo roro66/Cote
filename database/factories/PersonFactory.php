@@ -21,8 +21,7 @@ class PersonFactory extends Factory
         $dv = $this->calculateDV($number);
         $rut = number_format($number, 0, '', '.') . '-' . $dv;
         
-        $banks = ['Banco de Chile', 'Banco Santander', 'BCI', 'Banco Estado', 'Itaú', 'Scotiabank', 'Banco Falabella'];
-        $accountTypes = ['corriente', 'vista', 'ahorro'];
+    $accountTypes = ['corriente', 'vista', 'ahorro'];
         
         return [
             'first_name' => $this->faker->firstName(),
@@ -30,8 +29,8 @@ class PersonFactory extends Factory
             'rut' => $rut,
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->optional(0.8)->phoneNumber(),
-            'bank_name' => $this->faker->optional(0.7)->randomElement($banks),
-            'account_type' => $this->faker->optional(0.7)->randomElement($accountTypes),
+            'bank_id' => null,
+            'account_type_id' => null,
             'account_number' => $this->faker->optional(0.7)->numerify('##########'),
             'address' => $this->faker->optional(0.6)->address(),
             'role_type' => $this->faker->randomElement(['tesorero', 'trabajador']),

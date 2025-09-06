@@ -93,6 +93,26 @@ class StoreTransactionRequest extends FormRequest
                         $validator->errors()->add('to_account_id', 'Solo se permiten transferencias entre Tesorería y cuentas personales (en ambos sentidos).');
                     }
                 }
+
+                // Regla especial: Si la cuenta origen es la cuenta de fondeo 'Fondeo del Sistema',
+                // solo puede transferir a una cuenta tipo 'treasury'. Esto evita que el proveedor
+                // (owner de la cuenta Fondeo) transfiera a otras cuentas personales.
+                if ($from && strcasecmp(trim($from->name), 'Fondeo del Sistema') === 0) {
+                    if ($to->type !== 'treasury') {
+                        $validator->errors()->add('to_account_id', 'Las transferencias desde "Fondeo del Sistema" solo pueden enviarse a Tesorería.');
+                    }
+                }
+
+                // Seguridad adicional: si la cuenta origen tiene un owner que hemos designado
+                // como proveedor (es decir, la cuenta "Fondeo del Sistema"), evitamos que esa
+                // persona sea usada para transferir desde otras cuentas distintas a la cuenta Fondeo.
+                if ($from && $from->person_id) {
+                    // Buscar la cuenta Fondeo actual para comparar person_id
+                    $fondeo = Account::where('name', 'Fondeo del Sistema')->first();
+                    if ($fondeo && $fondeo->person_id && $fondeo->person_id == $from->person_id && $from->id !== $fondeo->id) {
+                        $validator->errors()->add('from_account_id', 'Esta persona solo puede operar desde la cuenta "Fondeo del Sistema".');
+                    }
+                }
             }
         });
     }

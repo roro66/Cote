@@ -42,6 +42,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
     Route::get('/statistics/person/{person}/monthly', [StatisticsController::class, 'personMonthly'])->name('statistics.person.monthly');
     Route::get('/statistics/person/{person}/monthly/export', [StatisticsController::class, 'exportPersonMonthly'])->name('statistics.person.monthly.export');
+    Route::get('/statistics/categories-monthly', [StatisticsController::class, 'categoriesMonthly'])->name('statistics.categories.monthly');
+    Route::get('/statistics/person/{person}/categories', [StatisticsController::class, 'personCategories'])->name('statistics.person.categories');
+    Route::get('/statistics/technicians-monthly', [StatisticsController::class, 'techniciansMonthly'])->name('statistics.technicians.monthly');
     Route::get('/statistics/categories', [StatisticsController::class, 'categories'])->name('statistics.categories');
 
     // Rutas de Cuentas

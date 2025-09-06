@@ -21,20 +21,26 @@ class ApprovalDataTableController extends Controller
             ->addColumn('transaction_number', fn($row) => $row->transaction_number)
             ->editColumn('created_at', fn($row) => $row->created_at)
             ->addColumn('from_account', function ($row) {
-                $person = $row->fromAccount?->person?->name;
-                $accountType = $row->fromAccount?->type === 'treasury' ? 'Tesorería' : 'Personal';
+                $account = $row->fromAccount;
+                $personName = $account?->person?->name;
+                $accountName = $account?->name;
+                $accountType = $account?->type === 'treasury' ? 'Tesorería' : 'Personal';
+                $displayName = $personName ?: $accountName ?: ($accountType === 'Tesorería' ? 'Tesorería' : 'N/A');
                 return '<div class="d-flex align-items-center">'
                     . '<i class="fas fa-university text-success me-2"></i>'
-                    . '<div><strong>' . e($person ?: 'N/A') . '</strong><br>'
+                    . '<div><strong>' . e($displayName) . '</strong><br>'
                     . '<small class="text-muted">' . e($accountType) . '</small></div>'
                     . '</div>';
             })
             ->addColumn('to_account', function ($row) {
-                $person = $row->toAccount?->person?->name;
-                $accountType = $row->toAccount?->type === 'treasury' ? 'Tesorería' : 'Personal';
+                $account = $row->toAccount;
+                $personName = $account?->person?->name;
+                $accountName = $account?->name;
+                $accountType = $account?->type === 'treasury' ? 'Tesorería' : 'Personal';
+                $displayName = $personName ?: $accountName ?: ($accountType === 'Tesorería' ? 'Tesorería' : 'N/A');
                 return '<div class="d-flex align-items-center">'
                     . '<i class="fas fa-user text-primary me-2"></i>'
-                    . '<div><strong>' . e($person ?: 'N/A') . '</strong><br>'
+                    . '<div><strong>' . e($displayName) . '</strong><br>'
                     . '<small class="text-muted">' . e($accountType) . '</small></div>'
                     . '</div>';
             })
@@ -97,7 +103,13 @@ class ApprovalDataTableController extends Controller
 
     return DataTables::of($query)
             ->editColumn('expense_date', fn($row) => $row->expense_date)
-            ->addColumn('person_name', fn($row) => $row->account?->person?->name ?: 'N/A')
+            ->addColumn('person_name', function ($row) {
+                $account = $row->account;
+                $personName = $account?->person?->name;
+                $accountName = $account?->name;
+                $accountType = $account?->type === 'treasury' ? 'Tesorería' : 'Personal';
+                return $personName ?: $accountName ?: ($accountType === 'Tesorería' ? 'Tesorería' : 'N/A');
+            })
             ->addColumn('items_count', fn($row) => $row->items ? $row->items->count() : 0)
             ->editColumn('total_amount', fn($row) => (float) $row->total_amount)
             ->editColumn('status', fn($row) => $row->status)

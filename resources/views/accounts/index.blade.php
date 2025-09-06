@@ -10,6 +10,42 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
 
+                    <!-- Estadísticas -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Cuentas</h5>
+                                    <h2 class="mb-0">{{ $stats['total'] ?? 0 }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Activas</h5>
+                                    <h2 class="mb-0">{{ $stats['enabled'] ?? 0 }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Cuentas con saldo ≠ 0</h5>
+                                    <h2 class="mb-0">{{ $stats['nonzero'] ?? 0 }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Saldo</h5>
+                                    <h2 class="mb-0">${{ number_format($stats['total_balance'] ?? 0, 0, ',', '.') }} CLP</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
                             {{ session('success') }}

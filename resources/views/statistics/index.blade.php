@@ -75,6 +75,68 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto por categoría - últimos N meses</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Selecciona cuántos meses mostrar</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <div>
+                                <label for="categoriesMonthsInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Meses</label>
+                                <input id="categoriesMonthsInput" data-months-input data-target="categoriesMonthly" type="number" min="1" max="60" step="1" value="6" class="form-control form-control-sm" />
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="categoriesMonthlyChart" height="160"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gastos por categoría de una persona</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Selecciona persona para ver su distribución por categorías</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <div>
+                                <label for="personSelectForCategories" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
+                                <select id="personSelectForCategories" class="form-select form-select-sm">
+                                    @foreach($people as $p)
+                                        <option value="{{ $p->id }}">{{ trim($p->first_name.' '.$p->last_name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="personCategoriesChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gastos por técnico - últimos N meses</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Comparativa por técnico (top 8)</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <div>
+                                <label for="techniciansMonthsInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Meses</label>
+                                <input id="techniciansMonthsInput" data-months-input data-target="techniciansMonthly" type="number" min="1" max="24" step="1" value="6" class="form-control form-control-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-transparent"> </label>
+                                <button id="reloadTechniciansBtn" class="btn btn-sm btn-primary">Recargar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <canvas id="techniciansMonthlyChart" height="140"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -213,6 +275,7 @@
             }
 
             let perPersonMonthlyChart, categoryBarChart;
+            let categoriesMonthlyChart, personCategoriesChart, techniciansMonthlyChart;
 
             function renderCharts() {
                 const colors = getThemeColors();
@@ -300,6 +363,43 @@
                         }
                     }
                 });
+
+                // Placeholder charts for additional widgets
+                // categoriesMonthlyChart (stacked lines by category)
+                const catMonthlyEl = document.getElementById('categoriesMonthlyChart');
+                if (catMonthlyEl) {
+                    const ctx = catMonthlyEl.getContext('2d');
+                    if (categoriesMonthlyChart) categoriesMonthlyChart.destroy();
+                    categoriesMonthlyChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: [], datasets: [] },
+                        options: { responsive: true, plugins: { legend: { labels: { color: colors.text } } }, scales: { x: { ticks: { color: colors.ticks } }, y: { ticks: { color: colors.ticks } } } }
+                    });
+                }
+
+                // personCategoriesChart (bar)
+                const personCatEl = document.getElementById('personCategoriesChart');
+                if (personCatEl) {
+                    const ctx2 = personCatEl.getContext('2d');
+                    if (personCategoriesChart) personCategoriesChart.destroy();
+                    personCategoriesChart = new Chart(ctx2, {
+                        type: 'bar',
+                        data: { labels: [], datasets: [{ label: 'Total por categoría', data: [], backgroundColor: getPastelPalette(10).backgrounds }] },
+                        options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { ticks: { color: colors.ticks } }, y: { ticks: { color: colors.ticks } } } }
+                    });
+                }
+
+                // techniciansMonthlyChart (multi-line)
+                const techEl = document.getElementById('techniciansMonthlyChart');
+                if (techEl) {
+                    const ctx3 = techEl.getContext('2d');
+                    if (techniciansMonthlyChart) techniciansMonthlyChart.destroy();
+                    techniciansMonthlyChart = new Chart(ctx3, {
+                        type: 'line',
+                        data: { labels: [], datasets: [] },
+                        options: { responsive: true, plugins: { legend: { labels: { color: colors.ticks } } }, scales: { x: { ticks: { color: colors.ticks } }, y: { ticks: { color: colors.ticks } } } }
+                    });
+                }
             }
 
             async function reloadPersonMonthly(personId) {
@@ -336,6 +436,40 @@
                 categoryBarChart.update();
             }
 
+            // New: load categories monthly for N months
+            async function loadCategoriesMonthly(months) {
+                const url = `{{ route('statistics.categories.monthly') }}?months=${encodeURIComponent(months)}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const json = await res.json();
+                if (!categoriesMonthlyChart) return;
+                categoriesMonthlyChart.data.labels = json.monthLabels;
+                categoriesMonthlyChart.data.datasets = buildLineDatasets(json.datasets);
+                categoriesMonthlyChart.update();
+            }
+
+            async function loadPersonCategories(personId, months=6) {
+                const url = `{{ url('/statistics/person') }}/${personId}/categories?months=${months}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const json = await res.json();
+                if (!personCategoriesChart) return;
+                personCategoriesChart.data.labels = json.labels;
+                personCategoriesChart.data.datasets[0].data = json.totals;
+                personCategoriesChart.update();
+            }
+
+            async function loadTechniciansMonthly(months=6) {
+                const url = `{{ route('statistics.technicians.monthly') }}?months=${months}`;
+                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                if (!res.ok) return;
+                const json = await res.json();
+                if (!techniciansMonthlyChart) return;
+                techniciansMonthlyChart.data.labels = json.monthLabels;
+                techniciansMonthlyChart.data.datasets = buildLineDatasets(json.datasets);
+                techniciansMonthlyChart.update();
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 renderCharts();
                 const select = document.getElementById('personSelect');
@@ -351,6 +485,32 @@
                         if (!isNaN(val)) reloadCategories(val);
                     });
                 }
+                // New controls: months inputs and tech dropdown
+                const monthsInputs = document.querySelectorAll('[data-months-input]');
+                monthsInputs.forEach(el => {
+                    const target = el.getAttribute('data-target');
+                    el.addEventListener('change', (e) => {
+                        const v = parseInt(e.target.value, 10) || 6;
+                        if (target === 'categoriesMonthly') loadCategoriesMonthly(v);
+                        if (target === 'techniciansMonthly') loadTechniciansMonthly(v);
+                    });
+                });
+
+                const techReloadBtn = document.getElementById('reloadTechniciansBtn');
+                if (techReloadBtn) techReloadBtn.addEventListener('click', () => {
+                    const el = document.getElementById('techniciansMonthsInput');
+                    const v = parseInt(el.value, 10) || 6;
+                    loadTechniciansMonthly(v);
+                });
+
+                const personCatSelect = document.getElementById('personSelectForCategories');
+                if (personCatSelect) {
+                    personCatSelect.addEventListener('change', (e) => loadPersonCategories(e.target.value));
+                }
+                // bootstrap: init default loads
+                loadCategoriesMonthly(6);
+                loadTechniciansMonthly(6);
+                if (personCatSelect) loadPersonCategories(personCatSelect.value);
                 window.addEventListener('theme-changed', () => { renderCharts(); });
             });
 
