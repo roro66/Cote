@@ -10,7 +10,24 @@ class AccountController extends Controller
 {
     public function index()
     {
-        return view('accounts.index');
+        // Estadísticas para el dashboard de cuentas
+        $total = \App\Models\Account::count();
+        $enabled = \App\Models\Account::where('is_enabled', true)->count();
+        $treasury = \App\Models\Account::where('type', 'treasury')->count();
+        $personal = \App\Models\Account::where('type', 'person')->count();
+        $nonzero = \App\Models\Account::where('balance', '<>', 0)->count();
+        $total_balance = \App\Models\Account::sum('balance');
+
+        $stats = [
+            'total' => $total,
+            'enabled' => $enabled,
+            'treasury' => $treasury,
+            'personal' => $personal,
+            'nonzero' => $nonzero,
+            'total_balance' => $total_balance,
+        ];
+
+        return view('accounts.index', compact('stats'));
     }
 
     public function create()
@@ -31,6 +48,13 @@ class AccountController extends Controller
         ]);
 
         $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes']);
+        // Validación extra: solo una cuenta de tipo 'treasury' permitida
+        if ($data['type'] === 'treasury') {
+            $existing = Account::where('type', 'treasury')->first();
+            if ($existing) {
+                return back()->withErrors(['type' => 'Ya existe una cuenta Tesorería en el sistema.'])->withInput();
+            }
+        }
         $data['is_enabled'] = $request->input('is_enabled', 0);
 
         $account = Account::create($data);
@@ -70,6 +94,13 @@ class AccountController extends Controller
         ]);
 
         $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes']);
+        // Validación extra: evitar convertir otra cuenta en 'treasury' si ya existe una diferente
+        if ($data['type'] === 'treasury') {
+            $existing = Account::where('type', 'treasury')->where('id', '<>', $account->id)->first();
+            if ($existing) {
+                return back()->withErrors(['type' => 'Ya existe otra cuenta Tesorería en el sistema.'])->withInput();
+            }
+        }
         $data['is_enabled'] = $request->input('is_enabled', 0);
 
         $account->update($data);

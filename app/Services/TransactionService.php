@@ -14,21 +14,40 @@ class TransactionService
      */
     public function createTransaction(array $data): Transaction
     {
-        return DB::transaction(function () use ($data) {
-            // Generar número de transacción único
-            $data['transaction_number'] = $this->generateTransactionNumber();
-            
-            // Crear la transacción
-            $transaction = Transaction::create($data);
-            
-            Log::info('Transacción creada', [
-                'transaction_id' => $transaction->id,
-                'number' => $transaction->transaction_number,
-                'amount' => $transaction->amount
-            ]);
-            
-            return $transaction;
-        });
+        $maxAttempts = 5;
+        $attempt = 0;
+        do {
+            $attempt++;
+            try {
+                return DB::transaction(function () use ($data) {
+                    // Generar número de transacción único
+                    $data['transaction_number'] = $this->generateTransactionNumber();
+
+                    // Crear la transacción
+                    $transaction = Transaction::create($data);
+
+                    Log::info('Transacción creada', [
+                        'transaction_id' => $transaction->id,
+                        'number' => $transaction->transaction_number,
+                        'amount' => $transaction->amount
+                    ]);
+
+                    return $transaction;
+                });
+            } catch (\Throwable $e) {
+                // Detectar unique_violation (Postgres 23505) en distintos tipos de excepción
+                $code = (string) $e->getCode();
+                $message = (string) $e->getMessage();
+                $isUniqueViolation = ($code === '23505') || str_contains($message, '23505') || str_contains($message, 'unique');
+                if ($isUniqueViolation && $attempt < $maxAttempts) {
+                    // Reintentar: posible colisión de transaction_number por concurrencia
+                    continue;
+                }
+                throw $e;
+            }
+        } while ($attempt < $maxAttempts);
+
+        throw new \Exception('No se pudo generar un número de transacción único después de varios intentos. Intenta de nuevo.');
     }
     
     /**
@@ -111,18 +130,34 @@ class TransactionService
     private function generateTransactionNumber(): string
     {
         $year = date('Y');
-        $lastTransaction = Transaction::where('transaction_number', 'like', "TXN-{$year}-%")
+
+        // Intent: find the next unused sequential number in the format TXN-YYYY-###
+        // We attempt to find a free slot by checking the DB; this reduces collisions under concurrency.
+        $lastTransactionNumber = Transaction::where('transaction_number', 'like', "TXN-{$year}-%")
             ->orderBy('transaction_number', 'desc')
-            ->first();
-        
-        if ($lastTransaction) {
-            $lastNumber = intval(substr($lastTransaction->transaction_number, -3));
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
+            ->value('transaction_number');
+
+        $lastNumber = 0;
+        if ($lastTransactionNumber) {
+            // Extract trailing number (support trailing suffixes if any)
+            if (preg_match('/TXN-\d{4}-(\d{1,6})/', $lastTransactionNumber, $m)) {
+                $lastNumber = intval($m[1]);
+            }
         }
-        
-        return sprintf('TXN-%s-%03d', $year, $newNumber);
+
+        // Try a window of sequential numbers to find a free one
+        $maxProbe = 1000;
+        for ($i = 1; $i <= $maxProbe; $i++) {
+            $candidate = sprintf('TXN-%s-%03d', $year, $lastNumber + $i);
+            $exists = Transaction::where('transaction_number', $candidate)->exists();
+            if (!$exists) {
+                return $candidate;
+            }
+        }
+
+        // Fallback: generate a timestamp+random suffix to guarantee uniqueness
+        $suffix = substr(sha1(uniqid((string) mt_rand(), true)), 0, 8);
+        return sprintf('TXN-%s-%s-%s', $year, time(), $suffix);
     }
     
     /**

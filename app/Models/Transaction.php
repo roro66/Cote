@@ -7,11 +7,12 @@ use App\Traits\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\LogOptions;
 
 class Transaction extends Model
 {
-    use LogsActivity, HasSequentialNumber, HasDocumentNumber;
+    use LogsActivity, HasFactory, HasSequentialNumber, HasDocumentNumber;
 
     protected $fillable = [
         'transaction_number',
