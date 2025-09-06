@@ -12,7 +12,9 @@ class PersonDataTableController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Person::with(['bank', 'accountType'])->select('*');
+            // Seleccionar explícitamente las columnas de la tabla people para que
+            // podamos aplicar joins en orderColumn sin ambigüedades
+            $data = Person::with(['bank', 'accountType'])->select('people.*');
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -67,8 +69,16 @@ class PersonDataTableController extends Controller
                     $html .= '</div>';
                     return $html;
                 })
+                // Soporte para ordenar por nombre completo (first_name, last_name)
+                ->orderColumn('full_name', 'first_name $1, last_name $1')
                 ->filterColumn('full_name', function ($query, $keyword) {
                     $query->whereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$keyword}%"]);
+                })
+                // Soporte para ordenar por el nombre del banco asociado
+                ->orderColumn('bank_info', function ($query, $order) {
+                    // Hacer left join con banks y ordenar por banks.name
+                    $query->leftJoin('banks', 'people.bank_id', '=', 'banks.id')
+                          ->orderBy('banks.name', $order);
                 })
                 ->filter(function ($query) use ($request) {
                     if ($request->has('search') && !empty($request->search['value'])) {

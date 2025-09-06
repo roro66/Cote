@@ -12,8 +12,10 @@ class ExpenseDataTableController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            // Calificar is_enabled con el nombre de la tabla para evitar
+            // ambigüedades cuando se hacen joins (por ejemplo people tiene is_enabled)
             $data = Expense::with(['account', 'submitter', 'reviewedBy'])
-                ->where('is_enabled', true)
+                ->where('expenses.is_enabled', true)
                 ->select('expenses.*');
 
             return DataTables::of($data)
@@ -21,15 +23,28 @@ class ExpenseDataTableController extends Controller
                 ->addColumn('title', function ($row) {
                     return $row->description;
                 })
+                // Soporte para ordenar por título (description)
+                ->orderColumn('title', 'expenses.description $1')
                 ->addColumn('submitter_name', function ($row) {
                     return $row->submitter ? $row->submitter->full_name : 'N/A';
+                })
+                // Orden por solicitante (submitter)
+                ->orderColumn('submitter_name', function ($query, $order) {
+                    $query->leftJoin('people', 'expenses.submitted_by', '=', 'people.id')
+                          ->orderBy('people.first_name', $order)
+                          ->orderBy('people.last_name', $order);
                 })
                 ->addColumn('account_name', function ($row) {
                     return $row->account ? $row->account->name : 'N/A';
                 })
+                ->orderColumn('account_name', function ($query, $order) {
+                    $query->leftJoin('accounts', 'expenses.account_id', '=', 'accounts.id')
+                          ->orderBy('accounts.name', $order);
+                })
                 ->addColumn('total_amount_formatted', function ($row) {
                     return '$' . number_format($row->total_amount, 0, ',', '.');
                 })
+                ->orderColumn('total_amount_formatted', 'expenses.total_amount $1')
                 ->addColumn('status_spanish', function ($row) {
                     $statusText = match ($row->status) {
                         'draft' => 'Borrador',
@@ -51,9 +66,12 @@ class ExpenseDataTableController extends Controller
                     };
                     return '<span class="badge ' . $class . '">' . $statusText . '</span>';
                 })
+                // Orden por estado (campo real: expenses.status)
+                ->orderColumn('status_spanish', 'expenses.status $1')
                 ->addColumn('submitted_at_formatted', function ($row) {
                     return $row->submitted_at ? $row->submitted_at->format('d/m/Y H:i') : '-';
                 })
+                ->orderColumn('submitted_at_formatted', 'expenses.submitted_at $1')
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<div class="btn-group" role="group">
                         <a href="' . route('expenses.show', $row->id) . '" class="btn btn-info btn-sm" title="Ver" aria-label="Ver">

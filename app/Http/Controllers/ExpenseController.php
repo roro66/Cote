@@ -49,6 +49,7 @@ class ExpenseController extends Controller
             'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
             'items.*.vendor_name' => 'required|string|max:255',
             'items.*.receipt_number' => 'nullable|string|max:100',
+            'items.*.expense_category_id' => 'nullable|exists:expense_categories,id',
             'items.*.files' => 'nullable|array',
             'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
@@ -104,7 +105,8 @@ class ExpenseController extends Controller
                     'vendor_name' => $item['vendor_name'],
                     'expense_date' => now()->toDateString(), // Fecha del gasto
                     'document_number' => $item['receipt_number'] ?? null,
-                    'category' => null, // Campo opcional
+                    'category' => null, // Campo opcional (legacy)
+                    'expense_category_id' => $item['expense_category_id'] ?? null,
                 ]);
 
                 // Handle attached files for this item (if any)
@@ -242,6 +244,7 @@ class ExpenseController extends Controller
                     'expense_date' => now()->toDateString(),
                     'document_number' => $item['receipt_number'] ?? null,
                     'category' => null,
+                    'expense_category_id' => $item['expense_category_id'] ?? null,
                 ]);
 
                 $files = $request->file("items.$index.files", []);

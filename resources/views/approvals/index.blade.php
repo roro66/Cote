@@ -329,7 +329,9 @@
                         {
                             data: 'items_count',
                             name: 'items_count',
-                            render: (d) => `<span class=\"badge bg-secondary\">${d} items</span>`
+                            render: (d) => `<span class=\"badge bg-secondary\">${d} items</span>`,
+                            orderable: false,
+                            searchable: false
                         },
                         {
                             data: 'status',

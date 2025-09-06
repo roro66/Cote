@@ -530,7 +530,7 @@
                         {
                             data: 'full_name',
                             name: 'full_name',
-                            orderable: false
+                            orderable: true
                         },
                         {
                             data: 'rut',
@@ -548,7 +548,7 @@
                             data: 'bank_info',
                             name: 'bank_info',
                             title: 'Banco',
-                            orderable: false
+                            orderable: true
                         },
                         {
                             data: 'account_info',
