@@ -22,8 +22,9 @@ class ExpenseItem extends Model implements HasMedia
         'vendor_name',
         'description',
         'amount',
-        'expense_date',
-        'category',
+    'expense_date',
+    'category',
+    'expense_category_id',
         'is_enabled'
     ];
 
@@ -32,6 +33,11 @@ class ExpenseItem extends Model implements HasMedia
         'expense_date' => 'date',
         'is_enabled' => 'boolean',
     ];
+
+    public function categoryObj()
+    {
+        return $this->belongsTo(ExpenseCategory::class, 'expense_category_id');
+    }
 
     public function getActivitylogOptions(): LogOptions
     {

@@ -124,7 +124,7 @@
                         {
                             data: 'status',
                             name: 'status',
-                            orderable: false
+                            orderable: true
                         },
                         {
                             data: 'action',

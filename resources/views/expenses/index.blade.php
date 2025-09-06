@@ -62,13 +62,13 @@
             ajax: "{{ route('datatables.expenses') }}",
             columns: [
                 {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
-                {data: 'expense_number', name: 'expense_number'},
-                {data: 'title', name: 'title'},
-                {data: 'submitter_name', name: 'submitter_name'},
-                {data: 'account_name', name: 'account_name'},
-                {data: 'total_amount_formatted', name: 'total_amount_formatted', className: 'text-end'},
-                {data: 'status_spanish', name: 'status_spanish', orderable: false},
-                {data: 'submitted_at_formatted', name: 'submitted_at_formatted'},
+                {data: 'expense_number', name: 'expense_number', orderable: true},
+                {data: 'title', name: 'title', orderable: true},
+                {data: 'submitter_name', name: 'submitter_name', orderable: true},
+                {data: 'account_name', name: 'account_name', orderable: true},
+                {data: 'total_amount_formatted', name: 'total_amount_formatted', className: 'text-end', orderable: true},
+                {data: 'status_spanish', name: 'status_spanish', orderable: true},
+                {data: 'submitted_at_formatted', name: 'submitted_at_formatted', orderable: true},
                 {data: 'action', name: 'action', orderable: false, searchable: false}
             ],
             language: {

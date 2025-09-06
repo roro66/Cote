@@ -179,13 +179,23 @@
                 <input type="hidden" class="item-currency" name="items[][currency]" value="CLP">
 
                 <div class="row mt-2">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Proveedor <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="items[][vendor_name]"
                             placeholder="Nombre del proveedor" required>
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="col-md-6">
+
+                    <div class="col-md-4">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select item-category-select" name="items[][expense_category_id]">
+                            <option value="">-- Sin categorizar --</option>
+                        </select>
+                        <div class="form-text">Seleccione la categoría de gasto (peaje, alimentación, insumos...)</div>
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="col-md-4">
                         <label class="form-label">Número de Recibo</label>
                         <input type="text" class="form-control" name="items[][receipt_number]"
                             placeholder="Número de recibo o factura">
@@ -252,9 +262,20 @@
             }
 
             document.getElementById('expenseItems').appendChild(clone);
-            itemCounter++;
-            calculateTotal();
+                itemCounter++;
+                calculateTotal();
         }
+
+            function populateCategorySelect(selectEl) {
+                const cats = window.COTESO_CATEGORIES || [];
+                selectEl.innerHTML = '<option value="">-- Sin categorizar --</option>';
+                cats.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    selectEl.appendChild(opt);
+                });
+            }
 
         function removeExpenseItem(button) {
             if (document.querySelectorAll('.expense-item').length > 1) {
@@ -320,6 +341,20 @@
         // Add initial item
         document.addEventListener('DOMContentLoaded', function() {
             addExpenseItem();
+
+            // Load categories and store locally
+            window.COTESO_CATEGORIES = [];
+            fetch('/datatables/expense-categories', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data.data)) {
+                        window.COTESO_CATEGORIES = data.data;
+                        // populate existing selects
+                        document.querySelectorAll('.item-category-select').forEach(sel => {
+                            populateCategorySelect(sel);
+                        });
+                    }
+                }).catch(() => {});
 
             // Form submission
             document.getElementById('createExpenseForm').addEventListener('submit', function(e) {

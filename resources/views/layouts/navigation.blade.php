@@ -35,6 +35,9 @@
                     <x-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
                         Bancos
                     </x-nav-link>
+                    <x-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')">
+                        Categorías
+                    </x-nav-link>
                     
                     <x-nav-link :href="route('account-types.index')" :active="request()->routeIs('account-types.*')">
                         Tipos de Cuenta
@@ -63,6 +66,22 @@
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
                     </svg>
                 </button>
+
+                <script>
+                    // Sync sun/moon icon visibility on load
+                    (function(){
+                        try {
+                            const html = document.documentElement;
+                            const isDark = html.getAttribute('data-bs-theme') === 'dark' || html.classList.contains('dark');
+                            const sun = document.getElementById('sun-icon');
+                            const moon = document.getElementById('moon-icon');
+                            if (sun && moon) {
+                                if (isDark) { sun.classList.add('hidden'); sun.classList.remove('block'); moon.classList.remove('hidden'); moon.classList.add('block'); }
+                                else { moon.classList.add('hidden'); moon.classList.remove('block'); sun.classList.remove('hidden'); sun.classList.add('block'); }
+                            }
+                        } catch(e){}
+                    })();
+                </script>
 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -137,6 +156,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
                 Bancos
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')">
+                Categorías
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('account-types.index')" :active="request()->routeIs('account-types.*')">
                 Tipos de Cuenta

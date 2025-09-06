@@ -12,6 +12,7 @@ class AccountDataTableController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            // Seleccionar explícitamente para evitar ambigüedades al hacer joins
             $data = Account::with(['person'])->select('accounts.*');
 
             return DataTables::of($data)
@@ -50,6 +51,18 @@ class AccountDataTableController extends Controller
                     $class = $row->is_enabled ? 'bg-success' : 'bg-danger';
                     return '<span class="badge ' . $class . '">' . $status . '</span>';
                 })
+                // Soporte para ordenar por tipo (accounts.type)
+                ->orderColumn('type_spanish', 'accounts.type $1')
+                // Soporte para ordenar por propietario (person's first_name, last_name)
+                ->orderColumn('owner', function ($query, $order) {
+                    $query->leftJoin('people', 'accounts.person_id', '=', 'people.id')
+                          ->orderBy('people.first_name', $order)
+                          ->orderBy('people.last_name', $order);
+                })
+                // Soporte para ordenar por saldo (accounts.balance)
+                ->orderColumn('balance_formatted', 'accounts.balance $1')
+                // Soporte para ordenar por estado (is_enabled)
+                ->orderColumn('status', 'accounts.is_enabled $1')
                 ->rawColumns(['action', 'status'])
                 ->make(true);
         }

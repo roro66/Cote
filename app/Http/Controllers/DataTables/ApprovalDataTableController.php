@@ -17,7 +17,7 @@ class ApprovalDataTableController extends Controller
             ->where('is_enabled', true)
             ->select('*');
 
-        return DataTables::of($query)
+    return DataTables::of($query)
             ->addColumn('transaction_number', fn($row) => $row->transaction_number)
             ->editColumn('created_at', fn($row) => $row->created_at)
             ->addColumn('from_account', function ($row) {
@@ -58,6 +58,13 @@ class ApprovalDataTableController extends Controller
                     . '</div>';
             })
             ->rawColumns(['from_account', 'to_account', 'action'])
+            // Map DataTables column names to real DB columns so server-side ordering works
+            ->orderColumn('transaction_number', 'transactions.transaction_number $1')
+            ->orderColumn('created_at', 'transactions.created_at $1')
+            ->orderColumn('amount', 'transactions.amount $1')
+            ->orderColumn('description', 'transactions.description $1')
+            // created_by is a relation (user id stored on transactions); order by the id as fallback
+            ->orderColumn('created_by', 'transactions.created_by $1')
             ->filter(function ($query) use ($request) {
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];
@@ -88,7 +95,7 @@ class ApprovalDataTableController extends Controller
             ->where('is_enabled', true)
             ->select('*');
 
-        return DataTables::of($query)
+    return DataTables::of($query)
             ->editColumn('expense_date', fn($row) => $row->expense_date)
             ->addColumn('person_name', fn($row) => $row->account?->person?->name ?: 'N/A')
             ->addColumn('items_count', fn($row) => $row->items ? $row->items->count() : 0)
@@ -108,6 +115,11 @@ class ApprovalDataTableController extends Controller
                     . '</div>';
             })
             ->rawColumns(['action'])
+            // Map virtual column names to real DB fields for ordering
+            ->orderColumn('expense_date', 'expenses.expense_date $1')
+            ->orderColumn('description', 'expenses.description $1')
+            ->orderColumn('total_amount', 'expenses.total_amount $1')
+            ->orderColumn('status', 'expenses.status $1')
             ->filter(function ($query) use ($request) {
                 if ($request->has('search') && !empty($request->search['value'])) {
                     $search = $request->search['value'];

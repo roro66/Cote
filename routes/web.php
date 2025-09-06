@@ -22,6 +22,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DataTables\UserDataTableController;
 use App\Http\Controllers\PersonBankAccountController;
 use App\Http\Controllers\StatisticsController;
+use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\DataTables\ExpenseCategoryDataTableController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
 use App\Livewire\ExpenseList;
@@ -62,6 +64,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Bancos
     Route::resource('banks', BankController::class);
+
+    // Categorías de gasto (plan de cuentas simplificado)
+    Route::resource('expense-categories', ExpenseCategoryController::class);
+    Route::get('datatables/expense-categories', [ExpenseCategoryDataTableController::class, 'index'])->name('datatables.expense-categories');
 
     // Rutas de Tipos de Cuenta
     Route::resource('account-types', AccountTypeController::class);
