@@ -20,6 +20,7 @@ class FundingAccountSeeder extends Seeder
                 'balance' => 100000000, // 100 millones CLP para pruebas
                 'notes' => 'Cuenta institucional para fondear Tesorería en entornos de prueba',
                 'is_enabled' => true,
+                'is_fondeo' => true,
             ]
         );
     }

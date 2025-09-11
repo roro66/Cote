@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Rules\ValidChileanRut;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\User;
 
 class StorePersonRequest extends FormRequest
 {
@@ -79,5 +80,18 @@ class StorePersonRequest extends FormRequest
             'role_type.required' => 'Debe seleccionar un tipo de rol.',
             'role_type.in' => 'El tipo de rol debe ser tesorero o trabajador.',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $role = $this->input('role_type');
+            if ($role === 'tesorero') {
+                // If any user already holds the Spatie 'treasurer' role, block creating another treasurer person
+                if (User::role('treasurer')->exists()) {
+                    $validator->errors()->add('role_type', 'Ya existe un tesorero asignado. Quita ese rol antes de asignarlo a otra persona.');
+                }
+            }
+        });
     }
 }

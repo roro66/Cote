@@ -45,9 +45,10 @@ class AccountController extends Controller
             'balance' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
             'is_enabled' => 'in:0,1',
+            'is_fondeo' => 'in:0,1',
         ]);
 
-        $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes']);
+        $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes', 'is_fondeo']);
         // Validación extra: solo una cuenta de tipo 'treasury' permitida
         if ($data['type'] === 'treasury') {
             $existing = Account::where('type', 'treasury')->first();
@@ -56,6 +57,16 @@ class AccountController extends Controller
             }
         }
         $data['is_enabled'] = $request->input('is_enabled', 0);
+        // Validación extra: solo una cuenta con is_fondeo = true
+        if ($request->input('is_fondeo')) {
+            $existingFondeo = Account::where('is_fondeo', true)->first();
+            if ($existingFondeo) {
+                return back()->withErrors(['is_fondeo' => 'Ya existe una cuenta marcada como Fondeo en el sistema.'])->withInput();
+            }
+            $data['is_fondeo'] = 1;
+        } else {
+            $data['is_fondeo'] = 0;
+        }
 
         $account = Account::create($data);
 
@@ -91,9 +102,10 @@ class AccountController extends Controller
             'balance' => 'required|numeric|min:0',
             'notes' => 'nullable|string',
             'is_enabled' => 'in:0,1',
+            'is_fondeo' => 'in:0,1',
         ]);
 
-        $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes']);
+        $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes', 'is_fondeo']);
         // Validación extra: evitar convertir otra cuenta en 'treasury' si ya existe una diferente
         if ($data['type'] === 'treasury') {
             $existing = Account::where('type', 'treasury')->where('id', '<>', $account->id)->first();
@@ -102,6 +114,17 @@ class AccountController extends Controller
             }
         }
         $data['is_enabled'] = $request->input('is_enabled', 0);
+        // Validación extra: evitar marcar otra cuenta como is_fondeo
+        if ($request->input('is_fondeo')) {
+            $existingFondeo = Account::where('is_fondeo', true)->where('id', '<>', $account->id)->first();
+            if ($existingFondeo) {
+                return back()->withErrors(['is_fondeo' => 'Ya existe otra cuenta marcada como Fondeo en el sistema.'])->withInput();
+            }
+            $data['is_fondeo'] = 1;
+        } else {
+            // Si no viene marcado, aseguramos el valor a 0
+            $data['is_fondeo'] = 0;
+        }
 
         $account->update($data);
 

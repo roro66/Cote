@@ -97,9 +97,10 @@ class StoreTransactionRequest extends FormRequest
                 // Regla especial: Si la cuenta origen es la cuenta de fondeo configurada,
                 // solo puede transferir a una cuenta tipo 'treasury'. Esto evita que el proveedor
                 // (owner de la cuenta Fondeo) transfiera a otras cuentas personales.
-                $fondeoName = config('coteso.fondeo_account_name');
-                if ($from && strcasecmp(trim($from->name), $fondeoName) === 0) {
+                // Si la cuenta origen está marcada como fondeo, solo puede transferir a treasury
+                if ($from && $from->is_fondeo) {
                     if ($to->type !== 'treasury') {
+                        $fondeoName = config('coteso.fondeo_account_name');
                         $validator->errors()->add('to_account_id', "Las transferencias desde \"{$fondeoName}\" solo pueden enviarse a Tesorería.");
                     }
                 }
@@ -109,9 +110,9 @@ class StoreTransactionRequest extends FormRequest
                 // persona sea usada para transferir desde otras cuentas distintas a la cuenta Fondeo.
                 if ($from && $from->person_id) {
                     // Buscar la cuenta Fondeo actual para comparar person_id
-                    $fondeoName = config('coteso.fondeo_account_name');
-                    $fondeo = Account::where('name', $fondeoName)->first();
+                    $fondeo = Account::where('is_fondeo', true)->first();
                     if ($fondeo && $fondeo->person_id && $fondeo->person_id == $from->person_id && $from->id !== $fondeo->id) {
+                        $fondeoName = config('coteso.fondeo_account_name');
                         $validator->errors()->add('from_account_id', "Esta persona solo puede operar desde la cuenta \"{$fondeoName}\".");
                     }
                 }
