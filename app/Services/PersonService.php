@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Person;
+use App\Models\User;
 use App\Http\Resources\PersonResource;
 use App\Helpers\RutHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -171,8 +172,13 @@ class PersonService
         $total = Person::count();
         $active = Person::where('is_enabled', true)->count();
         $inactive = $total - $active;
-        $tesoreros = Person::where('role_type', 'tesorero')->count();
-        $trabajadores = Person::where('role_type', 'trabajador')->count();
+    // Count actual users assigned the Spatie role 'treasurer' so the dashboard
+    // reflects the system role assignment (should normally be 1).
+    $tesoreros = User::role('treasurer')->count();
+
+    // Keep counting workers from the Person.role_type field for now
+    // (no corresponding Spatie role exists for trabajadores).
+    $trabajadores = Person::where('role_type', 'trabajador')->count();
 
         return [
             'total' => $total,

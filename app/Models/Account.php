@@ -20,12 +20,14 @@ class Account extends Model
         'person_id',
         'balance',
         'notes',
-        'is_enabled'
+    'is_enabled',
+    'is_fondeo',
     ];
 
     protected $casts = [
         'balance' => 'decimal:2',
         'is_enabled' => 'boolean',
+    'is_fondeo' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -71,6 +73,11 @@ class Account extends Model
     public function scopePerson($query)
     {
         return $query->where('type', 'person');
+    }
+
+    public function scopeFondeo($query)
+    {
+        return $query->where('is_fondeo', true);
     }
 
     // Accessors

@@ -27,7 +27,7 @@
 
                     <!-- Estadísticas -->
                     <div class="row mb-4">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card bg-primary text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Total Personas</h5>
@@ -35,7 +35,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card bg-success text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Activas</h5>
@@ -44,15 +44,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="card bg-info text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Tesoreros</h5>
-                                    <h2 class="mb-0">{{ $stats['tesoreros'] }}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="card bg-warning text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Trabajadores</h5>
@@ -679,34 +671,27 @@
                             // Actualizar los números en las tarjetas de estadísticas
                             const stats = data.statistics;
 
-                            // Total personas
-                            const totalCard = document.querySelector('.card-body h3');
-                            if (totalCard) totalCard.textContent = stats.total;
+                            // Actualizar tarjetas (ahora 3 cards: total, activos, trabajadores)
+                            const cardBodies = document.querySelectorAll('.card .card-body');
 
-                            // Activos
-                            const activosCards = document.querySelectorAll('.card-body');
-                            if (activosCards[1]) {
-                                const activosH3 = activosCards[1].querySelector('h3');
-                                const activosSmall = activosCards[1].querySelector('small');
-                                if (activosH3) activosH3.textContent = stats.activos;
-                                if (activosSmall) activosSmall.textContent = `${stats.porcentaje_activos}% del total`;
+                            // Total Personas
+                            if (cardBodies[0]) {
+                                const num = cardBodies[0].querySelector('h2');
+                                if (num) num.textContent = stats.total;
                             }
 
-                            // Tesoreros
-                            if (activosCards[2]) {
-                                const tesorerosH3 = activosCards[2].querySelector('h3');
-                                const tesorerosSmall = activosCards[2].querySelector('small');
-                                if (tesorerosH3) tesorerosH3.textContent = stats.tesoreros;
-                                if (tesorerosSmall) tesorerosSmall.textContent = `${stats.porcentaje_tesoreros}% del total`;
+                            // Activas
+                            if (cardBodies[1]) {
+                                const num = cardBodies[1].querySelector('h2');
+                                const small = cardBodies[1].querySelector('small');
+                                if (num) num.textContent = stats.active;
+                                if (small) small.textContent = `(${stats.active_percentage}%)`;
                             }
 
                             // Trabajadores
-                            if (activosCards[3]) {
-                                const trabajadoresH3 = activosCards[3].querySelector('h3');
-                                const trabajadoresSmall = activosCards[3].querySelector('small');
-                                if (trabajadoresH3) trabajadoresH3.textContent = stats.trabajadores;
-                                if (trabajadoresSmall) trabajadoresSmall.textContent =
-                                    `${stats.porcentaje_trabajadores}% del total`;
+                            if (cardBodies[2]) {
+                                const num = cardBodies[2].querySelector('h2');
+                                if (num) num.textContent = stats.trabajadores;
                             }
                         }
                     })

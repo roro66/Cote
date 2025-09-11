@@ -7,6 +7,7 @@ use App\Rules\ValidChileanRut;
 use App\Helpers\RutHelper;
 use Livewire\Component;
 use Livewire\WithPagination;
+use App\Models\User;
 
 class PersonList extends Component
 {
@@ -135,6 +136,18 @@ class PersonList extends Component
         $this->rut = RutHelper::clean($this->rut);
         
         $this->validate();
+
+        // Prevent assigning role_type 'tesorero' if another user already has the Spatie 'treasurer' role
+        if ($this->role_type === 'tesorero') {
+            $existing = User::role('treasurer')->first();
+            if ($existing) {
+                // If editing, allow only if existing treasurer belongs to this person
+                if (!($this->editing && $existing->person_id === $this->personId)) {
+                    $this->dispatch('showToastr', type: 'error', message: 'Ya existe un tesorero asignado en el sistema. Quita ese rol antes de asignarlo a otra persona.');
+                    return;
+                }
+            }
+        }
 
         if ($this->editing) {
             $person = Person::findOrFail($this->personId);

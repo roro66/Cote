@@ -107,8 +107,10 @@
                                 <span class="text-sm font-medium text-gray-900">
                                     @switch($type)
                                         @case('tesoreria') Tesorería @break
+                                        @case('treasury') Tesorería @break
                                         @case('cuadrilla') Cuadrillas @break
                                         @case('personal') Personal @break
+                                        @case('person') Personal @break
                                         @default {{ ucfirst($type) }}
                                     @endswitch
                                 </span>
