@@ -15,8 +15,38 @@ class AccountController extends Controller
         $enabled = \App\Models\Account::where('is_enabled', true)->count();
         $treasury = \App\Models\Account::where('type', 'treasury')->count();
         $personal = \App\Models\Account::where('type', 'person')->count();
-        $nonzero = \App\Models\Account::where('balance', '<>', 0)->count();
-        $total_balance = \App\Models\Account::sum('balance');
+        // Exclude treasury and fondeo accounts from the totals shown to represent money
+        // that is effectively held by people (not the organization's treasury/funding pool).
+        // Some rows may have is_fondeo NULL; treat NULL as false and exclude only where is_fondeo is true
+        $nonzero = \App\Models\Account::where('balance', '<>', 0)
+            ->where('type', '<>', 'treasury')
+            ->where(function ($q) {
+                $q->where('is_fondeo', false)->orWhereNull('is_fondeo');
+            })
+            ->count();
+
+        // Sum of all accounts (including treasury and fondeo)
+        $total_balance_all = \App\Models\Account::sum('balance');
+
+                // Sum of treasury + fondeo accounts (special pool).
+                // Some existing rows may not have `is_fondeo=true` set, so also treat any
+                // account whose name mentions 'fondeo' (case-insensitive) as fondeo.
+                $total_balance_special = \App\Models\Account::where(function ($q) {
+                        $q->where('type', 'treasury')
+                            ->orWhere('is_fondeo', true)
+                            ->orWhereRaw("name ILIKE ?", ['%fondeo%']);
+                })->sum('balance');
+
+        // Sum excluding treasury and fondeo (money in possession of people).
+        // Exclude accounts that are treasury OR that are explicitly marked as fondeo
+        // or whose name contains 'fondeo'. Treat NULL is_fondeo as false.
+        $total_balance = \App\Models\Account::where('type', '<>', 'treasury')
+            ->where(function ($q) {
+                $q->where(function ($q2) {
+                    $q2->where('is_fondeo', false)->orWhereNull('is_fondeo');
+                })->whereRaw("name NOT ILIKE ?", ['%fondeo%']);
+            })
+            ->sum('balance');
 
         $stats = [
             'total' => $total,
@@ -25,6 +55,8 @@ class AccountController extends Controller
             'personal' => $personal,
             'nonzero' => $nonzero,
             'total_balance' => $total_balance,
+            'total_balance_all' => $total_balance_all,
+            'total_balance_special' => $total_balance_special,
         ];
 
         return view('accounts.index', compact('stats'));

@@ -262,6 +262,15 @@
             }
 
             document.getElementById('expenseItems').appendChild(clone);
+                // After appending, populate category select for the newly added item
+                const parent = document.getElementById('expenseItems');
+                const lastItem = parent.lastElementChild;
+                if (lastItem) {
+                    const newSelect = lastItem.querySelector('.item-category-select');
+                    if (newSelect) {
+                        populateCategorySelect(newSelect);
+                    }
+                }
                 itemCounter++;
                 calculateTotal();
         }
