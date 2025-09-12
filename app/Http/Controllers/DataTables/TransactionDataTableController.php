@@ -224,6 +224,21 @@ class TransactionDataTableController extends Controller
                 })
                 ->orderColumn('amount_formatted', 'amount $1')
                 ->orderColumn('created_at_formatted', 'transactions.created_at $1')
+                // Case-insensitive global search (Postgres ILIKE) for common text fields
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('search') && !empty($request->search['value'])) {
+                        $s = $request->search['value'];
+                        $query->where(function ($q) use ($s) {
+                            $q->whereRaw("transactions.transaction_number ILIKE ?", ["%{$s}%"])
+                              ->orWhereRaw("transactions.type ILIKE ?", ["%{$s}%"])
+                              ->orWhereRaw("to_acc.name ILIKE ?", ["%{$s}%"])
+                              ->orWhereRaw("from_acc.name ILIKE ?", ["%{$s}%"])
+                              ->orWhereHas('creator', function ($cq) use ($s) {
+                                  $cq->whereRaw("name ILIKE ?", ["%{$s}%"]);
+                              });
+                        });
+                    }
+                })
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<div class="btn-group" role="group">
                         <button type="button" class="btn btn-info btn-sm" title="Ver" aria-label="Ver" onclick="viewTransaction(' . $row->id . ')">

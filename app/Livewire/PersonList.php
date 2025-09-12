@@ -230,13 +230,21 @@ class PersonList extends Component
 
     public function render()
     {
+        // Make search case-insensitive and cover more fields (full name, phone, role_type)
         $people = Person::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('first_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('last_name', 'like', '%' . $this->search . '%')
-                      ->orWhere('rut', 'like', '%' . $this->search . '%')
-                      ->orWhere('email', 'like', '%' . $this->search . '%');
+            ->when($this->search, function ($query, $search) {
+                // Normalize search term
+                $search = mb_strtolower(trim($search));
+
+                $query->where(function ($q) use ($search) {
+                    // Search full name, first, last, rut, email, phone and role_type in a case-insensitive way
+                    $q->whereRaw("LOWER(CONCAT(first_name, ' ', last_name)) LIKE ?", ["%{$search}%"])
+                      ->orWhereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(rut) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(email) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(phone) LIKE ?', ["%{$search}%"])
+                      ->orWhereRaw('LOWER(role_type) LIKE ?', ["%{$search}%"]);
                 });
             })
             ->orderBy($this->sortField, $this->sortDirection)

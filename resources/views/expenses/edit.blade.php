@@ -218,10 +218,27 @@
         
         // Load categories and populate selects
         window.COTESO_CATEGORIES = [];
-            fetch('/datatables/expense-categories', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                .then(r => r.json())
+            fetch('/datatables/expense-categories', {
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            })
+                .then(r => {
+                    if (r.status === 401) {
+                        toastr.warning('Necesitas iniciar sesión para cargar categorías. Por favor inicia sesión o recarga la página.');
+                        document.querySelectorAll('.item-category-select').forEach(sel => {
+                            sel.innerHTML = '<option value="">-- Inicie sesión para ver categorías --</option>';
+                            sel.disabled = true;
+                        });
+                        throw new Error('Unauthenticated');
+                    }
+                    return r.json();
+                })
             .then(data => {
-                if (Array.isArray(data.data)) {
+                if (Array.isArray(data.data) && data.data.length > 0) {
                     window.COTESO_CATEGORIES = data.data;
                     // populate each select and set selected when applicable
                     document.querySelectorAll('.expense-item').forEach((itemEl, idx) => {
@@ -241,8 +258,15 @@
                             sel.value = val;
                         }
                     });
+                } else {
+                    // No categories available
+                    document.querySelectorAll('.item-category-select').forEach(sel => {
+                        sel.innerHTML = '<option value="">-- No hay categorías disponibles --</option>';
+                    });
                 }
-            }).catch(() => {});
+            }).catch(err => {
+                if (err.message !== 'Unauthenticated') console.error('Error loading categories:', err);
+            });
 
         calculateTotal();
         

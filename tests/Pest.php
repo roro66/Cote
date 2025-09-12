@@ -12,8 +12,10 @@
 */
 
 pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
-    ->in('Feature');
+    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class);
+
+// Load test helpers
+require_once __DIR__ . '/Helpers/TestHelpers.php';
 
 /*
 |--------------------------------------------------------------------------

@@ -181,6 +181,20 @@ class ExpenseController extends Controller
     }
 
     /**
+     * Return expense details as JSON (HTML fragment) for AJAX modal
+     */
+    public function details(Expense $expense): JsonResponse
+    {
+        try {
+            $expense->load(['account.person', 'submittedBy', 'items.documents']);
+            $html = view('expenses.partials.details_modal', compact('expense'))->render();
+            return response()->json(['success' => true, 'html' => $html]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al renderizar detalles: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Show the form for editing the specified expense
      */
     public function edit(Expense $expense): View

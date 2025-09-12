@@ -136,6 +136,28 @@ class AccountController extends Controller
         // Verificar si la cuenta tiene transacciones asociadas (desde o hacia esta cuenta)
         $transactionCount = $account->transactionsFrom()->count() + $account->transactionsTo()->count();
         
+        // Prevent deletion of protected or special accounts
+        if (!empty($account->is_protected)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Esta cuenta está protegida y no se puede eliminar.'
+            ], 400);
+        }
+
+        if (!empty($account->is_fondeo)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La cuenta de fondeo no se puede eliminar.'
+            ], 400);
+        }
+
+        if ($account->type === 'treasury') {
+            return response()->json([
+                'success' => false,
+                'message' => 'La cuenta de tesorería no se puede eliminar.'
+            ], 400);
+        }
+
         if ($transactionCount > 0) {
             return response()->json([
                 'success' => false,
