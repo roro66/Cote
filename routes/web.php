@@ -55,6 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Gastos
     Route::resource('expenses', ExpenseController::class);
+    // AJAX endpoint to fetch expense details (used by approvals view)
+    Route::get('expenses/{expense}/details', [ExpenseController::class, 'details'])->name('expenses.details');
 
     // Rutas de Personas
     Route::resource('people', PersonController::class);

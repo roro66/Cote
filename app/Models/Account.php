@@ -22,12 +22,14 @@ class Account extends Model
         'notes',
     'is_enabled',
     'is_fondeo',
+    'is_protected',
     ];
 
     protected $casts = [
         'balance' => 'decimal:2',
         'is_enabled' => 'boolean',
     'is_fondeo' => 'boolean',
+    'is_protected' => 'boolean',
     ];
 
     public function getActivitylogOptions(): LogOptions

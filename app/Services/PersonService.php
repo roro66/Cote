@@ -57,6 +57,14 @@ class PersonService
     public function delete(Person $person): array
     {
         // Check for dependencies that prevent deletion
+        // Block deletion if person is protected
+        if (!empty($person->is_protected)) {
+            return [
+                'success' => false,
+                'message' => 'Esta persona está protegida y no se puede eliminar.'
+            ];
+        }
+
         $dependencies = $this->checkDependencies($person);
 
         if (!empty($dependencies)) {
@@ -95,7 +103,13 @@ class PersonService
         }
 
         if ($person->user()->exists()) {
-            $dependencies[] = 'usuario del sistema';
+            $user = $person->user;
+            // Prevent deletion if the linked user has role treasurer
+            if ($user->hasRole('treasurer')) {
+                $dependencies[] = 'usuario con rol Tesorero';
+            } else {
+                $dependencies[] = 'usuario del sistema';
+            }
         }
 
         return $dependencies;

@@ -27,11 +27,13 @@ class Person extends Model
         'account_number',
         'address',
         'role_type',
-        'is_enabled'
+    'is_enabled',
+    'is_protected'
     ];
 
     protected $casts = [
         'is_enabled' => 'boolean',
+    'is_protected' => 'boolean',
     ];
 
     /**

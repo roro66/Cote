@@ -52,6 +52,7 @@ class DatabaseSeeder extends Seeder
             AccountSeeder::class,   // Crea cuentas (depende de personas)
             TransactionSeeder::class, // Crea transacciones (depende de cuentas y usuarios)
             ExpenseSeeder::class,   // Crea gastos (depende de cuentas y usuarios)
+            \Database\Seeders\TreasurySeeder::class,
         ]);
 
         // Opcional: sembrar datos amplios para estadísticas (24 meses por persona)

@@ -72,7 +72,8 @@ class PersonDataTableController extends Controller
                 // Soporte para ordenar por nombre completo (first_name, last_name)
                 ->orderColumn('full_name', 'first_name $1, last_name $1')
                 ->filterColumn('full_name', function ($query, $keyword) {
-                    $query->whereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$keyword}%"]);
+                    // Use ILIKE for case-insensitive search on Postgres
+                    $query->whereRaw("CONCAT(first_name,' ',last_name) ILIKE ?", ["%{$keyword}%"]);
                 })
                 // Soporte para ordenar por el nombre del banco asociado
                 ->orderColumn('bank_info', function ($query, $order) {
@@ -84,17 +85,18 @@ class PersonDataTableController extends Controller
                     if ($request->has('search') && !empty($request->search['value'])) {
                         $searchValue = $request->search['value'];
                         $query->where(function ($q) use ($searchValue) {
-                            $q->where('first_name', 'like', "%{$searchValue}%")
-                                ->orWhere('last_name', 'like', "%{$searchValue}%")
-                                ->orWhere('rut', 'like', "%{$searchValue}%")
-                                ->orWhere('email', 'like', "%{$searchValue}%")
-                                ->orWhere('phone', 'like', "%{$searchValue}%")
-                                ->orWhereRaw("CONCAT(first_name,' ',last_name) like ?", ["%{$searchValue}%"])
+                            // Use ILIKE for case-insensitive matching (Postgres)
+                            $q->where('first_name', 'ILIKE', "%{$searchValue}%")
+                                ->orWhere('last_name', 'ILIKE', "%{$searchValue}%")
+                                ->orWhere('rut', 'ILIKE', "%{$searchValue}%")
+                                ->orWhere('email', 'ILIKE', "%{$searchValue}%")
+                                ->orWhere('phone', 'ILIKE', "%{$searchValue}%")
+                                ->orWhereRaw("CONCAT(first_name,' ',last_name) ILIKE ?", ["%{$searchValue}%"])
                                 ->orWhereHas('bank', function ($bankQuery) use ($searchValue) {
-                                    $bankQuery->where('name', 'like', "%{$searchValue}%");
+                                    $bankQuery->where('name', 'ILIKE', "%{$searchValue}%");
                                 })
                                 ->orWhereHas('accountType', function ($typeQuery) use ($searchValue) {
-                                    $typeQuery->where('name', 'like', "%{$searchValue}%");
+                                    $typeQuery->where('name', 'ILIKE', "%{$searchValue}%");
                                 });
                         });
                     }

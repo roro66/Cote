@@ -72,6 +72,22 @@ class ExpenseDataTableController extends Controller
                     return $row->submitted_at ? $row->submitted_at->format('d/m/Y H:i') : '-';
                 })
                 ->orderColumn('submitted_at_formatted', 'expenses.submitted_at $1')
+                // Global case-insensitive search (Postgres ILIKE) for expenses
+                ->filter(function ($query) use ($request) {
+                    if ($request->has('search') && !empty($request->search['value'])) {
+                        $s = $request->search['value'];
+                        $query->where(function ($q) use ($s) {
+                            $q->whereRaw("expenses.description ILIKE ?", ["%{$s}%"]) 
+                              ->orWhereRaw("expenses.expense_number ILIKE ?", ["%{$s}%"]) 
+                              ->orWhereHas('submitter', function ($sq) use ($s) {
+                                  $sq->whereRaw("CONCAT(first_name,' ',last_name) ILIKE ?", ["%{$s}%"]);
+                              })
+                              ->orWhereHas('account', function ($aq) use ($s) {
+                                  $aq->whereRaw("accounts.name ILIKE ?", ["%{$s}%"]);
+                              });
+                        });
+                    }
+                })
                 ->addColumn('action', function ($row) {
                     $actionBtn = '<div class="btn-group" role="group">
                         <a href="' . route('expenses.show', $row->id) . '" class="btn btn-info btn-sm" title="Ver" aria-label="Ver">
