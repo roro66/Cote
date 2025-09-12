@@ -12,7 +12,7 @@
 
                     <!-- Estadísticas -->
                     <div class="row mb-4">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="card bg-primary text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Total Cuentas</h5>
@@ -20,7 +20,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="card bg-success text-white">
                                 <div class="card-body">
                                     <h5 class="card-title">Activas</h5>
@@ -28,18 +28,29 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-md-3">
-                            <div class="card bg-info text-white">
+                            <div class="card bg-secondary text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Cuentas con saldo ≠ 0</h5>
-                                    <h2 class="mb-0">{{ $stats['nonzero'] ?? 0 }}</h2>
+                                    <h5 class="card-title">Total (todas las cuentas)</h5>
+                                    <h2 class="mb-0">${{ number_format($stats['total_balance_all'] ?? 0, 0, ',', '.') }} CLP</h2>
                                 </div>
                             </div>
                         </div>
+
                         <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Tesorería + Fondeo</h5>
+                                    <h2 class="mb-0">${{ number_format($stats['total_balance_special'] ?? 0, 0, ',', '.') }} CLP</h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
                             <div class="card bg-warning text-white">
                                 <div class="card-body">
-                                    <h5 class="card-title">Total Saldo</h5>
+                                    <h5 class="card-title">Total Personas</h5>
                                     <h2 class="mb-0">${{ number_format($stats['total_balance'] ?? 0, 0, ',', '.') }} CLP</h2>
                                 </div>
                             </div>
