@@ -88,6 +88,15 @@
                                 <label for="categoriesMonthsInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Meses</label>
                                 <input id="categoriesMonthsInput" data-months-input data-target="categoriesMonthly" type="number" min="1" max="60" step="1" value="6" class="form-control form-control-sm" />
                             </div>
+                            <div>
+                                <label for="categoriesPersonSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
+                                <select id="categoriesPersonSelect" class="form-select form-select-sm">
+                                    <option value="">Todas</option>
+                                    @foreach($people as $p)
+                                        <option value="{{ $p->id }}">{{ trim($p->first_name.' '.$p->last_name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <canvas id="categoriesMonthlyChart" height="160"></canvas>
@@ -217,6 +226,11 @@
                 return out;
             }
 
+            function normalizeMonthLabels(arr) {
+                if (!Array.isArray(arr)) return arr;
+                return arr.map(l => normalizeMonthLabel(l));
+            }
+
             // Paleta pastel por barra (mejor contraste para light/dark)
             function hsl(h, s, l, a = 1) { return `hsla(${h}, ${s}%, ${l}%, ${a})`; }
             function getPastelPalette(count) {
@@ -323,7 +337,15 @@
                 });
 
                 // Bar chart: category totals
-                const barCtx = document.getElementById('categoryBarChart').getContext('2d');
+                const barCanvas = document.getElementById('categoryBarChart');
+                // Ajustar altura del canvas para mostrar todas las categorías (28px por fila aprox.)
+                try {
+                    const rows = Math.max(1, (Array.isArray(categoryTotals) ? categoryTotals.length : categoryLabels.length));
+                    barCanvas.style.height = Math.max(160, rows * 28) + 'px';
+                } catch (e) {
+                    // fallback: leave default
+                }
+                const barCtx = barCanvas.getContext('2d');
                 if (categoryBarChart) categoryBarChart.destroy();
                 const pastel = getPastelPalette(categoryTotals.length);
                 ensureValueLabelsPlugin();
@@ -340,8 +362,9 @@
                         }]
                     },
                     options: {
-                        indexAxis: 'y',
                         responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
                         layout: { padding: { right: 36 } },
                         plugins: {
                             legend: { display: false },
@@ -429,21 +452,30 @@
                 // Recalcular paleta
                 const pastel = getPastelPalette(json.totals.length);
                 // Actualizar datos
+                // Ajustar canvas height para mostrar todas las categorías
+                try {
+                    const rows = Math.max(1, json.totals.length);
+                    const canvas = document.getElementById('categoryBarChart');
+                    canvas.style.height = Math.max(160, rows * 28) + 'px';
+                } catch (e) {}
+                
                 categoryBarChart.data.labels = json.labels;
                 categoryBarChart.data.datasets[0].data = json.totals;
                 categoryBarChart.data.datasets[0].backgroundColor = pastel.backgrounds;
                 categoryBarChart.data.datasets[0].borderColor = pastel.borders;
                 categoryBarChart.update();
+                try { categoryBarChart.resize(); } catch (e) {}
             }
 
             // New: load categories monthly for N months
-            async function loadCategoriesMonthly(months) {
-                const url = `{{ route('statistics.categories.monthly') }}?months=${encodeURIComponent(months)}`;
+            async function loadCategoriesMonthly(months, personId = '') {
+                let url = `{{ route('statistics.categories.monthly') }}?months=${encodeURIComponent(months)}`;
+                if (personId) url += `&person_id=${encodeURIComponent(personId)}`;
                 const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 if (!res.ok) return;
                 const json = await res.json();
                 if (!categoriesMonthlyChart) return;
-                categoriesMonthlyChart.data.labels = json.monthLabels;
+                categoriesMonthlyChart.data.labels = normalizeMonthLabels(json.monthLabels);
                 categoriesMonthlyChart.data.datasets = buildLineDatasets(json.datasets);
                 categoriesMonthlyChart.update();
             }
@@ -465,7 +497,7 @@
                 if (!res.ok) return;
                 const json = await res.json();
                 if (!techniciansMonthlyChart) return;
-                techniciansMonthlyChart.data.labels = json.monthLabels;
+                techniciansMonthlyChart.data.labels = normalizeMonthLabels(json.monthLabels);
                 techniciansMonthlyChart.data.datasets = buildLineDatasets(json.datasets);
                 techniciansMonthlyChart.update();
             }
@@ -491,10 +523,23 @@
                     const target = el.getAttribute('data-target');
                     el.addEventListener('change', (e) => {
                         const v = parseInt(e.target.value, 10) || 6;
-                        if (target === 'categoriesMonthly') loadCategoriesMonthly(v);
+                        if (target === 'categoriesMonthly') {
+                            const personEl = document.getElementById('categoriesPersonSelect');
+                            const pid = personEl ? personEl.value : '';
+                            loadCategoriesMonthly(v, pid);
+                        }
                         if (target === 'techniciansMonthly') loadTechniciansMonthly(v);
                     });
                 });
+
+                const categoriesPersonSelect = document.getElementById('categoriesPersonSelect');
+                if (categoriesPersonSelect) {
+                    categoriesPersonSelect.addEventListener('change', (e) => {
+                        const monthsEl = document.getElementById('categoriesMonthsInput');
+                        const months = parseInt(monthsEl.value, 10) || 6;
+                        loadCategoriesMonthly(months, e.target.value);
+                    });
+                }
 
                 const techReloadBtn = document.getElementById('reloadTechniciansBtn');
                 if (techReloadBtn) techReloadBtn.addEventListener('click', () => {
@@ -507,8 +552,10 @@
                 if (personCatSelect) {
                     personCatSelect.addEventListener('change', (e) => loadPersonCategories(e.target.value));
                 }
-                // bootstrap: init default loads
-                loadCategoriesMonthly(6);
+                // bootstrap: init default loads (include selected person if set)
+                const initPersonEl = document.getElementById('categoriesPersonSelect');
+                const initPersonId = initPersonEl ? initPersonEl.value : '';
+                loadCategoriesMonthly(6, initPersonId);
                 loadTechniciansMonthly(6);
                 if (personCatSelect) loadPersonCategories(personCatSelect.value);
                 window.addEventListener('theme-changed', () => { renderCharts(); });

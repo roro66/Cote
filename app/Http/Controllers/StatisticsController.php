@@ -37,16 +37,22 @@ class StatisticsController extends Controller
         // Gastos por categoría (últimos N días; por defecto 90)
         $defaultCategoryDays = 90;
         $catStart = now()->subDays($defaultCategoryDays)->startOfDay();
-        $byCategory = ExpenseItem::query()
-            ->select(['category', DB::raw('SUM(amount) as total')])
+
+    // Obtener todas las categorías (incluye deshabilitadas) y los totales agregados en el período.
+    $categories = \App\Models\ExpenseCategory::orderBy('name')->get(['id', 'name']);
+
+        $sums = ExpenseItem::query()
+            ->select(['expense_items.expense_category_id', DB::raw('SUM(expense_items.amount) as total')])
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
             ->where('expenses.status', 'approved')
-            ->whereNotNull('expense_items.category')
-            ->where('expense_items.expense_date', '>=', $catStart)
-            ->groupBy('category')
-            ->orderByDesc(DB::raw('SUM(amount)'))
-            ->limit(10)
-            ->get();
+            ->whereBetween('expense_items.expense_date', [$catStart, now()->endOfDay()])
+            ->whereNotNull('expense_items.expense_category_id')
+            ->groupBy('expense_items.expense_category_id')
+            ->get()
+            ->pluck('total', 'expense_category_id');
+
+        $categoryLabels = $categories->map(fn ($c) => $c->name);
+    $categoryTotals = $categories->map(fn ($c) => (float) ($sums[$c->id] ?? 0.0));
 
         return view('statistics.index', [
             'people' => $people,
@@ -54,8 +60,8 @@ class StatisticsController extends Controller
             'monthLabels' => $labels->values(),
             'selectedPersonMonthly' => $data,
             'categoryDays' => $defaultCategoryDays,
-            'categoryLabels' => $byCategory->pluck('category'),
-            'categoryTotals' => $byCategory->pluck('total')->map(fn ($v) => (float) $v),
+            'categoryLabels' => $categoryLabels,
+            'categoryTotals' => $categoryTotals,
         ]);
     }
 
@@ -131,24 +137,33 @@ class StatisticsController extends Controller
 
         $start = now()->subDays($days)->startOfDay();
 
-        $byCategory = ExpenseItem::query()
-            ->select(['category', DB::raw('SUM(amount) as total')])
+        // Obtener todas las categorías habilitadas
+        $categories = \App\Models\ExpenseCategory::enabled()->orderBy('name')->get(['id', 'name']);
+
+        $sums = ExpenseItem::query()
+            ->select(['expense_items.expense_category_id', DB::raw('SUM(expense_items.amount) as total')])
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
             ->where('expenses.status', 'approved')
-            ->whereNotNull('expense_items.category')
-            ->where('expense_items.expense_date', '>=', $start)
-            ->groupBy('category')
-            ->orderByDesc(DB::raw('SUM(amount)'))
-            ->limit(10)
-            ->get();
+            ->whereBetween('expense_items.expense_date', [$start, now()->endOfDay()])
+            ->whereNotNull('expense_items.expense_category_id')
+            ->groupBy('expense_items.expense_category_id')
+            ->get()
+            ->pluck('total', 'expense_category_id');
+
+        $labels = $categories->map(fn ($c) => $c->name);
+    $totals = $categories->map(fn ($c) => (float) ($sums[$c->id] ?? 0.0));
 
         return response()->json([
-            'labels' => $byCategory->pluck('category'),
-            'totals' => $byCategory->pluck('total')->map(fn ($v) => (float) $v),
+            'labels' => $labels->values(),
+            'totals' => $totals->values(),
             'days' => $days,
         ]);
     }
 
+    /**
+     * Return categories totals per month for the last N months.
+     * Optional query param: person_id to filter by expenses.submitted_by (returns categories for a specific person).
+     */
     public function categoriesMonthly(Request $request)
     {
         $months = max(1, min(60, (int)$request->query('months', 6)));
@@ -157,6 +172,8 @@ class StatisticsController extends Controller
 
         $start = $monthsColl->first()->copy();
         $end = now()->endOfMonth();
+
+        $personId = $request->query('person_id', null);
 
         $raw = ExpenseItem::query()
             ->select([
@@ -167,6 +184,12 @@ class StatisticsController extends Controller
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
             ->where('expenses.status', 'approved')
             ->whereBetween('expense_items.expense_date', [$start, $end])
+            ->when($personId !== null && $personId !== '', function ($q) use ($personId) {
+                // allow numeric ids, ignore otherwise
+                if (is_numeric($personId)) {
+                    $q->where('expenses.submitted_by', (int) $personId);
+                }
+            })
             ->whereNotNull('expense_items.expense_category_id')
             ->groupBy('month', 'expense_items.expense_category_id')
             ->get();
