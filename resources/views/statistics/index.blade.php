@@ -59,6 +59,12 @@
                                 <label class="block text-sm font-medium text-transparent"> </label>
                                 <button type="button" id="applyCategoryDaysBtn" class="btn btn-sm btn-primary">Aplicar</button>
                             </div>
+                            <div>
+                                <label for="categoryShowAll" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mostrar todas</label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="categoryShowAll" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -336,26 +342,40 @@
                     }
                 });
 
-                // Bar chart: category totals
+                // Bar chart: category totals (apply "Mostrar todas" filter on initial render)
                 const barCanvas = document.getElementById('categoryBarChart');
+                // Prepare initial labels/totals according to the checkbox state
+                let initLabels = categoryLabels.slice();
+                let initTotals = categoryTotals.slice();
+                try {
+                    const showAllInit = document.getElementById('categoryShowAll')?.checked;
+                    if (!showAllInit) {
+                        const filteredIdx = [];
+                        for (let i = 0; i < initTotals.length; i++) if (initTotals[i] > 0) filteredIdx.push(i);
+                        initLabels = filteredIdx.map(i => initLabels[i]);
+                        initTotals = filteredIdx.map(i => initTotals[i]);
+                    }
+                } catch (e) {
+                    // ignore and fallback to full lists
+                }
                 // Ajustar altura del canvas para mostrar todas las categorías (28px por fila aprox.)
                 try {
-                    const rows = Math.max(1, (Array.isArray(categoryTotals) ? categoryTotals.length : categoryLabels.length));
+                    const rows = Math.max(1, initTotals.length);
                     barCanvas.style.height = Math.max(160, rows * 28) + 'px';
                 } catch (e) {
                     // fallback: leave default
                 }
                 const barCtx = barCanvas.getContext('2d');
                 if (categoryBarChart) categoryBarChart.destroy();
-                const pastel = getPastelPalette(categoryTotals.length);
+                const pastel = getPastelPalette(initTotals.length);
                 ensureValueLabelsPlugin();
                 categoryBarChart = new Chart(barCtx, {
                     type: 'bar',
                     data: {
-                        labels: categoryLabels,
+                        labels: initLabels,
                         datasets: [{
                             label: 'Total por categoría',
-                            data: categoryTotals,
+                            data: initTotals,
                             backgroundColor: pastel.backgrounds,
                             borderColor: pastel.borders,
                             borderWidth: 1.25
@@ -444,9 +464,28 @@
 
             async function reloadCategories(days) {
                 const url = `{{ route('statistics.categories') }}?days=${encodeURIComponent(days)}`;
-                const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                if (!res.ok) return;
-                const json = await res.json();
+                console.log('Statistics: reloadCategories start, url=', url);
+                let res;
+                try {
+                    res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                } catch (err) {
+                    console.error('Statistics: fetch error when reloading categories', err);
+                    return;
+                }
+                if (!res.ok) {
+                    console.error('Statistics: reloadCategories response not ok', res.status, res.statusText);
+                    try { const t = await res.text(); console.error('Response body:', t.slice(0,200)); } catch(e){}
+                    return;
+                }
+                let json;
+                try {
+                    json = await res.json();
+                    console.log('Statistics: reloadCategories response json labels=', (json.labels||[]).length, 'totals=', (json.totals||[]).length, 'days=', json.days);
+                } catch (err) {
+                    console.error('Statistics: error parsing JSON from reloadCategories', err);
+                    try { const t = await res.text(); console.error('Response text:', t.slice(0,400)); } catch(e){}
+                    return;
+                }
                 categoryDays = json.days;
                 document.getElementById('categoryDaysSpan').textContent = String(categoryDays);
                 // Recalcular paleta
@@ -459,12 +498,32 @@
                     canvas.style.height = Math.max(160, rows * 28) + 'px';
                 } catch (e) {}
                 
-                categoryBarChart.data.labels = json.labels;
-                categoryBarChart.data.datasets[0].data = json.totals;
-                categoryBarChart.data.datasets[0].backgroundColor = pastel.backgrounds;
-                categoryBarChart.data.datasets[0].borderColor = pastel.borders;
-                categoryBarChart.update();
-                try { categoryBarChart.resize(); } catch (e) {}
+                try {
+                    const showAll = document.getElementById('categoryShowAll')?.checked;
+                    let labels = json.labels.slice();
+                    let totals = json.totals.slice();
+                    let backgrounds = pastel.backgrounds.slice();
+                    let borders = pastel.borders.slice();
+                    if (!showAll) {
+                        // filter out zero totals
+                        const filtered = [];
+                        for (let i = 0; i < totals.length; i++) {
+                            if (totals[i] > 0) filtered.push(i);
+                        }
+                        labels = filtered.map(i => labels[i]);
+                        totals = filtered.map(i => totals[i]);
+                        backgrounds = filtered.map(i => backgrounds[i % backgrounds.length]);
+                        borders = filtered.map(i => borders[i % borders.length]);
+                    }
+                    categoryBarChart.data.labels = labels;
+                    categoryBarChart.data.datasets[0].data = totals;
+                    categoryBarChart.data.datasets[0].backgroundColor = backgrounds;
+                    categoryBarChart.data.datasets[0].borderColor = borders;
+                    categoryBarChart.update();
+                    try { categoryBarChart.resize(); } catch (e) {}
+                } catch (err) {
+                    console.error('Statistics: error updating categoryBarChart', err);
+                }
             }
 
             // New: load categories monthly for N months
@@ -513,8 +572,13 @@
                 const daysInput = document.getElementById('categoryDaysInput');
                 if (applyBtn && daysInput) {
                     applyBtn.addEventListener('click', () => {
-                        const val = parseInt(daysInput.value, 10);
-                        if (!isNaN(val)) reloadCategories(val);
+                        try {
+                            const val = parseInt(daysInput.value, 10);
+                            console.log('Statistics: applyCategoryDaysBtn clicked, days=', val);
+                            if (!isNaN(val)) reloadCategories(val);
+                        } catch (err) {
+                            console.error('Statistics: error in apply handler', err);
+                        }
                     });
                 }
                 // New controls: months inputs and tech dropdown
@@ -538,6 +602,15 @@
                         const monthsEl = document.getElementById('categoriesMonthsInput');
                         const months = parseInt(monthsEl.value, 10) || 6;
                         loadCategoriesMonthly(months, e.target.value);
+                    });
+                }
+                const categoryShowAll = document.getElementById('categoryShowAll');
+                if (categoryShowAll) {
+                    categoryShowAll.addEventListener('change', () => {
+                        // re-apply current days filter
+                        const daysEl = document.getElementById('categoryDaysInput');
+                        const val = parseInt(daysEl.value, 10) || 90;
+                        reloadCategories(val);
                     });
                 }
 
