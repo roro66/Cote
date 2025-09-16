@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Database\Eloquent\Model;
 
 class User extends Authenticatable
 {
@@ -46,6 +47,25 @@ class User extends Authenticatable
             ->logOnly(['name', 'email', 'is_enabled'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
+    }
+
+    /**
+     * Boot model events.
+     */
+    protected static function booted()
+    {
+        // Prevent deleting a user that still has historical references.
+        static::deleting(function (User $user) {
+            // If the user has any important related records, block deletion.
+            if ($user->createdTransactions()->exists()
+                || $user->approvedTransactions()->exists()
+                || $user->reviewedExpenses()->exists()
+                || $user->uploadedDocuments()->exists()
+            ) {
+                throw new \Exception('No se puede eliminar el usuario porque tiene registros históricos (transacciones, aprobaciones, gastos o documentos). Desactiva el usuario en su lugar.');
+            }
+            return true;
+        });
     }
 
     /**
