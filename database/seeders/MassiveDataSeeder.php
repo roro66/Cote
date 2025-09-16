@@ -123,7 +123,7 @@ class MassiveDataSeeder extends Seeder
 
                 // Create personal account
                 $personAccount = Account::create([
-                    'name' => 'Cuenta de ' . $person->first_name,
+                    'name' => $person->first_name,
                     'type' => 'person',
                     'person_id' => $person->id,
                     'balance' => $faker->numberBetween(0, 2_000_000),

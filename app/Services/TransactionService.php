@@ -112,6 +112,7 @@ class TransactionService
         if ($transaction->from_account_id) {
             $fromAccount = Account::find($transaction->from_account_id);
             if ($fromAccount) {
+                // Ensure decrement won't go below allowed negative if business forbids it
                 $fromAccount->decrement('balance', $transaction->amount);
             }
         }
@@ -119,7 +120,19 @@ class TransactionService
         if ($transaction->to_account_id) {
             $toAccount = Account::find($transaction->to_account_id);
             if ($toAccount) {
-                $toAccount->increment('balance', $transaction->amount);
+                // Prevent overflow when incrementing toAccount balance
+                $newBalance = $toAccount->balance + $transaction->amount;
+                if ($newBalance > Account::MAX_BALANCE) {
+                    throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
+                }
+                try {
+                    $toAccount->increment('balance', $transaction->amount);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
+                        throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
+                    }
+                    throw $e;
+                }
             }
         }
     }

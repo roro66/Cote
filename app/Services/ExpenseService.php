@@ -86,7 +86,14 @@ class ExpenseService
             // Rebajar el monto desde la cuenta de la persona (puede quedar negativa)
             $account = Account::lockForUpdate()->find($expense->account_id);
             if ($account) {
-                $account->decrement('balance', $expense->total_amount);
+                try {
+                    $account->decrement('balance', $expense->total_amount);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
+                        throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
+                    }
+                    throw $e;
+                }
             }
 
             Log::info('Rendición aprobada y saldo rebajado', [
