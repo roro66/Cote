@@ -54,7 +54,7 @@ class AccountSeeder extends Seeder
 							'type' => 'person',
 						],
 						[
-							'name' => 'Cuenta de ' . ($p->name ?? ($p->first_name . ' ' . $p->last_name)),
+							'name' => ($p->name ?? trim($p->first_name . ' ' . $p->last_name)),
 							'balance' => 0,
 							'notes' => null,
 							'is_enabled' => true,

@@ -121,7 +121,15 @@ class UserController extends Controller
             return redirect()->route('users.index')->with('error', 'No puedes eliminar tu propio usuario.');
         }
 
-        $user->delete();
+        try {
+            $user->delete();
+        } catch (\Throwable $e) {
+            $msg = $e->getMessage() ?: 'No se pudo eliminar el usuario.';
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $msg], 400);
+            }
+            return redirect()->route('users.index')->with('error', $msg);
+        }
 
         if (request()->ajax()) {
             return response()->json(['success' => true, 'message' => 'Usuario eliminado correctamente']);

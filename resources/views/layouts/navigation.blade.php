@@ -32,11 +32,11 @@
                         Aprobaciones
                     </x-nav-link>
                     
-                    <x-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
-                        Bancos
-                    </x-nav-link>
                     <x-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')">
                         Categorías
+                    </x-nav-link>
+                    <x-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
+                        Bancos
                     </x-nav-link>
                     
                     <x-nav-link :href="route('account-types.index')" :active="request()->routeIs('account-types.*')">
@@ -154,11 +154,11 @@
             <x-responsive-nav-link :href="route('approvals.index')" :active="request()->routeIs('approvals.*')">
                 Aprobaciones
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
-                Bancos
-            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('expense-categories.index')" :active="request()->routeIs('expense-categories.*')">
                 Categorías
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('banks.index')" :active="request()->routeIs('banks.*')">
+                Bancos
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('account-types.index')" :active="request()->routeIs('account-types.*')">
                 Tipos de Cuenta

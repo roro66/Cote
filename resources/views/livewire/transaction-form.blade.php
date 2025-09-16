@@ -69,7 +69,7 @@
                     @if(isset($treasury) && $account->id === $treasury->id)
                         @continue
                     @endif
-                    <option value="{{ $account->id }}">
+                    <option value="{{ $account->id }}" style="font-style: italic;">
                         {{ $account->name }}
                         @if($account->person)
                             ({{ $account->person->full_name }})
@@ -104,7 +104,7 @@
                     @if(isset($treasury) && $account->id === $treasury->id)
                         @continue
                     @endif
-                    <option value="{{ $account->id }}">
+                    <option value="{{ $account->id }}" style="font-style: italic;">
                         {{ $account->name }}
                         @if($account->person)
                             ({{ $account->person->full_name }})

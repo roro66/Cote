@@ -81,6 +81,13 @@ class AccountController extends Controller
         ]);
 
         $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes', 'is_fondeo']);
+        // If this is a personal account and no name provided, default to the owner's full name
+        if (($data['type'] ?? '') === 'person' && empty($data['name']) && !empty($data['person_id'])) {
+            $person = Person::find($data['person_id']);
+            if ($person) {
+                $data['name'] = trim(($person->first_name ?? '') . ' ' . ($person->last_name ?? '')) ?: ('Cuenta ' . $person->id);
+            }
+        }
         // Validación extra: solo una cuenta de tipo 'treasury' permitida
         if ($data['type'] === 'treasury') {
             $existing = Account::where('type', 'treasury')->first();
@@ -100,7 +107,20 @@ class AccountController extends Controller
             $data['is_fondeo'] = 0;
         }
 
-        $account = Account::create($data);
+        // Validate against DB max to avoid numeric overflow (decimal(15,2) -> max ~ 9,999,999,999,999.99)
+        if (isset($data['balance']) && $data['balance'] > Account::MAX_BALANCE) {
+            return back()->withErrors(['balance' => 'El saldo es demasiado grande. Valor máximo permitido: ' . number_format(Account::MAX_BALANCE, 2, ',', '.')])->withInput();
+        }
+
+        try {
+            $account = Account::create($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Detect numeric overflow and return a friendly message
+            if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
+                return back()->withErrors(['balance' => 'El valor del saldo excede el máximo permitido por la base de datos.'])->withInput();
+            }
+            throw $e;
+        }
 
         // Si es una petición AJAX, devolver JSON
         if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
@@ -158,7 +178,19 @@ class AccountController extends Controller
             $data['is_fondeo'] = 0;
         }
 
-        $account->update($data);
+        // Validate against DB max to avoid numeric overflow
+        if (isset($data['balance']) && $data['balance'] > Account::MAX_BALANCE) {
+            return back()->withErrors(['balance' => 'El saldo es demasiado grande. Valor máximo permitido: ' . number_format(Account::MAX_BALANCE, 2, ',', '.')])->withInput();
+        }
+
+        try {
+            $account->update($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
+                return back()->withErrors(['balance' => 'El valor del saldo excede el máximo permitido por la base de datos.'])->withInput();
+            }
+            throw $e;
+        }
 
         return redirect()->route('accounts.index')->with('success', 'Cuenta actualizada exitosamente');
     }

@@ -48,7 +48,7 @@ class StatisticsDataSeeder extends Seeder
                 $account = $person->accounts()->where('type', 'person')->first();
                 if (!$account) {
                     $account = Account::create([
-                        'name' => 'Cuenta de ' . trim(($person->first_name ?? '') . ' ' . ($person->last_name ?? '')),
+                        'name' => trim(($person->first_name ?? '') . ' ' . ($person->last_name ?? '')),
                         'type' => 'person',
                         'person_id' => $person->id,
                         'balance' => 0,

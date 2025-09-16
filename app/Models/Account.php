@@ -32,6 +32,10 @@ class Account extends Model
     'is_protected' => 'boolean',
     ];
 
+    // Maximum storable balance according to the DB column decimal(15,2)
+    // Decimal(15,2) allows up to 13 integer digits (10^13 - 1) and 2 decimals.
+    public const MAX_BALANCE = 9999999999999.99; // 13 nines before the decimal
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -100,6 +104,11 @@ class Account extends Model
     // Métodos de negocio
     public function updateBalance(float $amount): void
     {
+        // Prevent incrementing past DB maximum
+        $new = $this->balance + $amount;
+        if ($new > self::MAX_BALANCE) {
+            throw new \RuntimeException('Balance update would exceed maximum allowed value');
+        }
         $this->increment('balance', $amount);
     }
 

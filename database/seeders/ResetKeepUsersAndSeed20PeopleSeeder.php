@@ -75,7 +75,7 @@ class ResetKeepUsersAndSeed20PeopleSeeder extends Seeder
             ]);
 
             Account::create([
-                'name' => 'Cuenta de ' . $first,
+                'name' => $first,
                 'type' => 'person',
                 'person_id' => $person->id,
                 'balance' => $faker->numberBetween(50_000, 300_000),
