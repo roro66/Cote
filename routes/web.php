@@ -23,6 +23,7 @@ use App\Http\Controllers\DataTables\UserDataTableController;
 use App\Http\Controllers\PersonBankAccountController;
 use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ExpenseCategoryController;
+use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\DataTables\ExpenseCategoryDataTableController;
 use App\Livewire\TransactionList;
 use App\Livewire\AccountList;
@@ -46,6 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/statistics/person/{person}/categories', [StatisticsController::class, 'personCategories'])->name('statistics.person.categories');
     Route::get('/statistics/technicians-monthly', [StatisticsController::class, 'techniciansMonthly'])->name('statistics.technicians.monthly');
     Route::get('/statistics/categories', [StatisticsController::class, 'categories'])->name('statistics.categories');
+
+    // Rutas de Informes
+    Route::get('/reports', [App\Http\Controllers\ReportsController::class, 'index'])->name('reports.index');
+    Route::post('/reports/monthly-expenses', [App\Http\Controllers\ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
+    Route::post('/reports/export-monthly-expenses', [App\Http\Controllers\ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
 
     // Rutas de Cuentas
     Route::resource('accounts', AccountController::class);
