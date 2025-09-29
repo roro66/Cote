@@ -21,17 +21,55 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
-            - postgres_net   # 👈 agregado para ver PostgreSQL
         depends_on:
+            - pgsql
             - redis
             - meilisearch
             - mailpit
             - selenium
-
-    # --- QUITAR LOS SERVICIOS pgsql y pgadmin ---
-    # pgsql:
-    # pgadmin:
-
+    pgsql:
+        image: 'postgres:17-alpine'
+        ports:
+            - '${FORWARD_DB_PORT:-5432}:5432'
+        environment:
+            POSTGRES_USER: 'admin'
+            POSTGRES_PASSWORD: '@coteso2025'
+            POSTGRES_DB: 'laravel'
+        volumes:
+            - 'sail-pgsql:/var/lib/postgresql/data'
+            - './docker/postgres/init-testing-db.sh:/docker-entrypoint-initdb.d/10-init-testing-db.sh:ro'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD-SHELL
+                - "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"
+            retries: 3
+            timeout: 5s
+    pgadmin:
+        image: 'dpage/pgadmin4:latest'
+        depends_on:
+            - pgsql
+        ports:
+            - '${FORWARD_PGADMIN_PORT:-5050}:80'
+        environment:
+            PGADMIN_DEFAULT_EMAIL: '${PGADMIN_DEFAULT_EMAIL:-admin@example.com}'
+            PGADMIN_DEFAULT_PASSWORD: '${PGADMIN_DEFAULT_PASSWORD:-@coteso2025}'
+            PGADMIN_CONFIG_SERVER_MODE: 'False'
+        volumes:
+            - 'sail-pgadmin:/var/lib/pgadmin'
+            - './docker/pgadmin/servers.json:/pgadmin4/servers.json:ro'
+        networks:
+            - sail
+        healthcheck:
+            test:
+                - CMD
+                - wget
+                - '--no-verbose'
+                - '--spider'
+                - 'http://127.0.0.1/misc/ping'
+            retries: 3
+            timeout: 5s
     redis:
         image: 'redis:alpine'
         ports:
@@ -41,10 +79,12 @@ services:
         networks:
             - sail
         healthcheck:
-            test: ["CMD", "redis-cli", "ping"]
+            test:
+                - CMD
+                - redis-cli
+                - ping
             retries: 3
             timeout: 5s
-
     meilisearch:
         image: 'getmeili/meilisearch:latest'
         ports:
@@ -55,7 +95,15 @@ services:
             - 'sail-meilisearch:/meili_data'
         networks:
             - sail
-
+        healthcheck:
+            test:
+                - CMD
+                - wget
+                - '--no-verbose'
+                - '--spider'
+                - 'http://127.0.0.1:7700/health'
+            retries: 3
+            timeout: 5s
     mailpit:
         image: 'axllent/mailpit:latest'
         ports:
@@ -63,7 +111,6 @@ services:
             - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
         networks:
             - sail
-
     selenium:
         image: selenium/standalone-chromium
         extra_hosts:
@@ -72,15 +119,15 @@ services:
             - '/dev/shm:/dev/shm'
         networks:
             - sail
-
 networks:
     sail:
         driver: bridge
-    postgres_net:               # 👈 debe coincidir con el que definiste en postgres-stack
-        external: true          # 👈 importantísimo
-
 volumes:
+    sail-pgsql:
+        driver: local
     sail-redis:
         driver: local
     sail-meilisearch:
+        driver: local
+    sail-pgadmin:
         driver: local

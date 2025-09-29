@@ -1,0 +1,335 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Informes
+        </h2>
+    </x-slot>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Informes Disponibles</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Gastos Mensuales</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                                Informe detallado o resumido de gastos por categoría en un rango de fechas.
+                            </p>
+                            <button onclick="openMonthlyExpenseReport()" class="mt-3 btn btn-primary btn-sm">
+                                Generar Informe
+                            </button>
+                        </div>
+                        
+                        <!-- Placeholder para futuros informes -->
+                        <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg opacity-50">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Próximamente</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mt-2">
+                                Más informes estarán disponibles pronto.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Informe de Gastos Mensuales -->
+    <div id="monthlyExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div class="flex items-center justify-between pb-3">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Informe de Gastos Mensuales
+                    </h3>
+                    <button onclick="closeMonthlyExpenseModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form id="monthlyExpenseForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Fecha Inicial
+                            </label>
+                            <input type="date" id="start_date" name="start_date" required
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                        
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Fecha Final
+                            </label>
+                            <input type="date" id="end_date" name="end_date" required
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="report_type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Tipo de Informe
+                        </label>
+                        <select id="report_type" name="report_type" required
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="summary">Resumido (Solo totales por categoría)</option>
+                            <option value="detailed">Detallado (Con items individuales)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="approval_status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Estado de Aprobación
+                        </label>
+                        <select id="approval_status" name="approval_status" required
+                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="approved_only">Solo rendiciones aprobadas</option>
+                            <option value="all">Todas las rendiciones</option>
+                        </select>
+                    </div>
+
+                    <div id="include_documents_container" class="hidden">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="include_documents" name="include_documents" value="1"
+                                class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                Incluir información de documentos adjuntos
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeMonthlyExpenseModal()" 
+                            class="btn btn-secondary">
+                            Cancelar
+                        </button>
+                        <button type="button" onclick="generateMonthlyReport()" 
+                            class="btn btn-primary">
+                            Generar Informe
+                        </button>
+                        <button type="button" onclick="exportMonthlyReport()" 
+                            class="btn btn-success">
+                            Exportar a Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para mostrar el informe generado -->
+    <div id="reportDisplayModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div class="flex items-center justify-between pb-3">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        Informe de Gastos Mensuales
+                    </h3>
+                    <button onclick="closeReportDisplayModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div id="reportContent" class="max-h-96 overflow-y-auto">
+                    <!-- El contenido del informe se cargará aquí dinámicamente -->
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeReportDisplayModal()" 
+                        class="btn btn-secondary">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        // Inicializar fechas con el mes anterior
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            
+            document.getElementById('start_date').value = lastMonth.toISOString().split('T')[0];
+            document.getElementById('end_date').value = lastDayOfMonth.toISOString().split('T')[0];
+            
+            // Mostrar/ocultar opción de documentos según el tipo de informe
+            document.getElementById('report_type').addEventListener('change', function() {
+                const container = document.getElementById('include_documents_container');
+                if (this.value === 'detailed') {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                    document.getElementById('include_documents').checked = false;
+                }
+            });
+        });
+
+        function openMonthlyExpenseReport() {
+            document.getElementById('monthlyExpenseModal').classList.remove('hidden');
+        }
+
+        function closeMonthlyExpenseModal() {
+            document.getElementById('monthlyExpenseModal').classList.add('hidden');
+        }
+
+        function closeReportDisplayModal() {
+            document.getElementById('reportDisplayModal').classList.add('hidden');
+        }
+
+        function generateMonthlyReport() {
+            const form = document.getElementById('monthlyExpenseForm');
+            const formData = new FormData(form);
+            
+            fetch('{{ route("reports.monthly-expenses") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayReport(data.data, data.report_info);
+                    closeMonthlyExpenseModal();
+                } else {
+                    alert('Error al generar el informe');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al generar el informe');
+            });
+        }
+
+        function exportMonthlyReport() {
+            const form = document.getElementById('monthlyExpenseForm');
+            const formData = new FormData(form);
+            
+            // Crear un formulario temporal para la descarga
+            const tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = '{{ route("reports.export-monthly-expenses") }}';
+            tempForm.style.display = 'none';
+            
+            // Agregar token CSRF
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = '{{ csrf_token() }}';
+            tempForm.appendChild(csrfInput);
+            
+            // Agregar todos los campos del formulario
+            for (let [key, value] of formData.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                tempForm.appendChild(input);
+            }
+            
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+            document.body.removeChild(tempForm);
+        }
+
+        function displayReport(data, reportInfo) {
+            let html = '';
+            
+            // Información del período
+            html += `<div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100">Información del Informe</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Período: ${reportInfo.start_date} al ${reportInfo.end_date}<br>
+                    Tipo: ${reportInfo.report_type === 'summary' ? 'Resumido' : 'Detallado'}<br>
+                    Estado: ${reportInfo.approval_status === 'approved_only' ? 'Solo aprobadas' : 'Todas las rendiciones'}
+                </p>
+            </div>`;
+            
+            // Resumen general
+            html += `<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <h4 class="font-medium text-gray-900 dark:text-gray-100">Resumen General</h4>
+                <div class="grid grid-cols-3 gap-4 mt-2 text-sm">
+                    <div><strong>Total General:</strong> $${data.total_amount.toLocaleString()}</div>
+                    <div><strong>Rendiciones:</strong> ${data.total_expenses}</div>
+                    <div><strong>Items:</strong> ${data.total_items}</div>
+                </div>
+            </div>`;
+            
+            // Mostrar datos por categoría
+            if (data.report_type === 'summary') {
+                html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumen por Categoría</h4>';
+                html += '<div class="overflow-x-auto"><table class="min-w-full table-auto">';
+                html += '<thead class="bg-gray-50 dark:bg-gray-700"><tr>';
+                html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Items</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rendiciones</th>';
+                html += '</tr></thead><tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">';
+                
+                data.categories.forEach(category => {
+                    html += `<tr>
+                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">${category.category}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">$${category.total_amount.toLocaleString()}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.items_count}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.expenses_count}</td>
+                    </tr>`;
+                });
+                
+                html += '</tbody></table></div>';
+            } else {
+                // Informe detallado
+                html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Detalle por Categoría</h4>';
+                
+                data.categories.forEach(category => {
+                    html += `<div class="mb-6 border rounded-lg p-4">
+                        <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                            ${category.category} - Total: $${category.total_amount.toLocaleString()}
+                        </h5>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                    <tr>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">N° Rendición</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Fecha</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Persona</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descripción</th>
+                                        <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Monto</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">`;
+                    
+                    category.items.forEach(item => {
+                        html += `<tr>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_number}</td>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_date}</td>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.submitter}</td>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.item_description}</td>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100 text-right">$${item.amount.toLocaleString()}</td>
+                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.expense_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${item.expense_status === 'approved' ? 'Aprobada' : 'Pendiente'}
+                                </span>
+                            </td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table></div></div>';
+                });
+            }
+            
+            document.getElementById('reportContent').innerHTML = html;
+            document.getElementById('reportDisplayModal').classList.remove('hidden');
+        }
+    </script>
+    @endpush
+</x-app-layout>
