@@ -11,6 +11,18 @@ use Illuminate\Support\Facades\DB;
 class ReportService
 {
     /**
+     * Formatear número según notación chilena
+     * Sin centavos, separador de miles con punto
+     */
+    private function formatChileanNumber($number): int
+    {
+        // Convertir a float y redondear según reglas chilenas
+        $num = is_numeric($number) ? (float) $number : 0;
+        
+        // Redondear: >=0.5 hacia arriba, <=0.4 hacia abajo
+        return (int) round($num);
+    }
+    /**
      * Generar informe de gastos mensuales
      */
     public function generateMonthlyExpenseReport(
@@ -24,7 +36,7 @@ class ReportService
         $end = Carbon::parse($endDate)->endOfDay();
 
         // Base query para expenses
-        $expenseQuery = Expense::with(['submitter.person', 'account.person', 'items.category'])
+        $expenseQuery = Expense::with(['submittedBy', 'account.person', 'items.categoryObj'])
             ->whereBetween('expense_date', [$start, $end]);
 
         // Filtrar por estado de aprobación
@@ -51,7 +63,7 @@ class ReportService
 
         foreach ($expenses as $expense) {
             foreach ($expense->items as $item) {
-                $categoryName = $item->category ? $item->category->name : 'Sin categoría';
+                $categoryName = $item->categoryObj ? $item->categoryObj->name : 'Sin categoría';
                 
                 if (!isset($categorySummary[$categoryName])) {
                     $categorySummary[$categoryName] = [
@@ -62,9 +74,9 @@ class ReportService
                     ];
                 }
 
-                $categorySummary[$categoryName]['total_amount'] += $item->amount;
+                $categorySummary[$categoryName]['total_amount'] += $this->formatChileanNumber($item->amount);
                 $categorySummary[$categoryName]['items_count']++;
-                $totalGeneral += $item->amount;
+                $totalGeneral += $this->formatChileanNumber($item->amount);
             }
         }
 
@@ -72,7 +84,7 @@ class ReportService
         foreach ($expenses as $expense) {
             $categoriesInExpense = [];
             foreach ($expense->items as $item) {
-                $categoryName = $item->category ? $item->category->name : 'Sin categoría';
+                $categoryName = $item->categoryObj ? $item->categoryObj->name : 'Sin categoría';
                 if (!in_array($categoryName, $categoriesInExpense)) {
                     $categoriesInExpense[] = $categoryName;
                     $categorySummary[$categoryName]['expenses_count']++;
@@ -110,7 +122,7 @@ class ReportService
 
         foreach ($expenses as $expense) {
             foreach ($expense->items as $item) {
-                $categoryName = $item->category ? $item->category->name : 'Sin categoría';
+                $categoryName = $item->categoryObj ? $item->categoryObj->name : 'Sin categoría';
                 
                 if (!isset($categoryDetails[$categoryName])) {
                     $categoryDetails[$categoryName] = [
@@ -123,30 +135,45 @@ class ReportService
                 $itemData = [
                     'expense_number' => $expense->expense_number,
                     'expense_date' => $expense->expense_date->format('Y-m-d'),
-                    'submitter' => $expense->submitter->person->first_name . ' ' . $expense->submitter->person->last_name,
+                    'submitter' => $expense->submittedBy ? ($expense->submittedBy->first_name . ' ' . $expense->submittedBy->last_name) : 'N/A',
                     'item_description' => $item->description,
-                    'amount' => $item->amount,
+                    'amount' => $this->formatChileanNumber($item->amount),
                     'receipt_number' => $item->receipt_number,
                     'expense_status' => $expense->status
                 ];
 
-                // Incluir documentos si se solicita
-                if ($includeDocuments && $item->hasMedia('receipts')) {
-                    $itemData['documents'] = $item->getMedia('receipts')->map(function ($media) {
-                        return [
+                // Incluir documentos si se solicita (ambos sistemas)
+                if ($includeDocuments) {
+                    $documentsArray = [];
+                    
+                    // 1. Documentos del sistema tradicional (tabla documents)
+                    foreach ($item->documents as $doc) {
+                        $documentsArray[] = [
+                            'filename' => $doc->name,
+                            'url' => asset('storage/' . $doc->file_path),
+                            'mime_type' => $doc->mime_type,
+                            'size' => $doc->file_size
+                        ];
+                    }
+                    
+                    // 2. Documentos de Spatie MediaLibrary (colección receipts)
+                    foreach ($item->getMedia('receipts') as $media) {
+                        $documentsArray[] = [
                             'filename' => $media->file_name,
                             'url' => $media->getFullUrl(),
                             'mime_type' => $media->mime_type,
                             'size' => $media->size
                         ];
-                    })->toArray();
+                    }
+                    
+                    $itemData['documents'] = $documentsArray;
                 } else {
                     $itemData['documents'] = [];
                 }
 
                 $categoryDetails[$categoryName]['items'][] = $itemData;
-                $categoryDetails[$categoryName]['total_amount'] += $item->amount;
-                $totalGeneral += $item->amount;
+                $categoryDetails[$categoryName]['total_amount'] += $this->formatChileanNumber($item->amount);
+                $totalGeneral += $this->formatChileanNumber($item->amount);
             }
         }
 
