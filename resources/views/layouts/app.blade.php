@@ -186,6 +186,323 @@
         <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
         <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
         
+        <!-- Global Reports Functions -->
+        <script>
+            // Variables globales para guardar los parámetros del informe actual
+            let currentReportParams = null;
+
+            // Función para formatear números según la notación chilena
+            function formatChileanNumber(number) {
+                // Convertir a número si es string
+                const num = typeof number === 'string' ? parseFloat(number) : number;
+                
+                // Validar que sea un número válido
+                if (isNaN(num)) return '0';
+                
+                // Redondear según reglas chilenas (sin centavos)
+                const rounded = Math.round(num);
+                
+                // Formatear con puntos como separadores de miles
+                return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            function openMonthlyExpenseReport() {
+                // Cargar la página de informes y abrir el modal automáticamente
+                fetch('{{ route("reports.index") }}')
+                    .then(response => response.text())
+                    .then(html => {
+                        // Crear un contenedor temporal para cargar el HTML
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = html;
+                        
+                        // Buscar el modal en el HTML cargado
+                        const modal = tempDiv.querySelector('#monthlyExpenseModal');
+                        if (modal) {
+                            // Si no existe en la página actual, agregarlo
+                            if (!document.querySelector('#monthlyExpenseModal')) {
+                                document.body.appendChild(modal);
+                            }
+                            
+                            // También agregar el modal de resultados si no existe
+                            const resultModal = tempDiv.querySelector('#reportDisplayModal');
+                            if (resultModal && !document.querySelector('#reportDisplayModal')) {
+                                document.body.appendChild(resultModal);
+                            }
+                            
+                            // Agregar el contenedor de resultados si no existe
+                            if (!document.querySelector('#reportResults')) {
+                                const reportResults = document.createElement('div');
+                                reportResults.id = 'reportResults';
+                                document.body.appendChild(reportResults);
+                            }
+                            
+                            // Cargar las funciones JavaScript necesarias
+                            loadReportsFunctions();
+                            
+                            // Abrir el modal
+                            openMonthlyExpenseModal();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading reports:', error);
+                        // Fallback: redirigir a la página
+                        window.location.href = '{{ route("reports.index") }}';
+                    });
+            }
+
+            function loadReportsFunctions() {
+                // Solo cargar si no están ya definidas
+                if (typeof openMonthlyExpenseModal !== 'function') {
+                    window.openMonthlyExpenseModal = function() {
+                        const modal = document.getElementById('monthlyExpenseModal');
+                        if (modal) {
+                            // Inicializar fechas si no están configuradas
+                            const startDate = document.getElementById('start_date');
+                            const endDate = document.getElementById('end_date');
+                            if (startDate && !startDate.value) {
+                                const now = new Date();
+                                const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                                const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                                startDate.value = lastMonth.toISOString().split('T')[0];
+                                endDate.value = lastDayOfMonth.toISOString().split('T')[0];
+                            }
+                            
+                            // Configurar listener para mostrar/ocultar documentos
+                            function toggleDocumentsOptionGlobal() {
+                                const selectedType = document.querySelector('input[name="report_type"]:checked');
+                                const container = document.getElementById('include_documents_container');
+                                if (container) {
+                                    if (selectedType && selectedType.value === 'detailed') {
+                                        container.classList.remove('hidden');
+                                    } else {
+                                        container.classList.add('hidden');
+                                        const checkbox = document.getElementById('include_documents');
+                                        if (checkbox) checkbox.checked = false;
+                                    }
+                                }
+                            }
+                            
+                            const reportTypeRadios = document.querySelectorAll('input[name="report_type"]');
+                            reportTypeRadios.forEach(radio => {
+                                if (!radio.hasAttribute('data-listener-added')) {
+                                    radio.addEventListener('change', toggleDocumentsOptionGlobal);
+                                    radio.setAttribute('data-listener-added', 'true');
+                                }
+                            });
+                            
+                            // Verificar estado inicial
+                            setTimeout(toggleDocumentsOptionGlobal, 100);
+                            
+                            modal.classList.remove('hidden');
+                        }
+                    };
+                }
+                
+                if (typeof closeMonthlyExpenseModal !== 'function') {
+                    window.closeMonthlyExpenseModal = function() {
+                        const modal = document.getElementById('monthlyExpenseModal');
+                        if (modal) modal.classList.add('hidden');
+                    };
+                }
+                
+                if (typeof generateMonthlyReport !== 'function') {
+                    window.generateMonthlyReport = function() {
+                        const form = document.getElementById('monthlyExpenseForm');
+                        if (!form) return;
+                        
+                        const formData = new FormData(form);
+                        
+                        // Guardar los parámetros del informe
+                        currentReportParams = {};
+                        for (let [key, value] of formData.entries()) {
+                            currentReportParams[key] = value;
+                        }
+                        
+                        fetch('{{ route("reports.monthly-expenses") }}', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(text => {
+                            try {
+                                const data = JSON.parse(text);
+                                if (data.success) {
+                                    displayReport(data.data, data.report_info);
+                                    closeMonthlyExpenseModal();
+                                } else {
+                                    alert('Error: ' + (data.message || 'Error desconocido'));
+                                }
+                            } catch (e) {
+                                console.error('JSON parse error:', e);
+                                alert('Error al procesar el informe');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error al generar el informe');
+                        });
+                    };
+                }
+                
+                if (typeof exportCurrentReport !== 'function') {
+                    window.exportCurrentReport = function() {
+                        if (!currentReportParams) {
+                            alert('No hay informe actual para exportar.');
+                            return;
+                        }
+                        
+                        const tempForm = document.createElement('form');
+                        tempForm.method = 'POST';
+                        tempForm.action = '{{ route("reports.export-monthly-expenses") }}';
+                        tempForm.style.display = 'none';
+                        
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = '{{ csrf_token() }}';
+                        tempForm.appendChild(csrfInput);
+                        
+                        for (let [key, value] of Object.entries(currentReportParams)) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = key;
+                            input.value = value;
+                            tempForm.appendChild(input);
+                        }
+                        
+                        document.body.appendChild(tempForm);
+                        tempForm.submit();
+                        document.body.removeChild(tempForm);
+                    };
+                }
+                
+                if (typeof displayReport !== 'function') {
+                    window.displayReport = function(data, reportInfo) {
+                        let html = `<div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Información del Informe</h4>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                                <strong>Período:</strong> ${reportInfo.start_date} al ${reportInfo.end_date}<br>
+                                <strong>Tipo:</strong> ${reportInfo.report_type === 'summary' ? 'Resumido' : 'Detallado'}<br>
+                                <strong>Filtro:</strong> <span class="px-2 py-1 rounded text-xs font-semibold ${reportInfo.approval_status === 'approved_only' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${reportInfo.approval_status === 'approved_only' ? 'Solo rendiciones aprobadas' : 'Todas las rendiciones (incluye pendientes)'}</span>
+                            </p>
+                        </div>`;
+                        
+                        html += `<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Resumen General</h4>
+                            <div class="grid grid-cols-3 gap-4 mt-2 text-sm">
+                                <div><strong>Total General:</strong> $${formatChileanNumber(data.total_amount)}</div>
+                                <div><strong>Rendiciones:</strong> ${data.total_expenses}</div>
+                                <div><strong>Items:</strong> ${data.total_items}</div>
+                            </div>
+                        </div>`;
+                        
+                        // Mostrar datos por categoría
+                        if (data.report_type === 'summary') {
+                            html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumen por Categoría</h4>';
+                            html += '<div class="overflow-x-auto"><table class="min-w-full table-auto">';
+                            html += '<thead class="bg-gray-50 dark:bg-gray-700"><tr>';
+                            html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Items</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rendiciones</th>';
+                            html += '</tr></thead><tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">';
+                            
+                            data.categories.forEach(category => {
+                                html += `<tr>
+                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">${category.category}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(category.total_amount)}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.items_count}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.expenses_count}</td>
+                                </tr>`;
+                            });
+                            
+                            html += '</tbody></table></div>';
+                        } else {
+                            // Informe detallado
+                            html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Detalle por Categoría</h4>';
+                            
+                            data.categories.forEach(category => {
+                                html += `<div class="mb-6 border rounded-lg p-4">
+                                    <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                                        ${category.category} - Total: $${formatChileanNumber(category.total_amount)}
+                                    </h5>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full table-auto text-sm">
+                                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                                <tr>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">N° Rendición</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Fecha</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Persona</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descripción</th>
+                                                    <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Monto</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Estado</th>
+                                                    ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Documentos</th>' : ''}
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">`;
+                                
+                                category.items.forEach(item => {
+                                    html += `<tr>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_number}</td>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_date}</td>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.submitter}</td>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.item_description}</td>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(item.amount)}</td>
+                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.expense_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                                ${item.expense_status === 'approved' ? 'Aprobada' : 'Pendiente'}
+                                            </span>
+                                        </td>`;
+                                    
+                                    // Agregar columna de documentos si está habilitada
+                                    if (data.include_documents) {
+                                        if (item.documents && item.documents.length > 0) {
+                                            html += `<td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                                <div class="flex flex-wrap gap-1">`;
+                                            item.documents.forEach(doc => {
+                                                const extension = doc.filename.split('.').pop().toLowerCase();
+                                                const iconClass = extension === 'pdf' ? 'fa-file-pdf text-red-600' : 
+                                                                extension.match(/(jpg|jpeg|png|gif)/) ? 'fa-file-image text-blue-600' : 
+                                                                'fa-file text-gray-600';
+                                                html += `<a href="${doc.url}" target="_blank" title="${doc.filename}" 
+                                                    class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
+                                                    <i class="fa ${iconClass} mr-1"></i>
+                                                    ${doc.filename.length > 15 ? doc.filename.substring(0, 12) + '...' : doc.filename}
+                                                </a>`;
+                                            });
+                                            html += `</div></td>`;
+                                        } else {
+                                            html += `<td class="px-2 py-1 text-gray-500 dark:text-gray-400 italic">Sin documentos</td>`;
+                                        }
+                                    }
+                                    
+                                    html += `</tr>`;
+                                });
+                                
+                                html += '</tbody></table></div></div>';
+                            });
+                        }
+                        
+                        const reportContent = document.getElementById('reportContent');
+                        if (reportContent) {
+                            reportContent.innerHTML = html;
+                            document.getElementById('reportDisplayModal').classList.remove('hidden');
+                        }
+                    };
+                }
+                
+                if (typeof closeReportDisplayModal !== 'function') {
+                    window.closeReportDisplayModal = function() {
+                        const modal = document.getElementById('reportDisplayModal');
+                        if (modal) modal.classList.add('hidden');
+                    };
+                }
+            }
+        </script>
+        
         @stack('scripts')
     </body>
 </html>

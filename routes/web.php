@@ -50,6 +50,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rutas de Informes
     Route::get('/reports', [App\Http\Controllers\ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/test-filters', [App\Http\Controllers\ReportsController::class, 'testFilters'])->name('reports.test-filters');
     Route::post('/reports/monthly-expenses', [App\Http\Controllers\ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
     Route::post('/reports/export-monthly-expenses', [App\Http\Controllers\ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
 
