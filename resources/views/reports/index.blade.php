@@ -1,21 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800  leading-tight">
             Informes
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+            <div class="bg-white  overflow-hidden shadow sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Informes Disponibles</h3>
+                    <h3 class="text-lg font-medium text-gray-900  mb-4">Informes Disponibles</h3>
                     
 @section('content')
 <div class="container-fluid">
     <!-- Contenedor para mostrar resultados -->
     <div id="reportResults" class="mt-4"></div>
-</div>                    <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+</div>                    <div class="mt-6 pt-4 border-t border-gray-200">
                         <button onclick="testFilters()" class="btn btn-outline-secondary btn-sm">
                             <i class="fa fa-flask"></i> Probar Filtros
                         </button>
@@ -27,13 +27,13 @@
 
     <!-- Modal para Informe de Gastos Mensuales -->
     <div id="monthlyExpenseModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-20 mx-auto p-5 border w-96 max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="relative top-20 mx-auto p-5 border w-96 max-w-md shadow-lg rounded-md bg-white">
             <div class="mt-3">
-                <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">
                         Gastos Mensuales
                     </h3>
-                    <button onclick="closeMonthlyExpenseModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <button onclick="closeMonthlyExpenseModal()" class="text-gray-400 hover:text-gray-600 ">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -44,39 +44,39 @@
                     <!-- Fechas -->
                     <div class="space-y-3">
                         <div>
-                            <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label for="start_date" class="block text-sm font-medium text-gray-700  mb-1">
                                 Fecha Inicial
                             </label>
                             <input type="date" id="start_date" name="start_date" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                              class="w-full rounded-md border-gray-300  bg-white  text-gray-900  shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
                         
                         <div>
-                            <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            <label for="end_date" class="block text-sm font-medium text-gray-700  mb-1">
                                 Fecha Final
                             </label>
                             <input type="date" id="end_date" name="end_date" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                              class="w-full rounded-md border-gray-300  bg-white  text-gray-900  shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                         </div>
                     </div>
 
                     <!-- Tipo de Informe -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700  mb-2">
                             Tipo de Informe
                         </label>
                         <div class="space-y-2">
                             <label class="flex items-center">
                                 <input type="radio" id="report_type_summary" name="report_type" value="summary" checked
-                                    class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                  class="rounded border-gray-300  text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">
                                     Resumido (Solo totales por categoría)
                                 </span>
                             </label>
                             <label class="flex items-center">
                                 <input type="radio" id="report_type_detailed" name="report_type" value="detailed"
-                                    class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                  class="rounded border-gray-300  text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">
                                     Detallado (Con items individuales)
                                 </span>
                             </label>
@@ -85,21 +85,21 @@
 
                     <!-- Estado de Aprobación -->
                     <div class="pt-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700  mb-2">
                             Estado de Aprobación
                         </label>
                         <div class="space-y-2">
                             <label class="flex items-center">
                                 <input type="radio" id="approval_status_approved" name="approval_status" value="approved_only" checked
-                                    class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                  class="rounded border-gray-300  text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">
                                     Solo rendiciones aprobadas
                                 </span>
                             </label>
                             <label class="flex items-center">
                                 <input type="radio" id="approval_status_all" name="approval_status" value="all"
-                                    class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                  class="rounded border-gray-300  text-indigo-600 shadow-sm focus:ring-indigo-500">
+                                <span class="ml-2 text-sm text-gray-700">
                                     Todas las rendiciones
                                 </span>
                             </label>
@@ -108,26 +108,26 @@
 
                     <!-- Incluir Documentos -->
                     <div id="include_documents_container" class="hidden pt-2">
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label class="block text-sm font-medium text-gray-700  mb-2">
                             Opciones Adicionales
                         </label>
                         <label class="flex items-center">
                             <input type="checkbox" id="include_documents" name="include_documents" value="1"
-                                class="rounded border-gray-300 dark:border-gray-600 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                              class="rounded border-gray-300  text-indigo-600 shadow-sm focus:ring-indigo-500">
+                            <span class="ml-2 text-sm text-gray-700">
                                 Incluir información de documentos adjuntos
                             </span>
                         </label>
                     </div>
 
                     <!-- Botones -->
-                    <div class="flex flex-col space-y-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex flex-col space-y-2 pt-4 border-t border-gray-200">
                         <button type="button" onclick="generateMonthlyReport()" 
-                            class="w-full btn btn-primary btn-sm">
+                          class="w-full btn btn-primary btn-sm">
                             <i class="fa fa-chart-bar"></i> Generar Informe
                         </button>
                         <button type="button" onclick="closeMonthlyExpenseModal()" 
-                            class="w-full btn btn-outline-secondary btn-sm">
+                          class="w-full btn btn-outline-secondary btn-sm">
                             Cancelar
                         </button>
                     </div>
@@ -138,13 +138,13 @@
 
     <!-- Modal para mostrar el informe generado -->
     <div id="reportDisplayModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <div class="flex items-center justify-between pb-3">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    <h3 class="text-lg font-medium text-gray-900">
                         Informe de Gastos Mensuales
                     </h3>
-                    <button onclick="closeReportDisplayModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                    <button onclick="closeReportDisplayModal()" class="text-gray-400 hover:text-gray-600 ">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -155,13 +155,13 @@
                     <!-- El contenido del informe se cargará aquí dinámicamente -->
                 </div>
                 
-                <div class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
                     <button type="button" onclick="exportCurrentReport()" 
-                        class="btn btn-success">
+                      class="btn btn-success">
                         <i class="fa fa-file-excel"></i> Exportar a Excel
                     </button>
                     <button type="button" onclick="closeReportDisplayModal()" 
-                        class="btn btn-secondary">
+                      class="btn btn-secondary">
                         Cerrar
                     </button>
                 </div>
@@ -363,9 +363,9 @@
             let html = '';
             
             // Información del período
-            html += `<div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h4 class="font-medium text-gray-900 dark:text-gray-100">Información del Informe</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-300">
+            html += `<div class="mb-4 p-4 bg-gray-50  rounded-lg">
+                <h4 class="font-medium text-gray-900">Información del Informe</h4>
+                <p class="text-sm text-gray-600">
                     <strong>Período:</strong> ${reportInfo.start_date} al ${reportInfo.end_date}<br>
                     <strong>Tipo:</strong> ${reportInfo.report_type === 'summary' ? 'Resumido' : 'Detallado'}<br>
                     <strong>Filtro:</strong> <span class="px-2 py-1 rounded text-xs font-semibold ${reportInfo.approval_status === 'approved_only' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${reportInfo.approval_status === 'approved_only' ? 'Solo rendiciones aprobadas' : 'Todas las rendiciones (incluye pendientes)'}</span>
@@ -373,8 +373,8 @@
             </div>`;
             
             // Resumen general
-            html += `<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <h4 class="font-medium text-gray-900 dark:text-gray-100">Resumen General</h4>
+            html += `<div class="mb-4 p-4 bg-blue-50  rounded-lg">
+                <h4 class="font-medium text-gray-900">Resumen General</h4>
                 <div class="grid grid-cols-3 gap-4 mt-2 text-sm">
                     <div><strong>Total General:</strong> $${formatChileanNumber(data.total_amount)}</div>
                     <div><strong>Rendiciones:</strong> ${data.total_expenses}</div>
@@ -384,57 +384,57 @@
             
             // Mostrar datos por categoría
             if (data.report_type === 'summary') {
-                html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumen por Categoría</h4>';
+                html += '<h4 class="font-medium text-gray-900  mb-3">Resumen por Categoría</h4>';
                 html += '<div class="overflow-x-auto"><table class="min-w-full table-auto">';
-                html += '<thead class="bg-gray-50 dark:bg-gray-700"><tr>';
-                html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Items</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rendiciones</th>';
-                html += '</tr></thead><tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">';
+                html += '<thead class="bg-gray-50"><tr>';
+                html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">Categoría</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Total</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Items</th>';
+                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Rendiciones</th>';
+                html += '</tr></thead><tbody class="bg-white  divide-y divide-gray-200">';
                 
                 data.categories.forEach(category => {
                     html += `<tr>
-                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">${category.category}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(category.total_amount)}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.items_count}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.expenses_count}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${category.category}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900  text-right">$${formatChileanNumber(category.total_amount)}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900  text-right">${category.items_count}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900  text-right">${category.expenses_count}</td>
                     </tr>`;
                 });
                 
                 html += '</tbody></table></div>';
             } else {
                 // Informe detallado
-                html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Detalle por Categoría</h4>';
+                html += '<h4 class="font-medium text-gray-900  mb-3">Detalle por Categoría</h4>';
                 
                 data.categories.forEach(category => {
                     html += `<div class="mb-6 border rounded-lg p-4">
-                        <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                        <h5 class="font-medium text-gray-900  mb-2">
                             ${category.category} - Total: $${formatChileanNumber(category.total_amount)}
                         </h5>
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto text-sm">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
+                                <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">N° Rendición</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Fecha</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Persona</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descripción</th>
-                                        <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Monto</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Estado</th>
-                                        ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Documentos</th>' : ''}
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">N° Rendición</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fecha</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Persona</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Descripción</th>
+                                        <th class="px-2 py-1 text-right text-xs font-medium text-gray-500">Monto</th>
+                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Estado</th>
+                                        ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Documentos</th>' : ''}
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">`;
+                                <tbody class="bg-white  divide-y divide-gray-200">`;
                     
                     category.items.forEach(item => {
                         html += `<tr>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_number}</td>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_date}</td>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.submitter}</td>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.item_description}</td>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(item.amount)}</td>
-                            <td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                            <td class="px-2 py-1 text-gray-900">${item.expense_number}</td>
+                            <td class="px-2 py-1 text-gray-900">${item.expense_date}</td>
+                            <td class="px-2 py-1 text-gray-900">${item.submitter}</td>
+                            <td class="px-2 py-1 text-gray-900">${item.item_description}</td>
+                            <td class="px-2 py-1 text-gray-900  text-right">$${formatChileanNumber(item.amount)}</td>
+                            <td class="px-2 py-1 text-gray-900">
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.expense_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
                                     ${item.expense_status === 'approved' ? 'Aprobada' : 'Pendiente'}
                                 </span>
@@ -443,7 +443,7 @@
                         // Agregar columna de documentos si está habilitada
                         if (data.include_documents) {
                             if (item.documents && item.documents.length > 0) {
-                                html += `<td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                html += `<td class="px-2 py-1 text-gray-900">
                                     <div class="flex flex-wrap gap-1">`;
                                 item.documents.forEach(doc => {
                                     const extension = doc.filename.split('.').pop().toLowerCase();
@@ -451,14 +451,14 @@
                                                     extension.match(/(jpg|jpeg|png|gif)/) ? 'fa-file-image text-blue-600' : 
                                                     'fa-file text-gray-600';
                                     html += `<a href="${doc.url}" target="_blank" title="${doc.filename}" 
-                                        class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
+                                      class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
                                         <i class="fa ${iconClass} mr-1"></i>
                                         ${doc.filename.length > 15 ? doc.filename.substring(0, 12) + '...' : doc.filename}
                                     </a>`;
                                 });
                                 html += `</div></td>`;
                             } else {
-                                html += `<td class="px-2 py-1 text-gray-500 dark:text-gray-400 italic">Sin documentos</td>`;
+                                html += `<td class="px-2 py-1 text-gray-500  italic">Sin documentos</td>`;
                             }
                         }
                         

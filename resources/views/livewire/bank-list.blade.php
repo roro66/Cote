@@ -3,11 +3,11 @@
     <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="md:col-span-2">
             <input type="text" wire:model.live="search" placeholder="Buscar bancos..."
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
         </div>
         <div>
             <select wire:model.live="typeFilter" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Todos los tipos</option>
                 <option value="banco">Bancos</option>
                 <option value="cooperativa">Cooperativas</option>
@@ -16,7 +16,7 @@
         </div>
         <div>
             <button type="button" onclick="openModal('bankModal')" 
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+               class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Nuevo Banco
             </button>
         </div>
@@ -78,12 +78,12 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button type="button" wire:click="edit({{ $bank->id }})" onclick="openModal('bankModal')"
-                            class="text-indigo-600 hover:text-indigo-900 mr-3">
+                           class="text-indigo-600 hover:text-indigo-900 mr-3">
                             Editar
                         </button>
                         <button type="button" wire:click="delete({{ $bank->id }})" 
                             onclick="confirm('¿Está seguro de eliminar este banco?') || event.stopImmediatePropagation()"
-                            class="text-red-600 hover:text-red-900">
+                           class="text-red-600 hover:text-red-900">
                             Eliminar
                         </button>
                     </td>
@@ -110,21 +110,21 @@
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
                         <input type="text" wire:model="name" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         @error('name') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Código</label>
                         <input type="text" wire:model="code" required maxlength="10"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         @error('code') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
                         <select wire:model="type" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="banco">Banco</option>
                             <option value="cooperativa">Cooperativa</option>
                             <option value="tarjeta_prepago">Tarjeta Prepago</option>
@@ -141,11 +141,11 @@
 
                     <div class="flex justify-end space-x-3 pt-4">
                         <button type="button" onclick="closeModal('bankModal')" wire:click="resetForm"
-                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                           class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                             Cancelar
                         </button>
                         <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                           class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                             {{ $bankId ? 'Actualizar' : 'Crear' }}
                         </button>
                     </div>

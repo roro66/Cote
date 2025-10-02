@@ -4,7 +4,7 @@
         <input type="text" 
                wire:model.live.debounce.300ms="search" 
                placeholder="Buscar rendiciones..."
-               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
         
         <select wire:model.live="teamFilter" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <option value="">Todos los equipos</option>
@@ -122,12 +122,12 @@
                             </a>
                             @if($expense->status === 'pending')
                                 <button wire:click="approveExpense({{ $expense->id }})" 
-                                        class="text-green-600 hover:text-green-900">
+                                       class="text-green-600 hover:text-green-900">
                                     Aprobar
                                 </button>
                                 <button wire:click="rejectExpense({{ $expense->id }})" 
                                         onclick="return confirm('¿Está seguro de rechazar esta rendición?')"
-                                        class="text-red-600 hover:text-red-900">
+                                       class="text-red-600 hover:text-red-900">
                                     Rechazar
                                 </button>
                             @endif

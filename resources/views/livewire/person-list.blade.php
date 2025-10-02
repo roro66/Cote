@@ -1,6 +1,6 @@
 <div>
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="h4 text-gray-900 dark:text-gray-100">Lista de Personas</h3>
+        <h3 class="h4 text-gray-900 ">Lista de Personas</h3>
         <button wire:click="create" class="btn btn-primary">
             <i class="fas fa-plus me-2"></i>Nueva Persona
         </button>
@@ -9,14 +9,14 @@
     @if($showingForm)
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title text-gray-900 dark:text-gray-100 mb-3">
+                <h5 class="card-title text-gray-900  mb-3">
                     {{ $editing ? 'Editar Persona' : 'Nueva Persona' }}
                 </h5>
                 
                 <form wire:submit.prevent="save">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">Nombre</label>
+                            <label class="form-label text-gray-900 ">Nombre</label>
                             <input type="text" wire:model="first_name" class="form-control @error('first_name') is-invalid @enderror">
                             @error('first_name') 
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -24,7 +24,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">Apellido</label>
+                            <label class="form-label text-gray-900 ">Apellido</label>
                             <input type="text" wire:model="last_name" class="form-control @error('last_name') is-invalid @enderror">
                             @error('last_name') 
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -32,7 +32,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">RUT</label>
+                            <label class="form-label text-gray-900 ">RUT</label>
                             <input type="text" wire:model="rut" placeholder="12345678-9" class="form-control @error('rut') is-invalid @enderror">
                             <div class="form-text">Formato: 12345678-9 (sin puntos, con guión)</div>
                             @error('rut') 
@@ -41,7 +41,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">Email</label>
+                            <label class="form-label text-gray-900 ">Email</label>
                             <input type="email" wire:model="email" class="form-control @error('email') is-invalid @enderror">
                             @error('email') 
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -49,7 +49,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">Teléfono</label>
+                            <label class="form-label text-gray-900 ">Teléfono</label>
                             <input type="text" wire:model="phone" class="form-control @error('phone') is-invalid @enderror">
                             @error('phone') 
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -57,7 +57,7 @@
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            <label class="form-label text-gray-900 dark:text-gray-100">Rol</label>
+                            <label class="form-label text-gray-900 ">Rol</label>
                             <select wire:model="role_type" class="form-select @error('role_type') is-invalid @enderror">
                                 <option value="trabajador">Trabajador</option>
                                 <option value="tesorero">Tesorero</option>
@@ -71,7 +71,7 @@
                     <div class="mb-3">
                         <div class="form-check">
                             <input type="checkbox" wire:model="is_enabled" class="form-check-input" id="is_enabled">
-                            <label class="form-check-label text-gray-900 dark:text-gray-100" for="is_enabled">Activo</label>
+                            <label class="form-check-label text-gray-900 " for="is_enabled">Activo</label>
                         </div>
                     </div>
                     
@@ -92,7 +92,7 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <input type="text" wire:model.live="search" placeholder="Buscar personas..." 
-                   class="form-control">
+                  class="form-control">
         </div>
     </div>
 

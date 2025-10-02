@@ -13,8 +13,8 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <a href="{{ route('expenses.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-1"></i>Volver

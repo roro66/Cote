@@ -4,7 +4,7 @@
         <input type="text" 
                wire:model.live.debounce.300ms="search" 
                placeholder="Buscar transacciones..."
-               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
         
         <select wire:model.live="typeFilter" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             <option value="">Todos los tipos</option>
@@ -152,12 +152,12 @@
                             </a>
                             @if($transaction->status === 'pending')
                                 <button wire:click="approveTransaction({{ $transaction->id }})" 
-                                        class="text-green-600 hover:text-green-900">
+                                       class="text-green-600 hover:text-green-900">
                                     Aprobar
                                 </button>
                                 <button wire:click="rejectTransaction({{ $transaction->id }})" 
                                         onclick="return confirm('¿Está seguro de rechazar esta transacción?')"
-                                        class="text-red-600 hover:text-red-900">
+                                       class="text-red-600 hover:text-red-900">
                                     Rechazar
                                 </button>
                             @endif

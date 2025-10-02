@@ -7,21 +7,12 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Early theme application: apply stored or system preference BEFORE CSS loads to avoid flash -->
+        <!-- Set default light theme -->
         <script>
             (function() {
                 try {
-                    const stored = localStorage.getItem('theme');
-                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    const useDark = stored ? stored === 'dark' : prefersDark;
                     const html = document.documentElement;
-                    if (useDark) {
-                        html.classList.add('dark');
-                        html.setAttribute('data-bs-theme', 'dark');
-                    } else {
-                        html.classList.remove('dark');
-                        html.setAttribute('data-bs-theme', 'light');
-                    }
+                    html.setAttribute('data-bs-theme', 'light');
                 } catch (e) {
                     // ignore
                 }
@@ -34,8 +25,6 @@
 
         <!-- Bootstrap CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Dark 5 (theme for dark mode) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css" rel="stylesheet">
         
         <!-- DataTables CSS - versiones estables -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
@@ -49,9 +38,6 @@
         
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-
-    <!-- Dark Mode Styles (project-specific tweaks; loaded after Bootstrap Dark) -->
-        <link rel="stylesheet" href="{{ asset('css/dark-mode.css') }}">
         
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
@@ -97,52 +83,20 @@
             }
         </style>
 
-        <!-- Dark Mode Toggle Script -->
-        <script>
-            function applyTheme(isDark) {
-                const html = document.documentElement;
-                if (isDark) {
-                    html.classList.add('dark');
-                    html.setAttribute('data-bs-theme', 'dark');
-                } else {
-                    html.classList.remove('dark');
-                    html.setAttribute('data-bs-theme', 'light');
-                }
-                // Notificar a la app que el tema cambió (p.ej., para re-renderizar charts)
-                window.dispatchEvent(new CustomEvent('theme-changed', { detail: { isDark } }));
-            }
-
-            function toggleTheme() {
-                const html = document.documentElement;
-                const isDark = html.classList.contains('dark');
-                applyTheme(!isDark);
-                localStorage.setItem('theme', !isDark ? 'dark' : 'light');
-            }
-        </script>
-
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Alpine.js (CDN) para dropdowns y UI reactiva sin compilar -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-        
-        <!-- Inicialización del modo oscuro -->
-        <script>
-            // Verificar tema guardado o preferencia del sistema y aplicarlo (Tailwind + Bootstrap 5.3)
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const storedTheme = localStorage.getItem('theme');
-            const useDark = storedTheme ? storedTheme === 'dark' : prefersDark;
-            (function() { applyTheme(useDark); })();
-        </script>
+        <!-- Alpine.js (CDN) para dropdowns y UI reactiva sin compilar -->
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-gray-100">
             <div class="fixed-header-nav">
                 @include('layouts.navigation')
             </div>
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="fixed-header-content bg-white dark:bg-gray-800 shadow">
+                <header class="fixed-header-content bg-white shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
@@ -381,17 +335,17 @@
                 
                 if (typeof displayReport !== 'function') {
                     window.displayReport = function(data, reportInfo) {
-                        let html = `<div class="mb-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Información del Informe</h4>
-                            <p class="text-sm text-gray-600 dark:text-gray-300">
+                        let html = `<div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-medium text-gray-900">Información del Informe</h4>
+                            <p class="text-sm text-gray-600">
                                 <strong>Período:</strong> ${reportInfo.start_date} al ${reportInfo.end_date}<br>
                                 <strong>Tipo:</strong> ${reportInfo.report_type === 'summary' ? 'Resumido' : 'Detallado'}<br>
                                 <strong>Filtro:</strong> <span class="px-2 py-1 rounded text-xs font-semibold ${reportInfo.approval_status === 'approved_only' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${reportInfo.approval_status === 'approved_only' ? 'Solo rendiciones aprobadas' : 'Todas las rendiciones (incluye pendientes)'}</span>
                             </p>
                         </div>`;
                         
-                        html += `<div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Resumen General</h4>
+                        html += `<div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-medium text-gray-900">Resumen General</h4>
                             <div class="grid grid-cols-3 gap-4 mt-2 text-sm">
                                 <div><strong>Total General:</strong> $${formatChileanNumber(data.total_amount)}</div>
                                 <div><strong>Rendiciones:</strong> ${data.total_expenses}</div>
@@ -401,57 +355,57 @@
                         
                         // Mostrar datos por categoría
                         if (data.report_type === 'summary') {
-                            html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Resumen por Categoría</h4>';
+                            html += '<h4 class="font-medium text-gray-900 mb-3">Resumen por Categoría</h4>';
                             html += '<div class="overflow-x-auto"><table class="min-w-full table-auto">';
-                            html += '<thead class="bg-gray-50 dark:bg-gray-700"><tr>';
-                            html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>';
-                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>';
-                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Items</th>';
-                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Rendiciones</th>';
-                            html += '</tr></thead><tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">';
+                            html += '<thead class="bg-gray-50"><tr>';
+                            html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>';
+                            html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Rendiciones</th>';
+                            html += '</tr></thead><tbody class="bg-white divide-y divide-gray-200">';
                             
                             data.categories.forEach(category => {
                                 html += `<tr>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100">${category.category}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(category.total_amount)}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.items_count}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100 text-right">${category.expenses_count}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900">${category.category}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 text-right">$${formatChileanNumber(category.total_amount)}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 text-right">${category.items_count}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-900 text-right">${category.expenses_count}</td>
                                 </tr>`;
                             });
                             
                             html += '</tbody></table></div>';
                         } else {
                             // Informe detallado
-                            html += '<h4 class="font-medium text-gray-900 dark:text-gray-100 mb-3">Detalle por Categoría</h4>';
+                            html += '<h4 class="font-medium text-gray-900 mb-3">Detalle por Categoría</h4>';
                             
                             data.categories.forEach(category => {
                                 html += `<div class="mb-6 border rounded-lg p-4">
-                                    <h5 class="font-medium text-gray-900 dark:text-gray-100 mb-2">
+                                    <h5 class="font-medium text-gray-900 mb-2">
                                         ${category.category} - Total: $${formatChileanNumber(category.total_amount)}
                                     </h5>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full table-auto text-sm">
-                                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                            <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">N° Rendición</th>
-                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Fecha</th>
-                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Persona</th>
-                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Descripción</th>
-                                                    <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 dark:text-gray-300">Monto</th>
-                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Estado</th>
-                                                    ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Documentos</th>' : ''}
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">N° Rendición</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fecha</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Persona</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Descripción</th>
+                                                    <th class="px-2 py-1 text-right text-xs font-medium text-gray-500">Monto</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Estado</th>
+                                                    ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Documentos</th>' : ''}
                                                 </tr>
                                             </thead>
-                                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">`;
+                                            <tbody class="bg-white divide-y divide-gray-200">`;
                                 
                                 category.items.forEach(item => {
                                     html += `<tr>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_number}</td>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.expense_date}</td>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.submitter}</td>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">${item.item_description}</td>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100 text-right">$${formatChileanNumber(item.amount)}</td>
-                                        <td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                        <td class="px-2 py-1 text-gray-900">${item.expense_number}</td>
+                                        <td class="px-2 py-1 text-gray-900">${item.expense_date}</td>
+                                        <td class="px-2 py-1 text-gray-900">${item.submitter}</td>
+                                        <td class="px-2 py-1 text-gray-900">${item.item_description}</td>
+                                        <td class="px-2 py-1 text-gray-900 text-right">$${formatChileanNumber(item.amount)}</td>
+                                        <td class="px-2 py-1 text-gray-900">
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.expense_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
                                                 ${item.expense_status === 'approved' ? 'Aprobada' : 'Pendiente'}
                                             </span>
@@ -460,7 +414,7 @@
                                     // Agregar columna de documentos si está habilitada
                                     if (data.include_documents) {
                                         if (item.documents && item.documents.length > 0) {
-                                            html += `<td class="px-2 py-1 text-gray-900 dark:text-gray-100">
+                                            html += `<td class="px-2 py-1 text-gray-900">
                                                 <div class="flex flex-wrap gap-1">`;
                                             item.documents.forEach(doc => {
                                                 const extension = doc.filename.split('.').pop().toLowerCase();
@@ -468,14 +422,14 @@
                                                                 extension.match(/(jpg|jpeg|png|gif)/) ? 'fa-file-image text-blue-600' : 
                                                                 'fa-file text-gray-600';
                                                 html += `<a href="${doc.url}" target="_blank" title="${doc.filename}" 
-                                                    class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
+                                                   class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
                                                     <i class="fa ${iconClass} mr-1"></i>
                                                     ${doc.filename.length > 15 ? doc.filename.substring(0, 12) + '...' : doc.filename}
                                                 </a>`;
                                             });
                                             html += `</div></td>`;
                                         } else {
-                                            html += `<td class="px-2 py-1 text-gray-500 dark:text-gray-400 italic">Sin documentos</td>`;
+                                            html += `<td class="px-2 py-1 text-gray-500 italic">Sin documentos</td>`;
                                         }
                                     }
                                     

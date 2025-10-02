@@ -8,7 +8,7 @@
             <input type="text" 
                    wire:model="name" 
                    id="name"
-                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             @error('name') 
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
             @enderror
@@ -21,7 +21,7 @@
             </label>
             <select wire:model.live="type" 
                     id="type"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="treasury">Tesorería</option>
                 <option value="person">Personal</option>
             </select>
@@ -38,7 +38,7 @@
             </label>
             <select wire:model="person_id" 
                     id="person_id"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="">Seleccionar persona</option>
                 @foreach($people as $person)
                     <option value="{{ $person->id }}">{{ $person->first_name }} {{ $person->last_name }}</option>
@@ -65,7 +65,7 @@
                        step="1"
                        min="0"
                        placeholder="0"
-                       class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md">
+                      class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md">
                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                     <span class="text-gray-500 sm:text-sm">CLP</span>
                 </div>
@@ -83,7 +83,7 @@
             <textarea wire:model="notes" 
                       id="notes"
                       rows="3"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                     class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
             @error('notes') 
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p> 
             @enderror
@@ -94,7 +94,7 @@
             <label class="flex items-center">
                 <input type="checkbox" 
                        wire:model="is_enabled" 
-                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
+                      class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
                 <span class="ml-2 text-sm text-gray-700">Cuenta Habilitada</span>
             </label>
         </div>
@@ -102,7 +102,7 @@
         <!-- Submit Button -->
         <div class="flex justify-end">
             <button type="submit" 
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                 @if($accountId)
                     Actualizar Cuenta
                 @else
