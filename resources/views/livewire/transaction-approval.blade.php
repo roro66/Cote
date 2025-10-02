@@ -21,7 +21,7 @@
             <div class="mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <input type="text" wire:model.live="search" placeholder="Buscar transacciones..." 
-                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
                 <div>
                     <select wire:model.live="statusFilter" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -109,12 +109,12 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <button wire:click="showDetails({{ $transaction->id }})" 
-                                            class="text-indigo-600 hover:text-indigo-900 mr-2">
+                                           class="text-indigo-600 hover:text-indigo-900 mr-2">
                                         Ver Detalles
                                     </button>
                                     @if($transaction->status === 'pending')
                                         <button wire:click="approve({{ $transaction->id }})" 
-                                                class="text-green-600 hover:text-green-900 mr-2">
+                                               class="text-green-600 hover:text-green-900 mr-2">
                                             Aprobar
                                         </button>
                                     @endif
@@ -206,17 +206,17 @@
                                 <div class="flex-1 mr-4">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Motivo de rechazo (opcional)</label>
                                     <textarea wire:model="rejectionReason" rows="3" 
-                                              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                               placeholder="Escriba el motivo del rechazo..."></textarea>
                                     @error('rejectionReason') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="flex flex-col space-y-2">
                                     <button wire:click="approve({{ $selectedTransaction->id }})" 
-                                            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                                           class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                                         Aprobar
                                     </button>
                                     <button wire:click="reject({{ $selectedTransaction->id }})" 
-                                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                                           class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
                                         Rechazar
                                     </button>
                                 </div>

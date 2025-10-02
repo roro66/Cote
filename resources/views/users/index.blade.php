@@ -5,7 +5,7 @@
         @media (max-width: 640px) { .users-page-wrapper { margin-top: 20px; } }
     </style>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Gestión de Usuarios') }}
         </h2>
     </x-slot>
@@ -18,8 +18,8 @@
             @if(session('error'))
                 <div class="mb-4 p-3 rounded bg-red-100 text-red-800">{{ session('error') }}</div>
             @endif
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="h4">Usuarios Registrados</h3>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">

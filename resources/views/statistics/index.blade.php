@@ -1,23 +1,23 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Estadísticas
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mb-6">
+            <div class="bg-white overflow-hidden shadow sm:rounded-lg mb-6">
                 <div class="p-6">
                     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-4">
                         <div class="flex-1">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto mensual por persona</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Últimos 12 meses</p>
+                            <h3 class="text-lg font-medium text-gray-900">Gasto mensual por persona</h3>
+                            <p class="text-sm text-gray-500 ">Últimos 12 meses</p>
                         </div>
                         <div class="flex items-end gap-2">
                             <div>
-                                <label for="personSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
-                                <select id="personSelect" class="form-select form-select-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600">
+                                <label for="personSelect" class="block text-sm font-medium text-gray-700 ">Persona</label>
+                                <select id="personSelect" class="form-select form-select-sm bg-white  text-gray-900  border-gray-300 ">
                                     @foreach($people as $p)
                                         <option value="{{ $p->id }}" @selected($p->id === $selectedPersonId)>
                                             {{ trim($p->first_name.' '.$p->last_name) }}
@@ -43,24 +43,24 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+            <div class="bg-white  overflow-hidden shadow sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-2">
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto por categoría</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Últimos <span id="categoryDaysSpan">{{ $categoryDays }}</span> días</p>
+                            <h3 class="text-lg font-medium text-gray-900 ">Gasto por categoría</h3>
+                            <p class="text-sm text-gray-500 ">Últimos <span id="categoryDaysSpan">{{ $categoryDays }}</span> días</p>
                         </div>
                         <div class="flex items-end gap-2">
                             <div>
-                                <label for="categoryDaysInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Días</label>
-                                <input id="categoryDaysInput" type="number" min="7" max="3650" step="1" value="{{ $categoryDays }}" class="form-control form-control-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-600" />
+                                <label for="categoryDaysInput" class="block text-sm font-medium text-gray-700 ">Días</label>
+                                <input id="categoryDaysInput" type="number" min="7" max="3650" step="1" value="{{ $categoryDays }}" class="form-control form-control-sm bg-white  text-gray-900  border-gray-300 " />
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-transparent"> </label>
                                 <button type="button" id="applyCategoryDaysBtn" class="btn btn-sm btn-primary">Aplicar</button>
                             </div>
                             <div>
-                                <label for="categoryShowAll" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mostrar todas</label>
+                                <label for="categoryShowAll" class="block text-sm font-medium text-gray-700 ">Mostrar todas</label>
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="categoryShowAll" />
                                 </div>
@@ -71,7 +71,7 @@
                         <div class="lg:col-span-2">
                             <canvas id="categoryBarChart" height="160"></canvas>
                         </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-300">
+                        <div class="text-sm text-gray-600 ">
                             <p class="mb-2">Incluye rendiciones aprobadas en el período seleccionado.</p>
                             <ul class="list-disc ms-5">
                                 <li>Máx. 10 categorías más altas.</li>
@@ -82,20 +82,20 @@
                 </div>
             </div>
             
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+            <div class="bg-white  overflow-hidden shadow sm:rounded-lg mt-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gasto por categoría - últimos N meses</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Selecciona cuántos meses mostrar</p>
+                            <h3 class="text-lg font-medium text-gray-900 ">Gasto por categoría - últimos N meses</h3>
+                            <p class="text-sm text-gray-500 ">Selecciona cuántos meses mostrar</p>
                         </div>
                         <div class="flex items-end gap-2">
                             <div>
-                                <label for="categoriesMonthsInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Meses</label>
+                                <label for="categoriesMonthsInput" class="block text-sm font-medium text-gray-700 ">Meses</label>
                                 <input id="categoriesMonthsInput" data-months-input data-target="categoriesMonthly" type="number" min="1" max="60" step="1" value="6" class="form-control form-control-sm" />
                             </div>
                             <div>
-                                <label for="categoriesPersonSelect" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
+                                <label for="categoriesPersonSelect" class="block text-sm font-medium text-gray-700 ">Persona</label>
                                 <select id="categoriesPersonSelect" class="form-select form-select-sm">
                                     <option value="">Todas</option>
                                     @foreach($people as $p)
@@ -109,16 +109,16 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+            <div class="bg-white  overflow-hidden shadow sm:rounded-lg mt-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gastos por categoría de una persona</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Selecciona persona para ver su distribución por categorías</p>
+                            <h3 class="text-lg font-medium text-gray-900 ">Gastos por categoría de una persona</h3>
+                            <p class="text-sm text-gray-500 ">Selecciona persona para ver su distribución por categorías</p>
                         </div>
                         <div class="flex items-end gap-2">
                             <div>
-                                <label for="personSelectForCategories" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Persona</label>
+                                <label for="personSelectForCategories" class="block text-sm font-medium text-gray-700 ">Persona</label>
                                 <select id="personSelectForCategories" class="form-select form-select-sm">
                                     @foreach($people as $p)
                                         <option value="{{ $p->id }}">{{ trim($p->first_name.' '.$p->last_name) }}</option>
@@ -131,16 +131,16 @@
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg mt-6">
+            <div class="bg-white  overflow-hidden shadow sm:rounded-lg mt-6">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-3">
                         <div>
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Gastos por técnico - últimos N meses</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Comparativa por técnico (top 8)</p>
+                            <h3 class="text-lg font-medium text-gray-900 ">Gastos por técnico - últimos N meses</h3>
+                            <p class="text-sm text-gray-500 ">Comparativa por técnico (top 8)</p>
                         </div>
                         <div class="flex items-end gap-2">
                             <div>
-                                <label for="techniciansMonthsInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Meses</label>
+                                <label for="techniciansMonthsInput" class="block text-sm font-medium text-gray-700 ">Meses</label>
                                 <input id="techniciansMonthsInput" data-months-input data-target="techniciansMonthly" type="number" min="1" max="24" step="1" value="6" class="form-control form-control-sm" />
                             </div>
                             <div>

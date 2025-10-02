@@ -7,12 +7,12 @@
             <div class="flex gap-2">
                 @if ($transaction->status === 'pending')
                     <a href="{{ route('transactions.edit', $transaction) }}"
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                         <i class="fas fa-edit mr-1"></i> Editar
                     </a>
                 @endif
                 <a href="{{ route('transactions.index') }}"
-                    class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                   class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <i class="fas fa-arrow-left mr-1"></i> Volver
                 </a>
             </div>
@@ -47,7 +47,7 @@
                                     ];
                                 @endphp
                                 <span
-                                    class="px-3 py-1 rounded-full text-sm font-medium border {{ $statusColors[$transaction->status] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
+                                   class="px-3 py-1 rounded-full text-sm font-medium border {{ $statusColors[$transaction->status] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
                                     {{ $statusText[$transaction->status] ?? 'Desconocido' }}
                                 </span>
                             </div>

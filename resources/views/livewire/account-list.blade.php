@@ -5,7 +5,7 @@
             <input type="text" 
                    wire:model.live.debounce.300ms="search" 
                    placeholder="Buscar cuentas..."
-                   class="block w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                  class="block w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
             
             <select wire:model.live="perPage" class="block px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="10">10 por página</option>
@@ -119,12 +119,12 @@
                             @if($account->is_enabled)
                                 <button wire:click="deleteAccount({{ $account->id }})" 
                                         onclick="return confirm('¿Está seguro de deshabilitar esta cuenta?')"
-                                        class="text-red-600 hover:text-red-900">
+                                       class="text-red-600 hover:text-red-900">
                                     Deshabilitar
                                 </button>
                             @else
                                 <button wire:click="enableAccount({{ $account->id }})" 
-                                        class="text-green-600 hover:text-green-900">
+                                       class="text-green-600 hover:text-green-900">
                                     Habilitar
                                 </button>
                             @endif

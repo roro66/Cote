@@ -155,11 +155,11 @@
                                 @if($transaction->status === 'pending')
                                     <div class="mt-1 flex space-x-1">
                                         <button wire:click="approveTransaction({{ $transaction->id }})" 
-                                                class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">
+                                               class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">
                                             Aprobar
                                         </button>
                                         <button wire:click="rejectTransaction({{ $transaction->id }})" 
-                                                class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
+                                               class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded">
                                             Rechazar
                                         </button>
                                     </div>
