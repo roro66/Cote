@@ -97,6 +97,14 @@ php artisan serve
 
 Contraseña por defecto: `password123` (cambiar en producción).
 
+## Donaciones
+
+Se aceptan donaciones de cualquier monto para apoyar el desarrollo y mantenimiento de COTE. Gracias desde ya por tu aporte.
+
+[![Donar con PayPal](https://www.paypalobjects.com/es_ES/ES/i/btn/btn_donate_SM.gif)](https://www.paypal.com/donate/?hosted_button_id=4WY2DYMZL2HBW)
+
+**[Donar con PayPal](https://www.paypal.com/donate/?hosted_button_id=4WY2DYMZL2HBW)**
+
 ## Licencia
 
 Este proyecto está bajo la [licencia MIT](https://opensource.org/licenses/MIT).
