@@ -1,6 +1,3 @@
 import './bootstrap';
 
-// Inicializar Alpine.js para menús desplegables (Jetstream/Blade components)
-import Alpine from 'alpinejs'
-window.Alpine = Alpine
-Alpine.start()
+// Alpine lo inicia Livewire; no iniciar aquí para evitar "Detected multiple instances of Alpine"
