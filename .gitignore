@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Backups y dumps (no versionar)
+*.sql
+*.dump
+.env.old*
+
+# Documentación interna (no subir al repo)
+/docs
