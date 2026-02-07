@@ -237,7 +237,7 @@
                             text: '<i class="fas fa-file-pdf"></i> PDF',
                             className: 'btn btn-secondary btn-sm',
                             filename: 'cuentas_' + new Date().toISOString().split('T')[0],
-                            title: 'Lista de Cuentas - COTESO',
+                            title: 'Lista de Cuentas - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }
@@ -246,7 +246,7 @@
                             extend: 'print',
                             text: '<i class="fas fa-print"></i> Imprimir',
                             className: 'btn btn-secondary btn-sm',
-                            title: 'Lista de Cuentas - COTESO',
+                            title: 'Lista de Cuentas - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }

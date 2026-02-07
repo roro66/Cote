@@ -64,7 +64,7 @@ class ResetKeepUsersAndSeed20PeopleSeeder extends Seeder
                 'first_name' => $first,
                 'last_name' => $last,
                 'rut' => $this->formatRut($rutBase),
-                'email' => sprintf('persona%02d@coteso.test', $i),
+                'email' => sprintf('persona%02d@cote.test', $i),
                 'phone' => $faker->optional(0.7)->phoneNumber(),
                 'bank_id' => !empty($bankIds) ? $faker->randomElement($bankIds) : null,
                 'account_type_id' => !empty($acctTypeIds) ? $faker->randomElement($acctTypeIds) : null,

@@ -13,7 +13,7 @@ class MinimalTransactionsSeeder extends Seeder
     public function run(): void
     {
         DB::disableQueryLog();
-        $admin = User::where('email', 'admin@coteso.com')->first() ?? User::first();
+        $admin = User::where('email', 'admin@cote.com')->first() ?? User::first();
 
         // Crear/asegurar cuenta de Tesorería
         $treasury = Account::firstOrCreate([

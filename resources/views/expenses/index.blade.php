@@ -126,7 +126,7 @@
                     text: '<i class="fas fa-file-pdf"></i> PDF',
                     className: 'btn btn-secondary btn-sm',
                     filename: 'gastos_' + new Date().toISOString().split('T')[0],
-                    title: 'Lista de Gastos - COTESO',
+                    title: 'Lista de Gastos - COTE',
                     orientation: 'landscape',
                     exportOptions: {
                         columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
@@ -136,7 +136,7 @@
                     extend: 'print',
                     text: '<i class="fas fa-print"></i> Imprimir',
                     className: 'btn btn-secondary btn-sm',
-                    title: 'Lista de Gastos - COTESO',
+                    title: 'Lista de Gastos - COTE',
                     exportOptions: {
                         columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                     }

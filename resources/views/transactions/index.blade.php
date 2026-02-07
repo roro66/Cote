@@ -191,7 +191,7 @@
                             text: '<i class="fas fa-file-pdf"></i> PDF',
                             className: 'btn btn-secondary btn-sm',
                             filename: 'transacciones_' + new Date().toISOString().split('T')[0],
-                            title: 'Lista de Transacciones - COTESO',
+                            title: 'Lista de Transacciones - COTE',
                             orientation: 'landscape',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
@@ -201,7 +201,7 @@
                             extend: 'print',
                             text: '<i class="fas fa-print"></i> Imprimir',
                             className: 'btn btn-secondary btn-sm',
-                            title: 'Lista de Transacciones - COTESO',
+                            title: 'Lista de Transacciones - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }

@@ -23,14 +23,14 @@ class TransactionForm extends Component
     public $adjustment_direction = 'credit'; // 'credit' agrega saldo al destino; 'debit' descuenta del origen
     
     /**
-     * ¿Es jefe (boss) el usuario? Considera también el correo admin@coteso.com
+     * ¿Es jefe (boss) el usuario? Considera también el correo admin@cote.com
      */
     protected function isBossUser(): bool
     {
         $user = Auth::user();
         if (!$user) return false;
         $byRole = method_exists($user, 'isBoss') ? $user->isBoss() : $user->hasRole('boss');
-        $byEmail = strtolower((string) $user->email) === 'admin@coteso.com';
+        $byEmail = strtolower((string) $user->email) === 'admin@cote.com';
         return $byRole || $byEmail;
     }
 

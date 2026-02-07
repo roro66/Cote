@@ -18,11 +18,11 @@ class TreasurySeeder extends Seeder
         Role::firstOrCreate(['name' => 'treasurer']);
 
         // Ensure there's a user for treasurer
-        $user = User::where('email', 'treasurer@coteso.local')->first();
+        $user = User::where('email', 'treasurer@cote.local')->first();
         if (!$user) {
             $user = User::create([
                 'name' => 'Tesorero Sistema',
-                'email' => 'treasurer@coteso.local',
+                'email' => 'treasurer@cote.local',
                 'password' => Hash::make('secret123'),
             ]);
             $user->assignRole('treasurer');
@@ -35,7 +35,7 @@ class TreasurySeeder extends Seeder
                 'first_name' => 'Tesorero',
                 'last_name' => 'Sistema',
                 'rut' => uniqid('RUT'),
-                'email' => 'treasurer.person@coteso.local',
+                'email' => 'treasurer.person@cote.local',
                 'is_enabled' => true,
                 'is_protected' => true,
                 'role_type' => 'tesorero'

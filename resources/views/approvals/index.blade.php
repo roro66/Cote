@@ -271,7 +271,7 @@
                             text: '<i class="fas fa-file-pdf"></i> PDF',
                             className: 'btn btn-secondary btn-sm',
                             filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
-                            title: 'Transferencias Pendientes - COTESO',
+                            title: 'Transferencias Pendientes - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }
@@ -280,7 +280,7 @@
                             extend: 'print',
                             text: '<i class="fas fa-print"></i> Imprimir',
                             className: 'btn btn-secondary btn-sm',
-                            title: 'Transferencias Pendientes - COTESO',
+                            title: 'Transferencias Pendientes - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }
@@ -414,7 +414,7 @@
                             text: '<i class="fas fa-file-pdf"></i> PDF',
                             className: 'btn btn-secondary btn-sm',
                             filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
-                            title: 'Rendiciones Pendientes - COTESO',
+                            title: 'Rendiciones Pendientes - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }
@@ -423,7 +423,7 @@
                             extend: 'print',
                             text: '<i class="fas fa-print"></i> Imprimir',
                             className: 'btn btn-secondary btn-sm',
-                            title: 'Rendiciones Pendientes - COTESO',
+                            title: 'Rendiciones Pendientes - COTE',
                             exportOptions: {
                                 columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
                             }

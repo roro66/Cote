@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Person;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AccountController extends Controller
 {
@@ -29,22 +30,28 @@ class AccountController extends Controller
         $total_balance_all = \App\Models\Account::sum('balance');
 
                 // Sum of treasury + fondeo accounts (special pool).
-                // Some existing rows may not have `is_fondeo=true` set, so also treat any
-                // account whose name mentions 'fondeo' (case-insensitive) as fondeo.
-                $total_balance_special = \App\Models\Account::where(function ($q) {
-                        $q->where('type', 'treasury')
-                            ->orWhere('is_fondeo', true)
-                            ->orWhereRaw("name ILIKE ?", ['%fondeo%']);
-                })->sum('balance');
+        // Some existing rows may not have `is_fondeo=true` set, so also treat any
+        // account whose name mentions 'fondeo' (case-insensitive) as fondeo.
+        $nameLikeFondeo = DB::getDriverName() === 'pgsql'
+            ? "name ILIKE ?"
+            : "LOWER(name) LIKE LOWER(?)";
+        $total_balance_special = \App\Models\Account::where(function ($q) use ($nameLikeFondeo) {
+            $q->where('type', 'treasury')
+                ->orWhere('is_fondeo', true)
+                ->orWhereRaw($nameLikeFondeo, ['%fondeo%']);
+        })->sum('balance');
 
         // Sum excluding treasury and fondeo (money in possession of people).
         // Exclude accounts that are treasury OR that are explicitly marked as fondeo
         // or whose name contains 'fondeo'. Treat NULL is_fondeo as false.
+        $nameNotLikeFondeo = DB::getDriverName() === 'pgsql'
+            ? "name NOT ILIKE ?"
+            : "LOWER(name) NOT LIKE LOWER(?)";
         $total_balance = \App\Models\Account::where('type', '<>', 'treasury')
-            ->where(function ($q) {
+            ->where(function ($q) use ($nameNotLikeFondeo) {
                 $q->where(function ($q2) {
                     $q2->where('is_fondeo', false)->orWhereNull('is_fondeo');
-                })->whereRaw("name NOT ILIKE ?", ['%fondeo%']);
+                })->whereRaw($nameNotLikeFondeo, ['%fondeo%']);
             })
             ->sum('balance');
 

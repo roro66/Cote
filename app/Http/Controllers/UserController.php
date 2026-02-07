@@ -105,8 +105,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Nadie puede borrar al usuario administrador (admin@coteso.com)
-        if (strtolower($user->email) === 'admin@coteso.com') {
+        // Nadie puede borrar al usuario administrador (admin@cote.com)
+        if (strtolower($user->email) === 'admin@cote.com') {
             if (request()->ajax()) {
                 return response()->json(['success' => false, 'message' => 'No se puede eliminar al usuario Administrador.'], 400);
             }

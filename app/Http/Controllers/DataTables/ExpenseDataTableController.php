@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DataTables;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\DatabaseHelper;
 use App\Models\Expense;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -72,18 +73,18 @@ class ExpenseDataTableController extends Controller
                     return $row->submitted_at ? $row->submitted_at->format('d/m/Y H:i') : '-';
                 })
                 ->orderColumn('submitted_at_formatted', 'expenses.submitted_at $1')
-                // Global case-insensitive search (Postgres ILIKE) for expenses
+                // Global case-insensitive search
                 ->filter(function ($query) use ($request) {
                     if ($request->has('search') && !empty($request->search['value'])) {
                         $s = $request->search['value'];
                         $query->where(function ($q) use ($s) {
-                            $q->whereRaw("expenses.description ILIKE ?", ["%{$s}%"]) 
-                              ->orWhereRaw("expenses.expense_number ILIKE ?", ["%{$s}%"]) 
+                            $q->whereRaw(DatabaseHelper::likeExpression('expenses.description'), ["%{$s}%"])
+                              ->orWhereRaw(DatabaseHelper::likeExpression('expenses.expense_number'), ["%{$s}%"])
                               ->orWhereHas('submitter', function ($sq) use ($s) {
-                                  $sq->whereRaw("CONCAT(first_name,' ',last_name) ILIKE ?", ["%{$s}%"]);
+                                  $sq->whereRaw(DatabaseHelper::likeExpression("CONCAT(first_name,' ',last_name)"), ["%{$s}%"]);
                               })
                               ->orWhereHas('account', function ($aq) use ($s) {
-                                  $aq->whereRaw("accounts.name ILIKE ?", ["%{$s}%"]);
+                                  $aq->whereRaw(DatabaseHelper::likeExpression('accounts.name'), ["%{$s}%"]);
                               });
                         });
                     }

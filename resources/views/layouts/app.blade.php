@@ -42,45 +42,86 @@
         <!-- Toastr CSS -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
         
-        <!-- Custom Styles for Fixed Header -->
+        <!-- Sidebar lateral estilo AdminLTE -->
         <style>
-            .fixed-header-nav {
+            :root {
+                --sidebar-width: 250px;
+                --sidebar-collapsed-width: 64px;
+                --sidebar-bg: #343a40;
+                --sidebar-nav-hover: rgba(255,255,255,0.08);
+                --sidebar-nav-active: rgba(255,255,255,0.15);
+            }
+            body { overflow-x: hidden; }
+            .sidebar {
                 position: fixed;
                 top: 0;
                 left: 0;
-                right: 0;
-                z-index: 1030;
+                z-index: 1035;
+                width: var(--sidebar-width);
+                height: 100vh;
+                background: var(--sidebar-bg);
+                transition: width 0.2s ease, transform 0.2s ease;
+                display: flex;
+                flex-direction: column;
+                overflow-x: hidden;
             }
-            
-            .fixed-header-content {
+            .sidebar-collapsed { width: var(--sidebar-collapsed-width) !important; }
+            .sidebar-brand { min-height: 56px; flex-shrink: 0; }
+            .sidebar-brand-link { min-width: 0; }
+            .sidebar-brand-text { font-weight: 700; font-size: 1.1rem; }
+            .sidebar-nav { flex: 1; overflow-y: auto; overflow-x: hidden; }
+            .sidebar-nav .nav-link {
+                display: flex;
+                align-items: center;
+                padding: 0.6rem 1rem;
+                color: rgba(255,255,255,0.8);
+                text-decoration: none;
+                border-left: 3px solid transparent;
+                transition: background 0.15s, color 0.15s;
+            }
+            .sidebar-nav .nav-link:hover { background: var(--sidebar-nav-hover); color: #fff; }
+            .sidebar-nav .nav-link.active { background: var(--sidebar-nav-active); color: #fff; border-left-color: #0d6efd; }
+            .sidebar-nav .nav-icon {
+                width: 1.5rem;
+                flex-shrink: 0;
+                text-align: center;
+                margin-right: 0.5rem;
+            }
+            .sidebar-collapsed .nav-icon { margin-right: 0; }
+            .sidebar-nav .nav-text { white-space: nowrap; overflow: hidden; }
+            .sidebar-divider { height: 1px; margin: 0.5rem 1rem; background: rgba(255,255,255,0.2); list-style: none; }
+            .sidebar-nav .nav-header { padding: 0.5rem 1rem; font-size: 0.7rem; text-transform: uppercase; color: rgba(255,255,255,0.5); list-style: none; }
+            .sidebar-footer { flex-shrink: 0; }
+            .main-wrapper {
+                margin-left: var(--sidebar-width);
+                min-height: 100vh;
+                transition: margin-left 0.2s ease;
+                display: flex;
+                flex-direction: column;
+            }
+            body.sidebar-collapsed .main-wrapper { margin-left: var(--sidebar-collapsed-width); }
+            .navbar-top { min-height: 52px; z-index: 1030; }
+            .navbar-page-title { font-size: 1.1rem; font-weight: 500; }
+            .main-content { flex: 1; padding: 1rem 1.5rem; }
+            .sidebar-overlay {
+                display: none;
                 position: fixed;
-                top: 64px; /* altura del nav */
-                z-index: 1020;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1034;
             }
-
-            .main-content {
-                margin-top: 128px; /* nav (64px) + header (64px) */
+            @media (max-width: 767.98px) {
+                .sidebar { transform: translateX(-100%); }
+                .sidebar.sidebar-mobile-open { transform: translateX(0); }
+                .sidebar-overlay.sidebar-overlay-show { display: block; }
+                .main-wrapper { margin-left: 0 !important; }
+                body.sidebar-collapsed .main-wrapper { margin-left: 0 !important; }
             }
-
-            /* Para móviles */
-            @media (max-width: 640px) {
-                .main-content {
-                    margin-top: 140px; /* Un poco más de espacio en móviles */
-                }
-            }
-            
-            /* Espaciado para DataTables */
-            .dataTables_wrapper .row:first-child {
-                margin-bottom: 1rem !important;
-            }
-            
-            .dt-buttons {
-                margin-bottom: 0.5rem;
-            }
-            
-            .dt-length {
-                margin-bottom: 0.5rem;
-            }
+            [x-cloak] { display: none !important; }
+            .hover-bg-light:hover { background: rgba(0,0,0,0.05); }
+            .dataTables_wrapper .row:first-child { margin-bottom: 1rem !important; }
+            .dt-buttons { margin-bottom: 0.5rem; }
+            .dt-length { margin-bottom: 0.5rem; }
         </style>
 
         <!-- Scripts -->
@@ -89,25 +130,39 @@
         <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            <div class="fixed-header-nav">
-                @include('layouts.navigation')
-            </div>
+        <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
+        @include('layouts.sidebar')
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="fixed-header-content bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+        <div class="main-wrapper bg-light">
+            @include('layouts.navbar-top')
 
-            <!-- Page Content -->
             <main class="main-content">
                 {{ $slot }}
             </main>
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var overlay = document.getElementById('sidebar-overlay');
+                var sidebar = document.getElementById('sidebar');
+                var mobileToggle = document.getElementById('sidebar-mobile-toggle');
+                if (overlay && sidebar) {
+                    overlay.addEventListener('click', function() {
+                        sidebar.classList.remove('sidebar-mobile-open');
+                        overlay.classList.remove('sidebar-overlay-show');
+                    });
+                }
+                if (mobileToggle && sidebar) {
+                    mobileToggle.addEventListener('click', function() {
+                        sidebar.classList.toggle('sidebar-mobile-open');
+                        document.getElementById('sidebar-overlay').classList.toggle('sidebar-overlay-show');
+                    });
+                }
+                if (sidebar && localStorage.getItem('sidebar-open') === 'false') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            });
+        </script>
         
         <!-- jQuery PRIMERO -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

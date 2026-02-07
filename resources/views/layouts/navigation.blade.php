@@ -83,7 +83,7 @@
                     </x-slot>
 
                     <x-slot name="content">
-                        @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@coteso.com'))
+                        @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@cote.com'))
                             <x-dropdown-link :href="route('users.index')">
                                 {{ __('Administrar usuarios') }}
                             </x-dropdown-link>
@@ -162,7 +162,7 @@
             </div>
 
             <div class="mt-3 space-y-1">
-                @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@coteso.com'))
+                @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@cote.com'))
                     <x-responsive-nav-link :href="route('users.index')">
                         {{ __('Administrar usuarios') }}
                     </x-responsive-nav-link>

@@ -9,7 +9,7 @@ class FundingAccountSeeder extends Seeder
 {
     public function run(): void
     {
-        $fondeoName = config('coteso.fondeo_account_name');
+        $fondeoName = config('cote.fondeo_account_name');
         Account::firstOrCreate(
             [
                 'type' => 'person',
