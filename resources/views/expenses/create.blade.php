@@ -276,7 +276,7 @@
         }
 
             function populateCategorySelect(selectEl) {
-                const cats = window.COTESO_CATEGORIES || [];
+                const cats = window.COTE_CATEGORIES || [];
                 selectEl.innerHTML = '<option value="">-- Sin categorizar --</option>';
                 cats.forEach(c => {
                     const opt = document.createElement('option');
@@ -352,7 +352,7 @@
             addExpenseItem();
 
             // Load categories and store locally
-            window.COTESO_CATEGORIES = [];
+            window.COTE_CATEGORIES = [];
             fetch('/datatables/expense-categories', {
                 credentials: 'same-origin',
                 headers: {
@@ -375,7 +375,7 @@
                 })
                 .then(data => {
                     if (Array.isArray(data.data) && data.data.length > 0) {
-                        window.COTESO_CATEGORIES = data.data;
+                        window.COTE_CATEGORIES = data.data;
                         // populate existing selects
                         document.querySelectorAll('.item-category-select').forEach(sel => {
                             populateCategorySelect(sel);

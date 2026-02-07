@@ -217,7 +217,7 @@
         @endforeach
         
         // Load categories and populate selects
-        window.COTESO_CATEGORIES = [];
+        window.COTE_CATEGORIES = [];
             fetch('/datatables/expense-categories', {
                 credentials: 'same-origin',
                 headers: {
@@ -239,14 +239,14 @@
                 })
             .then(data => {
                 if (Array.isArray(data.data) && data.data.length > 0) {
-                    window.COTESO_CATEGORIES = data.data;
+                    window.COTE_CATEGORIES = data.data;
                     // populate each select and set selected when applicable
                     document.querySelectorAll('.expense-item').forEach((itemEl, idx) => {
                         const sel = itemEl.querySelector('.item-category-select');
                         if (sel) {
                             // populate
                             sel.innerHTML = '<option value="">-- Sin categorizar --</option>';
-                            window.COTESO_CATEGORIES.forEach(c => {
+                            window.COTE_CATEGORIES.forEach(c => {
                                 const opt = document.createElement('option');
                                 opt.value = c.id;
                                 opt.textContent = c.name;

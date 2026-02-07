@@ -758,7 +758,7 @@
                             buttons: [{
                                 extend: type,
                                 filename: 'personas_' + new Date().toISOString().split('T')[0],
-                                title: 'Lista de Personas - COTESO'
+                                title: 'Lista de Personas - COTE'
                             }]
                         });
 

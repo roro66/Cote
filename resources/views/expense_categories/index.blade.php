@@ -88,7 +88,7 @@
                     {data: 'description', name: 'description'},
                     {data: 'action', name: 'action', orderable: false, searchable: false}
                 ],
-                language: window.COTESO_DATATABLE_LANG || {},
+                language: window.COTE_DATATABLE_LANG || {},
                 dom: '<"row mb-3"<"col-sm-4"B><"col-sm-4"f><"col-sm-4"l>>rtip',
                 lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'Todos']],
                 pageLength: 10

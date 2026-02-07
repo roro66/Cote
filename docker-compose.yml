@@ -21,16 +21,11 @@ services:
             - '.:/var/www/html'
         networks:
             - sail
-            - postgres_net   # 👈 agregado para ver PostgreSQL
         depends_on:
             - redis
             - meilisearch
             - mailpit
             - selenium
-
-    # --- QUITAR LOS SERVICIOS pgsql y pgadmin ---
-    # pgsql:
-    # pgadmin:
 
     redis:
         image: 'redis:alpine'
@@ -76,8 +71,6 @@ services:
 networks:
     sail:
         driver: bridge
-    postgres_net:               # 👈 debe coincidir con el que definiste en postgres-stack
-        external: true          # 👈 importantísimo
 
 volumes:
     sail-redis:

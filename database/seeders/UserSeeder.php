@@ -15,10 +15,10 @@ class UserSeeder extends Seeder
     {
         // Crear usuario administrador de prueba
         User::firstOrCreate([
-            'email' => 'admin@coteso.com'
+            'email' => 'admin@cote.com'
         ], [
             'name' => 'Administrador',
-            'email' => 'admin@coteso.com',
+            'email' => 'admin@cote.com',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
             'is_enabled' => true,
@@ -26,17 +26,17 @@ class UserSeeder extends Seeder
 
         // Crear usuario tesorero de prueba
         User::firstOrCreate([
-            'email' => 'tesorero@coteso.com'
+            'email' => 'tesorero@cote.com'
         ], [
             'name' => 'Tesorero Principal',
-            'email' => 'tesorero@coteso.com',
+            'email' => 'tesorero@cote.com',
             'password' => Hash::make('password123'),
             'email_verified_at' => now(),
             'is_enabled' => true,
         ]);
 
         $this->command->info('Usuarios de prueba creados exitosamente.');
-        $this->command->info('Email: admin@coteso.com | Password: password123');
-        $this->command->info('Email: tesorero@coteso.com | Password: password123');
+        $this->command->info('Email: admin@cote.com | Password: password123');
+        $this->command->info('Email: tesorero@cote.com | Password: password123');
     }
 }

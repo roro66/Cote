@@ -12,7 +12,7 @@
     <div class="py-8 users-page-wrapper">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white shadow-sm sm:rounded-lg p-6 space-y-4">
-                @if(strtolower($user->email) === 'admin@coteso.com')
+                @if(strtolower($user->email) === 'admin@cote.com')
                     <div class="p-3 rounded bg-blue-50 text-blue-800 mb-2">Este usuario es el Administrador y no puede ser eliminado.</div>
                 @endif
                 <form id="userEditForm" method="POST" action="{{ route('users.update', $user) }}" class="space-y-4">

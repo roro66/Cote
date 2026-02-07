@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\DatabaseHelper;
 use App\Models\ExpenseItem;
 use App\Models\Person;
 use Illuminate\Http\Request;
@@ -111,16 +112,17 @@ class StatisticsController extends Controller
      */
     protected function monthlyTotalsForPerson(int $personId, $start, $end, $months): array
     {
+        $monthExpr = DatabaseHelper::monthTruncExpression('expense_items.expense_date');
         $raw = ExpenseItem::query()
             ->select([
-                DB::raw("date_trunc('month', expense_items.expense_date) as month"),
+                DB::raw("{$monthExpr} as month"),
                 DB::raw('SUM(expense_items.amount) as total')
             ])
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
             ->where('expenses.status', 'approved')
             ->where('expenses.submitted_by', $personId)
             ->whereBetween('expense_items.expense_date', [$start, $end])
-            ->groupBy('month')
+            ->groupBy(DB::raw($monthExpr))
             ->get();
 
         return collect($months)->map(function ($m) use ($raw) {
@@ -175,9 +177,10 @@ class StatisticsController extends Controller
 
         $personId = $request->query('person_id', null);
 
+        $monthExpr = DatabaseHelper::monthTruncExpression('expense_items.expense_date');
         $raw = ExpenseItem::query()
             ->select([
-                DB::raw("date_trunc('month', expense_items.expense_date) as month"),
+                DB::raw("{$monthExpr} as month"),
                 'expense_items.expense_category_id',
                 DB::raw('SUM(expense_items.amount) as total')
             ])
@@ -191,7 +194,7 @@ class StatisticsController extends Controller
                 }
             })
             ->whereNotNull('expense_items.expense_category_id')
-            ->groupBy('month', 'expense_items.expense_category_id')
+            ->groupBy(DB::raw($monthExpr), 'expense_items.expense_category_id')
             ->get();
 
         // Top categories by total across period
@@ -257,16 +260,17 @@ class StatisticsController extends Controller
         $start = $monthsColl->first()->copy();
         $end = now()->endOfMonth();
 
+        $monthExpr = DatabaseHelper::monthTruncExpression('expense_items.expense_date');
         $raw = ExpenseItem::query()
             ->select([
-                DB::raw("date_trunc('month', expense_items.expense_date) as month"),
+                DB::raw("{$monthExpr} as month"),
                 'expenses.submitted_by',
                 DB::raw('SUM(expense_items.amount) as total')
             ])
             ->join('expenses', 'expense_items.expense_id', '=', 'expenses.id')
             ->where('expenses.status', 'approved')
             ->whereBetween('expense_items.expense_date', [$start, $end])
-            ->groupBy('month', 'expenses.submitted_by')
+            ->groupBy(DB::raw($monthExpr), 'expenses.submitted_by')
             ->get();
 
         // Top technicians by total

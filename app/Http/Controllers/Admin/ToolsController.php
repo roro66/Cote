@@ -19,7 +19,7 @@ class ToolsController extends Controller
         $params = $dryRun ? ['--dry-run' => true] : [];
 
         // Capturar salida del comando
-        Artisan::call('coteso:normalize-legacy-transactions', $params);
+        Artisan::call('cote:normalize-legacy-transactions', $params);
         $output = Artisan::output();
 
         return redirect()->route('admin.tools')

@@ -19,7 +19,7 @@ class UserDataTableController extends Controller
                 return e($user->roles->pluck('name')->join(', '));
             })
             ->addColumn('actions', function (User $user) {
-                $disabled = (strtolower($user->email) === 'admin@coteso.com' || auth()->id() === $user->id) ? 'disabled' : '';
+                $disabled = (strtolower($user->email) === 'admin@cote.com' || auth()->id() === $user->id) ? 'disabled' : '';
                 $id = (int) $user->id;
                 return '<div class="btn-group btn-group-sm" role="group">
                             <button type="button" class="btn btn-primary" onclick="openEditUserModal('.$id.')">Editar</button>

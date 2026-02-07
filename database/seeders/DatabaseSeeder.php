@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
 
         // Crear/actualizar usuario admin por defecto y asignar rol 'boss'
         $admin = \App\Models\User::firstOrCreate(
-            ['email' => 'admin@coteso.com'],
+            ['email' => 'admin@cote.com'],
             [
                 'name' => 'Administrador',
                 'password' => \Illuminate\Support\Facades\Hash::make('password123'),
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
 
         // Crear/actualizar usuario tesorero por defecto y asignar rol 'treasurer'
         $treasurer = \App\Models\User::firstOrCreate(
-            ['email' => 'tesorero@coteso.com'],
+            ['email' => 'tesorero@cote.com'],
             [
                 'name' => 'Tesorero Principal',
                 'password' => \Illuminate\Support\Facades\Hash::make('password123'),

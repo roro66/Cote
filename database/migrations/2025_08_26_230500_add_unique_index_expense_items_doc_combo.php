@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -10,38 +12,45 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Create unique partial index only if not present and there are no duplicates already stored
-        DB::unprepared(<<<SQL
-        DO $$
-        BEGIN
-            IF NOT EXISTS (
-                SELECT 1 FROM pg_indexes WHERE indexname = 'expense_items_unique_doc_combo'
-            ) THEN
-                -- Check for existing duplicates (normalized)
+        if (DB::getDriverName() === 'pgsql') {
+            // Create unique partial index only if not present and there are no duplicates already stored
+            DB::unprepared(<<<SQL
+            DO $$
+            BEGIN
                 IF NOT EXISTS (
-                    SELECT 1 FROM (
-                        SELECT document_type,
-                               lower(trim(vendor_name)) AS vendor_norm,
-                               lower(trim(document_number)) AS number_norm,
-                               COUNT(*) AS c
-                        FROM expense_items
-                        WHERE document_number IS NOT NULL
-                        GROUP BY document_type, vendor_norm, number_norm
-                        HAVING COUNT(*) > 1
-                    ) dup
+                    SELECT 1 FROM pg_indexes WHERE indexname = 'expense_items_unique_doc_combo'
                 ) THEN
-                    CREATE UNIQUE INDEX expense_items_unique_doc_combo
-                    ON expense_items (
-                        document_type,
-                        lower(trim(vendor_name)),
-                        lower(trim(document_number))
-                    )
-                    WHERE document_number IS NOT NULL;
+                    -- Check for existing duplicates (normalized)
+                    IF NOT EXISTS (
+                        SELECT 1 FROM (
+                            SELECT document_type,
+                                   lower(trim(vendor_name)) AS vendor_norm,
+                                   lower(trim(document_number)) AS number_norm,
+                                   COUNT(*) AS c
+                            FROM expense_items
+                            WHERE document_number IS NOT NULL
+                            GROUP BY document_type, vendor_norm, number_norm
+                            HAVING COUNT(*) > 1
+                        ) dup
+                    ) THEN
+                        CREATE UNIQUE INDEX expense_items_unique_doc_combo
+                        ON expense_items (
+                            document_type,
+                            lower(trim(vendor_name)),
+                            lower(trim(document_number))
+                        )
+                        WHERE document_number IS NOT NULL;
+                    END IF;
                 END IF;
-            END IF;
-        END
-        $$;
-        SQL);
+            END
+            $$;
+            SQL);
+        } else {
+            // SQLite: índice único simple (sin expresión ni parcial)
+            Schema::table('expense_items', function (Blueprint $table) {
+                $table->unique(['document_type', 'vendor_name', 'document_number'], 'expense_items_unique_doc_combo');
+            });
+        }
     }
 
     /**

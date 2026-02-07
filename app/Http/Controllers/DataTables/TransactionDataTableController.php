@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\DataTables;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\DatabaseHelper;
 use App\Models\Transaction;
 use App\Models\Expense;
 use App\Models\Account;
@@ -224,17 +225,17 @@ class TransactionDataTableController extends Controller
                 })
                 ->orderColumn('amount_formatted', 'amount $1')
                 ->orderColumn('created_at_formatted', 'transactions.created_at $1')
-                // Case-insensitive global search (Postgres ILIKE) for common text fields
+                // Case-insensitive global search
                 ->filter(function ($query) use ($request) {
                     if ($request->has('search') && !empty($request->search['value'])) {
                         $s = $request->search['value'];
                         $query->where(function ($q) use ($s) {
-                            $q->whereRaw("transactions.transaction_number ILIKE ?", ["%{$s}%"])
-                              ->orWhereRaw("transactions.type ILIKE ?", ["%{$s}%"])
-                              ->orWhereRaw("to_acc.name ILIKE ?", ["%{$s}%"])
-                              ->orWhereRaw("from_acc.name ILIKE ?", ["%{$s}%"])
+                            $q->whereRaw(DatabaseHelper::likeExpression('transactions.transaction_number'), ["%{$s}%"])
+                              ->orWhereRaw(DatabaseHelper::likeExpression('transactions.type'), ["%{$s}%"])
+                              ->orWhereRaw(DatabaseHelper::likeExpression('to_acc.name'), ["%{$s}%"])
+                              ->orWhereRaw(DatabaseHelper::likeExpression('from_acc.name'), ["%{$s}%"])
                               ->orWhereHas('creator', function ($cq) use ($s) {
-                                  $cq->whereRaw("name ILIKE ?", ["%{$s}%"]);
+                                  $cq->whereRaw(DatabaseHelper::likeExpression('name'), ["%{$s}%"]);
                               });
                         });
                     }

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class NormalizeLegacyTransactions extends Command
 {
-    protected $signature = 'coteso:normalize-legacy-transactions {--dry-run : Muestra lo que haría sin aplicar cambios}';
+    protected $signature = 'cote:normalize-legacy-transactions {--dry-run : Muestra lo que haría sin aplicar cambios}';
 
     protected $description = 'Convierte transacciones legacy (payment/adjustment) a transfer, asegurando dirección Tesorería<->Persona';
 
