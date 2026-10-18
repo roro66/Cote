@@ -79,7 +79,7 @@
             </li>
             <li class="sidebar-divider"></li>
             <li class="nav-item">
-                <a href="#" onclick="openMonthlyExpenseReport(); return false;" class="nav-link">
+                <a href="{{ route('reports.index', ['openModal' => 'monthlyExpense']) }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                     <i class="fas fa-file-alt nav-icon"></i>
                     <span class="nav-text">Informes</span>
                 </a>

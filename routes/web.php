@@ -64,7 +64,6 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
 
     // Informes
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/reports/test-filters', [ReportsController::class, 'testFilters'])->name('reports.test-filters');
     Route::post('/reports/monthly-expenses', [ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
     Route::post('/reports/export-monthly-expenses', [ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
 

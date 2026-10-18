@@ -27,39 +27,6 @@ class ReportsController extends Controller
     }
 
     /**
-     * Endpoint de prueba para verificar filtros
-     */
-    public function testFilters()
-    {
-        $startDate = '2024-08-01';
-        $endDate = '2025-01-31';
-        
-        $approvedOnly = $this->reportService->generateMonthlyExpenseReport(
-            $startDate, $endDate, 'summary', 'approved_only', false
-        );
-        
-        $all = $this->reportService->generateMonthlyExpenseReport(
-            $startDate, $endDate, 'summary', 'all', false
-        );
-        
-        return response()->json([
-            'period' => "$startDate al $endDate",
-            'approved_only' => [
-                'total_expenses' => $approvedOnly['total_expenses'],
-                'total_amount' => $approvedOnly['total_amount']
-            ],
-            'all' => [
-                'total_expenses' => $all['total_expenses'],
-                'total_amount' => $all['total_amount']
-            ],
-            'difference' => [
-                'expenses' => $all['total_expenses'] - $approvedOnly['total_expenses'],
-                'amount' => $all['total_amount'] - $approvedOnly['total_amount']
-            ]
-        ]);
-    }
-
-    /**
      * Generar informe de gastos mensuales
      */
     public function monthlyExpenses(Request $request)

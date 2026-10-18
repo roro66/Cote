@@ -10,14 +10,14 @@
             <div class="bg-white  overflow-hidden shadow sm:rounded-lg">
                 <div class="p-6">
                     <h3 class="text-lg font-medium text-gray-900  mb-4">Informes Disponibles</h3>
-                    
-@section('content')
-<div class="container-fluid">
-    <!-- Contenedor para mostrar resultados -->
-    <div id="reportResults" class="mt-4"></div>
-</div>                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <button onclick="testFilters()" class="btn btn-outline-secondary btn-sm">
-                            <i class="fa fa-flask"></i> Probar Filtros
+
+                    <div class="d-flex align-items-center justify-content-between border rounded p-3">
+                        <div>
+                            <div class="fw-semibold text-gray-900">Gastos mensuales</div>
+                            <div class="text-sm text-gray-500">Rendiciones por categoría en un período, resumido o con detalle y documentos.</div>
+                        </div>
+                        <button type="button" onclick="openMonthlyExpenseReport()" class="btn btn-primary btn-sm">
+                            <i class="fa fa-chart-bar"></i> Generar
                         </button>
                     </div>
                 </div>
@@ -171,41 +171,25 @@
 
     @push('scripts')
     <script>
-        // Variables globales para guardar los parámetros del informe actual
         let currentReportParams = null;
 
-        // Función para formatear números según la notación chilena
-        function formatChileanNumber(number) {
-            // Convertir a número si es string
-            const num = typeof number === 'string' ? parseFloat(number) : number;
-            
-            // Validar que sea un número válido
-            if (isNaN(num)) return '0';
-            
-            // Redondear según reglas chilenas (sin centavos)
-            const rounded = Math.round(num);
-            
-            // Formatear con puntos como separadores de miles
-            return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        function esc(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
         }
 
-        // Inicializar fechas con el mes anterior
+        function formatChileanNumber(number) {
+            const num = typeof number === 'string' ? parseFloat(number) : number;
+            if (isNaN(num)) return '0';
+            return Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Si llegamos directamente desde el menú, abrir el modal automáticamente
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('openModal') === 'monthlyExpense') {
-                setTimeout(() => {
-                    openMonthlyExpenseReport();
-                }, 100);
-            }
             const now = new Date();
-            const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-            const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-            
-            document.getElementById('start_date').value = lastMonth.toISOString().split('T')[0];
-            document.getElementById('end_date').value = lastDayOfMonth.toISOString().split('T')[0];
-            
-            // Mostrar/ocultar opción de documentos según el tipo de informe
+            const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+            document.getElementById('start_date').value = firstOfLastMonth.toISOString().split('T')[0];
+            document.getElementById('end_date').value = lastOfLastMonth.toISOString().split('T')[0];
+
             function toggleDocumentsOption() {
                 const selectedType = document.querySelector('input[name="report_type"]:checked');
                 const container = document.getElementById('include_documents_container');
@@ -213,17 +197,17 @@
                     container.classList.remove('hidden');
                 } else {
                     container.classList.add('hidden');
-                    const checkbox = document.getElementById('include_documents');
-                    if (checkbox) checkbox.checked = false;
+                    document.getElementById('include_documents').checked = false;
                 }
             }
-            
             document.querySelectorAll('input[name="report_type"]').forEach(radio => {
                 radio.addEventListener('change', toggleDocumentsOption);
             });
-            
-            // Verificar estado inicial
             toggleDocumentsOption();
+
+            if (new URLSearchParams(window.location.search).get('openModal') === 'monthlyExpense') {
+                openMonthlyExpenseReport();
+            }
         });
 
         function openMonthlyExpenseReport() {
@@ -239,49 +223,19 @@
         }
 
         function generateMonthlyReport() {
-            const form = document.getElementById('monthlyExpenseForm');
-            const formData = new FormData(form);
-            
-            // Guardar los parámetros del informe para poder exportar después
-            currentReportParams = {};
-            for (let [key, value] of formData.entries()) {
-                currentReportParams[key] = value;
-            }
-            
-            // Debug: mostrar los datos que se envían
-            console.log('Datos del formulario:');
-            for (let [key, value] of formData.entries()) {
-                console.log(`${key}: ${value}`);
-            }
-            
+            const formData = new FormData(document.getElementById('monthlyExpenseForm'));
+            currentReportParams = Object.fromEntries(formData.entries());
+
             fetch('{{ route("reports.monthly-expenses") }}', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 }
             })
-            .then(response => {
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return response.text().then(text => {
-                    console.log('Raw response:', text);
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        console.error('JSON parse error:', e);
-                        console.error('Response text:', text);
-                        throw new Error('Invalid JSON response');
-                    }
-                });
-            })
+            .then(response => response.json().catch(() => ({ success: false, message: 'Respuesta inválida del servidor.' })))
             .then(data => {
-                console.log('Parsed data:', data);
                 if (data.success) {
                     displayReport(data.data, data.report_info);
                     closeMonthlyExpenseModal();
@@ -289,41 +243,7 @@
                     alert('Error al generar el informe: ' + (data.message || 'Error desconocido'));
                 }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al generar el informe: ' + error.message);
-            });
-        }
-
-        function exportMonthlyReport() {
-            const form = document.getElementById('monthlyExpenseForm');
-            const formData = new FormData(form);
-            
-            // Crear un formulario temporal para la descarga
-            const tempForm = document.createElement('form');
-            tempForm.method = 'POST';
-            tempForm.action = '{{ route("reports.export-monthly-expenses") }}';
-            tempForm.style.display = 'none';
-            
-            // Agregar token CSRF
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = '{{ csrf_token() }}';
-            tempForm.appendChild(csrfInput);
-            
-            // Agregar todos los campos del formulario
-            for (let [key, value] of formData.entries()) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                tempForm.appendChild(input);
-            }
-            
-            document.body.appendChild(tempForm);
-            tempForm.submit();
-            document.body.removeChild(tempForm);
+            .catch(() => alert('No se pudo contactar al servidor para generar el informe.'));
         }
 
         function exportCurrentReport() {
@@ -331,166 +251,120 @@
                 alert('No hay informe actual para exportar.');
                 return;
             }
-            
-            // Crear un formulario temporal para la descarga
+
             const tempForm = document.createElement('form');
             tempForm.method = 'POST';
             tempForm.action = '{{ route("reports.export-monthly-expenses") }}';
             tempForm.style.display = 'none';
-            
-            // Agregar token CSRF
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = '{{ csrf_token() }}';
-            tempForm.appendChild(csrfInput);
-            
-            // Agregar todos los parámetros del informe actual
-            for (let [key, value] of Object.entries(currentReportParams)) {
+
+            const fields = { _token: '{{ csrf_token() }}', ...currentReportParams };
+            for (const [key, value] of Object.entries(fields)) {
                 const input = document.createElement('input');
                 input.type = 'hidden';
                 input.name = key;
                 input.value = value;
                 tempForm.appendChild(input);
             }
-            
+
             document.body.appendChild(tempForm);
             tempForm.submit();
             document.body.removeChild(tempForm);
         }
 
+        function statusBadge(status) {
+            const approved = status === 'approved';
+            return `<span class="px-2 py-1 text-xs font-semibold rounded-full ${approved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">${approved ? 'Aprobada' : 'Pendiente'}</span>`;
+        }
+
+        function documentLinks(documents) {
+            if (!documents || documents.length === 0) {
+                return '<td class="px-2 py-1 text-gray-500 italic">Sin documentos</td>';
+            }
+            const links = documents.map(doc => {
+                const name = String(doc.filename ?? '');
+                const extension = name.split('.').pop().toLowerCase();
+                const iconClass = extension === 'pdf' ? 'fa-file-pdf text-red-600'
+                    : /^(jpg|jpeg|png|gif|webp)$/.test(extension) ? 'fa-file-image text-blue-600'
+                    : 'fa-file text-gray-600';
+                const label = name.length > 15 ? name.substring(0, 12) + '...' : name;
+                return `<a href="${esc(doc.url)}" target="_blank" rel="noopener" title="${esc(name)}"
+                    class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
+                    <i class="fa ${iconClass} mr-1"></i>${esc(label)}</a>`;
+            }).join('');
+            return `<td class="px-2 py-1 text-gray-900"><div class="flex flex-wrap gap-1">${links}</div></td>`;
+        }
+
         function displayReport(data, reportInfo) {
-            let html = '';
-            
-            // Información del período
-            html += `<div class="mb-4 p-4 bg-gray-50  rounded-lg">
+            const approvedOnly = reportInfo.approval_status === 'approved_only';
+            let html = `<div class="mb-4 p-4 bg-gray-50 rounded-lg">
                 <h4 class="font-medium text-gray-900">Información del Informe</h4>
                 <p class="text-sm text-gray-600">
-                    <strong>Período:</strong> ${reportInfo.start_date} al ${reportInfo.end_date}<br>
+                    <strong>Período:</strong> ${esc(reportInfo.start_date)} al ${esc(reportInfo.end_date)}<br>
                     <strong>Tipo:</strong> ${reportInfo.report_type === 'summary' ? 'Resumido' : 'Detallado'}<br>
-                    <strong>Filtro:</strong> <span class="px-2 py-1 rounded text-xs font-semibold ${reportInfo.approval_status === 'approved_only' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${reportInfo.approval_status === 'approved_only' ? 'Solo rendiciones aprobadas' : 'Todas las rendiciones (incluye pendientes)'}</span>
+                    <strong>Filtro:</strong> <span class="px-2 py-1 rounded text-xs font-semibold ${approvedOnly ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${approvedOnly ? 'Solo rendiciones aprobadas' : 'Todas las rendiciones (incluye pendientes)'}</span>
                 </p>
-            </div>`;
-            
-            // Resumen general
-            html += `<div class="mb-4 p-4 bg-blue-50  rounded-lg">
+            </div>
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg">
                 <h4 class="font-medium text-gray-900">Resumen General</h4>
                 <div class="grid grid-cols-3 gap-4 mt-2 text-sm">
                     <div><strong>Total General:</strong> $${formatChileanNumber(data.total_amount)}</div>
-                    <div><strong>Rendiciones:</strong> ${data.total_expenses}</div>
-                    <div><strong>Items:</strong> ${data.total_items}</div>
+                    <div><strong>Rendiciones:</strong> ${esc(data.total_expenses)}</div>
+                    <div><strong>Items:</strong> ${esc(data.total_items)}</div>
                 </div>
             </div>`;
-            
-            // Mostrar datos por categoría
+
             if (data.report_type === 'summary') {
-                html += '<h4 class="font-medium text-gray-900  mb-3">Resumen por Categoría</h4>';
-                html += '<div class="overflow-x-auto"><table class="min-w-full table-auto">';
-                html += '<thead class="bg-gray-50"><tr>';
-                html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500  uppercase tracking-wider">Categoría</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Total</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Items</th>';
-                html += '<th class="px-4 py-2 text-right text-xs font-medium text-gray-500  uppercase tracking-wider">Rendiciones</th>';
-                html += '</tr></thead><tbody class="bg-white  divide-y divide-gray-200">';
-                
+                html += `<h4 class="font-medium text-gray-900 mb-3">Resumen por Categoría</h4>
+                    <div class="overflow-x-auto"><table class="min-w-full table-auto">
+                    <thead class="bg-gray-50"><tr>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Rendiciones</th>
+                    </tr></thead><tbody class="bg-white divide-y divide-gray-200">`;
                 data.categories.forEach(category => {
                     html += `<tr>
-                        <td class="px-4 py-2 text-sm text-gray-900">${category.category}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900  text-right">$${formatChileanNumber(category.total_amount)}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900  text-right">${category.items_count}</td>
-                        <td class="px-4 py-2 text-sm text-gray-900  text-right">${category.expenses_count}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${esc(category.category)}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 text-right">$${formatChileanNumber(category.total_amount)}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 text-right">${esc(category.items_count)}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 text-right">${esc(category.expenses_count)}</td>
                     </tr>`;
                 });
-                
                 html += '</tbody></table></div>';
             } else {
-                // Informe detallado
-                html += '<h4 class="font-medium text-gray-900  mb-3">Detalle por Categoría</h4>';
-                
+                html += '<h4 class="font-medium text-gray-900 mb-3">Detalle por Categoría</h4>';
                 data.categories.forEach(category => {
                     html += `<div class="mb-6 border rounded-lg p-4">
-                        <h5 class="font-medium text-gray-900  mb-2">
-                            ${category.category} - Total: $${formatChileanNumber(category.total_amount)}
-                        </h5>
+                        <h5 class="font-medium text-gray-900 mb-2">${esc(category.category)} - Total: $${formatChileanNumber(category.total_amount)}</h5>
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-auto text-sm">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">N° Rendición</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fecha</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Persona</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Descripción</th>
-                                        <th class="px-2 py-1 text-right text-xs font-medium text-gray-500">Monto</th>
-                                        <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Estado</th>
-                                        ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Documentos</th>' : ''}
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white  divide-y divide-gray-200">`;
-                    
+                                <thead class="bg-gray-50"><tr>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">N° Rendición</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fecha</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Persona</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Descripción</th>
+                                    <th class="px-2 py-1 text-right text-xs font-medium text-gray-500">Monto</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Estado</th>
+                                    ${data.include_documents ? '<th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Documentos</th>' : ''}
+                                </tr></thead>
+                                <tbody class="bg-white divide-y divide-gray-200">`;
                     category.items.forEach(item => {
                         html += `<tr>
-                            <td class="px-2 py-1 text-gray-900">${item.expense_number}</td>
-                            <td class="px-2 py-1 text-gray-900">${item.expense_date}</td>
-                            <td class="px-2 py-1 text-gray-900">${item.submitter}</td>
-                            <td class="px-2 py-1 text-gray-900">${item.item_description}</td>
-                            <td class="px-2 py-1 text-gray-900  text-right">$${formatChileanNumber(item.amount)}</td>
-                            <td class="px-2 py-1 text-gray-900">
-                                <span class="px-2 py-1 text-xs font-semibold rounded-full ${item.expense_status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                                    ${item.expense_status === 'approved' ? 'Aprobada' : 'Pendiente'}
-                                </span>
-                            </td>`;
-                        
-                        // Agregar columna de documentos si está habilitada
-                        if (data.include_documents) {
-                            if (item.documents && item.documents.length > 0) {
-                                html += `<td class="px-2 py-1 text-gray-900">
-                                    <div class="flex flex-wrap gap-1">`;
-                                item.documents.forEach(doc => {
-                                    const extension = doc.filename.split('.').pop().toLowerCase();
-                                    const iconClass = extension === 'pdf' ? 'fa-file-pdf text-red-600' : 
-                                                    extension.match(/(jpg|jpeg|png|gif)/) ? 'fa-file-image text-blue-600' : 
-                                                    'fa-file text-gray-600';
-                                    html += `<a href="${doc.url}" target="_blank" title="${doc.filename}" 
-                                      class="inline-flex items-center px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded">
-                                        <i class="fa ${iconClass} mr-1"></i>
-                                        ${doc.filename.length > 15 ? doc.filename.substring(0, 12) + '...' : doc.filename}
-                                    </a>`;
-                                });
-                                html += `</div></td>`;
-                            } else {
-                                html += `<td class="px-2 py-1 text-gray-500  italic">Sin documentos</td>`;
-                            }
-                        }
-                        
-                        html += `</tr>`;
+                            <td class="px-2 py-1 text-gray-900">${esc(item.expense_number)}</td>
+                            <td class="px-2 py-1 text-gray-900">${esc(item.expense_date)}</td>
+                            <td class="px-2 py-1 text-gray-900">${esc(item.submitter)}</td>
+                            <td class="px-2 py-1 text-gray-900">${esc(item.item_description)}</td>
+                            <td class="px-2 py-1 text-gray-900 text-right">$${formatChileanNumber(item.amount)}</td>
+                            <td class="px-2 py-1 text-gray-900">${statusBadge(item.expense_status)}</td>
+                            ${data.include_documents ? documentLinks(item.documents) : ''}
+                        </tr>`;
                     });
-                    
                     html += '</tbody></table></div></div>';
                 });
             }
-            
+
             document.getElementById('reportContent').innerHTML = html;
             document.getElementById('reportDisplayModal').classList.remove('hidden');
-        }
-
-        function testFilters() {
-            fetch('{{ route("reports.test-filters") }}')
-            .then(response => response.json())
-            .then(data => {
-                alert(`PRUEBA DE FILTROS (${data.period}):
-
-Solo aprobadas: ${data.approved_only.total_expenses} rendiciones, $${data.approved_only.total_amount.toLocaleString()}
-
-Todas las rendiciones: ${data.all.total_expenses} rendiciones, $${data.all.total_amount.toLocaleString()}
-
-DIFERENCIA: ${data.difference.expenses} rendiciones, $${data.difference.amount.toLocaleString()}
-
-${data.difference.expenses > 0 ? '✅ Los filtros están funcionando correctamente!' : '⚠️ No hay rendiciones sin aprobar en este período'}`);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al probar filtros: ' + error.message);
-            });
         }
     </script>
     @endpush
