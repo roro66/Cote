@@ -9,36 +9,37 @@ Comandos útiles
 - Ejecutar toda la suite (dentro de Sail):
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest
+./vendor/bin/sail pest
 ```
 
 - Ejecutar un test específico (por nombre de clase/spec):
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest --filter ExpenseApprovalTest
+./vendor/bin/sail pest --filter ExpenseApprovalTest
 ```
 
 - Ejecutar un test por descripción (texto del it):
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest --filter "allows a treasurer to approve an expense and debits account balance"
+./vendor/bin/sail pest --filter "allows a treasurer to approve an expense and debits account balance"
 ```
 
 - Listar tests descubiertos (útil para encontrar el identificador):
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest --list-tests
+./vendor/bin/sail pest --list-tests
 ```
 
 - Ejecutar un archivo de test concreto:
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest tests/Feature/ExpenseApprovalTest.php
+./vendor/bin/sail pest tests/Feature/ExpenseApprovalTest.php
 ```
 
 Notas y buenas prácticas
 
 - Preferir Pest (no ejecutar phpunit directamente) ya que este proyecto usa Pest como runner principal.
+- Usar `sail pest` y no `sail exec laravel.test ...`: `exec` corre como root y deja vistas compiladas en `storage/` que luego el servidor web no puede sobrescribir (error "Permission denied" en `storage/framework/views`).
 - `phpunit.xml` usa SQLite en memoria (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`), así que no hace falta un servidor de base de datos para los tests. La producción usa PostgreSQL: las consultas específicas de un motor deben pasar por `App\Helpers\DatabaseHelper`.
 - La suite está configurada para usar la trait `RefreshDatabase` en `tests/Pest.php`, por lo que cada test ejecuta migraciones en memoria/DB configurada. No es necesario llamar a `artisan migrate` manualmente antes de cada test.
 - Si ves errores de conexión a la base de datos en la máquina host, ejecuta los tests dentro de Sail tal como se muestra arriba.
@@ -48,13 +49,13 @@ Salida y flags útiles
 - Para CI, evita colores y usa `--colors=never`:
 
 ```bash
-./vendor/bin/sail exec laravel.test php ./vendor/bin/pest --colors=never --filter ExpenseApprovalTest
+./vendor/bin/sail pest --colors=never --filter ExpenseApprovalTest
 ```
 
 - Para depuración rápida, captura el código de salida:
 
 ```bash
-./vendor/bin/sail exec laravel.test bash -lc "php ./vendor/bin/pest --filter ExpenseApprovalTest; echo EXIT:\$?"
+./vendor/bin/sail bash -c "php ./vendor/bin/pest --filter ExpenseApprovalTest; echo EXIT:\$?"
 ```
 
 Helpers y utilidades de test
@@ -77,4 +78,4 @@ Integración en CI
 
 Contacto
 
-- Si algún test falla en tu entorno, pega aquí el output (o usa `./vendor/bin/sail exec laravel.test bash -lc "php ./vendor/bin/pest --filter <filtro>; echo EXIT:\$?"`) y te ayudo a depurarlo.
+- Si algún test falla en tu entorno, pega aquí el output (o usa `./vendor/bin/sail bash -c "php ./vendor/bin/pest --filter <filtro>; echo EXIT:\$?"`) y te ayudo a depurarlo.
