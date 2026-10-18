@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Document;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Account;
@@ -34,8 +35,11 @@ class ExpenseController extends Controller
         $account = Account::findOrFail($request->account_id);
         $this->authorize('view', $account);
 
+        if ($errors = $this->validateReceipts($request)) {
+            return $this->errorsResponse($request, $errors, 'Falta el comprobante de uno o más gastos.');
+        }
         if ($errors = $this->validateDuplicateDocuments($request->items)) {
-            return $this->duplicateResponse($request, $errors);
+            return $this->errorsResponse($request, $errors, 'Se encontraron documentos duplicados (tipo + proveedor + número).');
         }
 
         try {
@@ -87,8 +91,11 @@ class ExpenseController extends Controller
         $account = Account::findOrFail($request->account_id);
         $this->authorize('view', $account);
 
+        if ($errors = $this->validateReceipts($request, $expense)) {
+            return $this->errorsResponse($request, $errors, 'Falta el comprobante de uno o más gastos.');
+        }
         if ($errors = $this->validateDuplicateDocuments($request->items, $expense->id)) {
-            return $this->duplicateResponse($request, $errors);
+            return $this->errorsResponse($request, $errors, 'Se encontraron documentos duplicados (tipo + proveedor + número).');
         }
 
         try {
@@ -140,6 +147,8 @@ class ExpenseController extends Controller
             'items.*.vendor_name' => 'required|string|max:255',
             'items.*.receipt_number' => 'nullable|string|max:100',
             'items.*.expense_category_id' => 'nullable|exists:expense_categories,id',
+            'items.*.without_receipt' => 'nullable|boolean',
+            'items.*.without_receipt_reason' => 'nullable|string|max:255',
             'items.*.remove_documents' => 'nullable|array',
             'items.*.remove_documents.*' => 'integer',
             'items.*.files' => 'nullable|array',
@@ -187,9 +196,40 @@ class ExpenseController extends Controller
         return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message])->withInput();
     }
 
-    private function duplicateResponse(Request $request, array $errors)
+    /**
+     * Cada gasto necesita al menos un comprobante (los que quedan + los nuevos),
+     * salvo que se marque "sin comprobante" con un motivo.
+     */
+    private function validateReceipts(Request $request, ?Expense $expense = null): array
     {
-        $message = 'Se encontraron documentos duplicados (tipo + proveedor + número).';
+        $errors = [];
+        foreach ($request->items as $key => $item) {
+            if (ExpenseService::isWithoutReceipt($item)) {
+                if (trim((string) ($item['without_receipt_reason'] ?? '')) === '') {
+                    $errors["items.$key.without_receipt_reason"] = ['Indica por qué este gasto no tiene comprobante.'];
+                }
+                continue;
+            }
+
+            $kept = 0;
+            if ($expense && ! empty($item['id'])) {
+                $kept = Document::where('expense_item_id', $item['id'])
+                    ->whereHas('expenseItem', fn ($q) => $q->where('expense_id', $expense->id))
+                    ->whereNotIn('id', array_map('intval', $item['remove_documents'] ?? []))
+                    ->count();
+            }
+            $new = count(array_filter((array) $request->file("items.$key.files", [])));
+
+            if ($kept + $new === 0) {
+                $errors["items.$key.files"] = ['Adjunta al menos un comprobante, o marca "Sin comprobante" e indica el motivo.'];
+            }
+        }
+
+        return $errors;
+    }
+
+    private function errorsResponse(Request $request, array $errors, string $message)
+    {
         if ($request->expectsJson() || $request->ajax()) {
             return response()->json(['success' => false, 'message' => $message, 'errors' => $errors], 422);
         }

@@ -18,6 +18,7 @@ function item_payload(array $overrides = []): array
         'amount' => 12_000,
         'document_type' => 'boleta',
         'vendor_name' => 'Restorán',
+        'files' => [UploadedFile::fake()->image('boleta.jpg')],
     ], $overrides);
 }
 
@@ -119,4 +120,62 @@ it('lets a receipt from a rejected expense be submitted again', function () {
         ->postJson(route('expenses.store'), ['account_id' => $rejected->account_id, 'description' => 'Duplicada', 'items' => [item_payload($receipt)]])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('items.0.receipt_number');
+});
+
+it('requires a receipt for every item', function () {
+    $person = Person::factory()->create();
+    $account = Account::factory()->create(['type' => 'person', 'person_id' => $person->id]);
+
+    $this->actingAs(create_treasurer_user())
+        ->postJson(route('expenses.store'), [
+            'account_id' => $account->id,
+            'description' => 'Semana',
+            'items' => [item_payload(), item_payload(['vendor_name' => 'Kiosco', 'files' => []])],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('items.1.files')
+        ->assertJsonMissingValidationErrors('items.0.files');
+
+    expect(Expense::count())->toBe(0);
+});
+
+it('accepts an item without receipt only with a reason', function () {
+    $person = Person::factory()->create();
+    $account = Account::factory()->create(['type' => 'person', 'person_id' => $person->id]);
+    $noReceipt = ['files' => [], 'without_receipt' => '1'];
+
+    $this->actingAs(create_treasurer_user())
+        ->postJson(route('expenses.store'), ['account_id' => $account->id, 'description' => 'Semana', 'items' => [item_payload($noReceipt)]])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('items.0.without_receipt_reason');
+
+    $this->actingAs(create_treasurer_user())
+        ->postJson(route('expenses.store'), [
+            'account_id' => $account->id,
+            'description' => 'Semana',
+            'items' => [item_payload([...$noReceipt, 'without_receipt_reason' => 'Colación en local sin boleta'])],
+        ])
+        ->assertOk();
+
+    $item = Expense::sole()->items()->sole();
+    expect($item->without_receipt)->toBeTrue();
+    expect($item->without_receipt_reason)->toBe('Colación en local sin boleta');
+});
+
+it('blocks removing the last receipt of an item when editing', function () {
+    $expense = create_expense_via_http($this, [item_payload()]);
+    $item = $expense->items()->first();
+    $doc = $item->documents()->first();
+
+    $this->actingAs(create_treasurer_user())
+        ->postJson(route('expenses.update', $expense), [
+            '_method' => 'PUT',
+            'account_id' => $expense->account_id,
+            'description' => 'Semana',
+            'items' => [item_payload(['id' => $item->id, 'files' => [], 'remove_documents' => [$doc->id]])],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('items.0.files');
+
+    expect(Document::find($doc->id))->not->toBeNull();
 });

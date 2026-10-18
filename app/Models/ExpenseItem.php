@@ -19,6 +19,8 @@ class ExpenseItem extends Model implements HasMedia
         'expense_id',
         'document_type',
         'document_number',
+        'without_receipt',
+        'without_receipt_reason',
         'vendor_name',
         'description',
         'amount',
@@ -32,6 +34,7 @@ class ExpenseItem extends Model implements HasMedia
         'amount' => 'decimal:2',
         'expense_date' => 'date',
         'is_enabled' => 'boolean',
+        'without_receipt' => 'boolean',
     ];
 
     public function categoryObj()

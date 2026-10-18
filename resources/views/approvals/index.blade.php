@@ -351,7 +351,8 @@
                         {
                             data: 'items_count',
                             name: 'items_count',
-                            render: (d) => `<span class=\"badge bg-secondary\">${d} items</span>`,
+                            render: (d, type, row) => `<span class=\"badge bg-secondary\">${Number(d)} items</span>`
+                                + (row.items_without_receipt ? ` <span class=\"badge bg-warning text-dark\" title=\"Gastos sin comprobante\">${Number(row.items_without_receipt)} sin comprobante</span>` : ''),
                             orderable: false,
                             searchable: false
                         },
@@ -588,6 +589,7 @@
                     ['Fecha', String(row?.expense_date ?? '').slice(0, 10).split('-').reverse().join('/')],
                     ['Descripción', plainText(row?.description)],
                     ['Ítems', plainText(row?.items_count)],
+                    ['Sin comprobante', row?.items_without_receipt ? `${row.items_without_receipt} gasto(s) — revisa el motivo en el detalle` : 'Ninguno'],
                     ['Monto', row ? clp(row.total_amount) : ''],
                 ], () => sendExpenseApproval(expenseId));
             }

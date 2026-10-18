@@ -51,6 +51,7 @@ function expense_update_payload(Expense $expense, int $amount): array
             'currency' => 'CLP',
             'document_type' => 'boleta',
             'vendor_name' => 'Restorán',
+            'files' => [\Illuminate\Http\UploadedFile::fake()->image('boleta.jpg')],
         ]],
     ];
 }
@@ -80,6 +81,7 @@ it('does not allow deleting an approved expense', function () {
 });
 
 it('resubmits a rejected expense when it is corrected', function () {
+    \Illuminate\Support\Facades\Storage::fake('local');
     [$expense] = expense_with_item('rejected');
 
     $this->actingAs(create_treasurer_user())

@@ -111,6 +111,7 @@ class ApprovalDataTableController extends Controller
                 return $personName ?: $accountName ?: ($accountType === 'Tesorería' ? 'Tesorería' : 'N/A');
             })
             ->addColumn('items_count', fn($row) => $row->items ? $row->items->count() : 0)
+            ->addColumn('items_without_receipt', fn($row) => $row->items ? $row->items->where('without_receipt', true)->count() : 0)
             ->editColumn('total_amount', fn($row) => (float) $row->total_amount)
             ->editColumn('status', fn($row) => $row->status)
             ->addColumn('action', function ($row) {

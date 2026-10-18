@@ -69,6 +69,8 @@ class ExpenseService
                     'document_number' => $data['receipt_number'] ?? null,
                     'expense_category_id' => $data['expense_category_id'] ?? null,
                     'expense_date' => $data['expense_date'],
+                    'without_receipt' => self::isWithoutReceipt($data),
+                    'without_receipt_reason' => self::isWithoutReceipt($data) ? trim((string) $data['without_receipt_reason']) : null,
                 ];
 
                 $item = ! empty($data['id']) ? $expense->items()->whereKey($data['id'])->first() : null;
@@ -100,6 +102,11 @@ class ExpenseService
 
             return $expense->refresh();
         });
+    }
+
+    public static function isWithoutReceipt(array $item): bool
+    {
+        return filter_var($item['without_receipt'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     private function storeDocument(Expense $expense, ExpenseItem $item, UploadedFile $file, int $userId): Document

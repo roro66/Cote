@@ -156,8 +156,11 @@
                                                                     </a>
                                                                 @endforeach
                                                             </div>
+                                                        @elseif($item->without_receipt)
+                                                            <span class="badge bg-warning text-dark">Sin comprobante</span>
+                                                            <div class="small text-muted">{{ $item->without_receipt_reason }}</div>
                                                         @else
-                                                            <span class="text-muted">—</span>
+                                                            <span class="text-danger small">Falta comprobante</span>
                                                         @endif
                                                     </td>
                                                 </tr>

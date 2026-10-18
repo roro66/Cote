@@ -9,6 +9,7 @@ use App\Models\User;
 uses(RefreshDatabase::class);
 
 it('stores expense with items including expense_category_id', function () {
+    \Illuminate\Support\Facades\Storage::fake('local');
     $person = \App\Models\Person::create([
         'first_name' => 'Persona',
         'last_name' => 'Prueba',
@@ -34,7 +35,8 @@ it('stores expense with items including expense_category_id', function () {
                 'document_type' => 'boleta',
                 'vendor_name' => 'Proveedor X',
                 'receipt_number' => 'R001',
-                'expense_category_id' => $category->id
+                'expense_category_id' => $category->id,
+                'files' => [\Illuminate\Http\UploadedFile::fake()->image('boleta.jpg')],
             ],
         ],
     ];

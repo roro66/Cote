@@ -11,6 +11,8 @@
             'vendor_name' => $item->vendor_name,
             'receipt_number' => $item->document_number,
             'expense_category_id' => $item->expense_category_id,
+            'without_receipt' => (bool) $item->without_receipt,
+            'without_receipt_reason' => $item->without_receipt_reason,
             'documents' => $item->documents->map(fn ($doc) => [
                 'id' => $doc->id,
                 'name' => $doc->name,
@@ -162,6 +164,16 @@
                     <span class="small text-muted selected-files">Ningún archivo nuevo</span>
                 </div>
                 <div class="invalid-feedback d-block files-feedback"></div>
+
+                <label class="form-check mt-2 small">
+                    <input type="checkbox" class="form-check-input without-receipt" data-field="without_receipt" value="1">
+                    Sin comprobante (excepcional)
+                </label>
+                <div class="without-receipt-reason mt-1" style="display:none">
+                    <input type="text" class="form-control form-control-sm" data-field="without_receipt_reason" maxlength="255"
+                           placeholder="Motivo: ej. colación en local sin boleta">
+                    <div class="invalid-feedback"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -236,9 +248,14 @@
             const field = input.dataset.field;
             input.name = fieldName(index, field);
             if (field === 'files') return;
+            if (input.type === 'checkbox') {
+                input.checked = !!data[field];
+                return;
+            }
             const value = field === 'expense_date' ? (data.expense_date || TODAY) : data[field];
             if (value !== undefined && value !== null) input.value = value;
         });
+        toggleReason(card);
         card.querySelector('[data-field="expense_date"]').max = TODAY;
         fillCategories(card.querySelector('.item-category-select'), data.expense_category_id);
         renderDocuments(card.querySelector('.existing-documents'), index, data.documents);
@@ -246,6 +263,11 @@
         document.getElementById('expenseItems').appendChild(card);
         calculateTotal();
     };
+
+    function toggleReason(card) {
+        const checked = card.querySelector('.without-receipt').checked;
+        card.querySelector('.without-receipt-reason').style.display = checked ? 'block' : 'none';
+    }
 
     function calculateTotal() {
         let total = 0;
@@ -312,6 +334,9 @@
 
         form.addEventListener('input', e => { if (e.target.classList.contains('item-amount')) calculateTotal(); });
         form.addEventListener('change', e => {
+            if (e.target.classList.contains('without-receipt')) {
+                toggleReason(e.target.closest('.expense-item'));
+            }
             if (e.target.classList.contains('item-files')) {
                 const names = Array.from(e.target.files || []).map(f => f.name);
                 e.target.closest('.expense-item').querySelector('.selected-files').textContent = names.length ? names.join(', ') : 'Ningún archivo nuevo';
