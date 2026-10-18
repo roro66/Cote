@@ -90,16 +90,20 @@ class ExpenseDataTableController extends Controller
                         });
                     }
                 })
-                ->addColumn('action', function ($row) {
+                ->addColumn('action', function ($row) use ($request) {
+                    $user = $request->user();
                     $actionBtn = '<div class="btn-group" role="group">
                         <a href="' . route('expenses.show', $row->id) . '" class="btn btn-info btn-sm" title="Ver" aria-label="Ver">
                             <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="' . route('expenses.edit', $row->id) . '" class="btn btn-primary btn-sm" title="Editar" aria-label="Editar">
-                            <i class="fas fa-edit"></i>
                         </a>';
 
-                    if ($row->status === 'submitted') {
+                    if ($user->can('update', $row)) {
+                        $actionBtn .= '<a href="' . route('expenses.edit', $row->id) . '" class="btn btn-primary btn-sm" title="Editar" aria-label="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>';
+                    }
+
+                    if ($row->status === 'submitted' && $user->hasAnyRole(['boss', 'treasurer'])) {
                         $actionBtn .= '<form action="' . route('approvals.expenses.approve', $row->id) . '" method="POST" style="display:inline;">
                             <input type="hidden" name="_token" value="' . csrf_token() . '">
                             <button type="submit" class="btn btn-success btn-sm" title="Aprobar" aria-label="Aprobar" onclick="return confirm(\'¿Aprobar esta rendición?\')">
@@ -108,11 +112,13 @@ class ExpenseDataTableController extends Controller
                         </form>';
                     }
 
-                    $actionBtn .= '<button type="button" class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="deleteExpense(' . $row->id . ')">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                    </div>';
-                    return $actionBtn;
+                    if ($user->can('delete', $row)) {
+                        $actionBtn .= '<button type="button" class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="deleteExpense(' . $row->id . ')">
+                            <i class="fas fa-trash"></i>
+                        </button>';
+                    }
+
+                    return $actionBtn . '</div>';
                 })
                 ->rawColumns(['action', 'status_spanish'])
                 ->make(true);

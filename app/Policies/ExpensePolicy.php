@@ -15,11 +15,11 @@ class ExpensePolicy
 
     public function update(User $user, Expense $expense): bool
     {
-        return $this->view($user, $expense);
+        return $expense->isEditable() && $this->view($user, $expense);
     }
 
     public function delete(User $user, Expense $expense): bool
     {
-        return $this->view($user, $expense);
+        return $expense->isEditable() && $this->view($user, $expense);
     }
 }

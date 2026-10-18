@@ -32,11 +32,11 @@
                                 </form>
                             @endif
                             
-                            @if($expense->status === 'draft')
+                            @can('update', $expense)
                                 <a href="{{ route('expenses.edit', $expense) }}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> Editar
+                                    <i class="fas fa-edit"></i> {{ $expense->status === 'rejected' ? 'Corregir y reenviar' : 'Editar' }}
                                 </a>
-                            @endif
+                            @endcan
                         </div>
                     </div>
 

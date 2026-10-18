@@ -126,7 +126,7 @@ class FullFinanceSeeder extends Seeder
                     // actualizar total y aprobar la rendición al azar
                     $expense->update(['total_amount' => $sum]);
                     if (rand(0,1) === 1) {
-                        $expense->approve($admin->id);
+                        app(\App\Services\ExpenseService::class)->approveExpense($expense, $admin->id);
                     }
                     $totalExp++;
                 }

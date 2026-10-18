@@ -144,37 +144,11 @@ class Expense extends Model
         return 'RND';
     }
 
-    // Métodos de negocio
-    public function calculateTotal(): float
-    {
-        return $this->items()->sum('amount');
-    }
+    // Métodos de negocio (aprobar/rechazar va por ExpenseService, que también mueve el saldo)
 
-    public function submit(): void
+    /** Una rendición aprobada ya descontó el saldo: no se edita ni se elimina. */
+    public function isEditable(): bool
     {
-        $this->update([
-            'status' => 'submitted',
-            'submitted_at' => now(),
-            'total_amount' => $this->calculateTotal()
-        ]);
-    }
-
-    public function approve($userId = null): void
-    {
-        $this->update([
-            'status' => 'approved',
-            'reviewed_by' => $userId ?? auth()->id(),
-            'reviewed_at' => now()
-        ]);
-    }
-
-    public function reject($reason, $userId = null): void
-    {
-        $this->update([
-            'status' => 'rejected',
-            'reviewed_by' => $userId ?? auth()->id(),
-            'reviewed_at' => now(),
-            'rejection_reason' => $reason
-        ]);
+        return $this->is_enabled && in_array($this->status, ['draft', 'submitted', 'rejected'], true);
     }
 }

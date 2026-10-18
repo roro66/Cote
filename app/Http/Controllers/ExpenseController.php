@@ -246,12 +246,21 @@ class ExpenseController extends Controller
             // Calculate total amount
             $totalAmount = collect($request->items)->sum('amount');
 
-            // Update expense
+            // Una rendición rechazada que se corrige vuelve a quedar enviada para aprobación
+            $resubmit = $expense->status === 'rejected' ? [
+                'status' => 'submitted',
+                'submitted_at' => now(),
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+                'rejection_reason' => null,
+            ] : [];
+
             $expense->update([
                 'account_id' => $request->account_id,
                 'description' => $request->description,
                 'reference' => $request->reference,
                 'total_amount' => $totalAmount,
+                ...$resubmit,
             ]);
 
             // Delete existing items and documents, then recreate
