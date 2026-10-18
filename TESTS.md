@@ -39,6 +39,7 @@ Comandos útiles
 Notas y buenas prácticas
 
 - Preferir Pest (no ejecutar phpunit directamente) ya que este proyecto usa Pest como runner principal.
+- `phpunit.xml` usa SQLite en memoria (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`), así que no hace falta un servidor de base de datos para los tests. La producción usa PostgreSQL: las consultas específicas de un motor deben pasar por `App\Helpers\DatabaseHelper`.
 - La suite está configurada para usar la trait `RefreshDatabase` en `tests/Pest.php`, por lo que cada test ejecuta migraciones en memoria/DB configurada. No es necesario llamar a `artisan migrate` manualmente antes de cada test.
 - Si ves errores de conexión a la base de datos en la máquina host, ejecuta los tests dentro de Sail tal como se muestra arriba.
 
