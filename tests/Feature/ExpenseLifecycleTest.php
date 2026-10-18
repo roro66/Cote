@@ -46,6 +46,7 @@ function expense_update_payload(Expense $expense, int $amount): array
         'currency' => 'CLP',
         'items' => [[
             'description' => 'Almuerzo',
+            'expense_date' => now()->toDateString(),
             'amount' => $amount,
             'currency' => 'CLP',
             'document_type' => 'boleta',

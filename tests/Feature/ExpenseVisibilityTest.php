@@ -65,7 +65,7 @@ it('forbids submitting an expense on another person account', function () {
         'account_id' => $otherAccount->id,
         'description' => 'Intento',
         'currency' => 'CLP',
-        'items' => [['description' => 'x', 'amount' => 10, 'currency' => 'CLP', 'document_type' => 'boleta', 'vendor_name' => 'x']],
+        'items' => [['description' => 'x', 'expense_date' => now()->toDateString(), 'amount' => 10, 'currency' => 'CLP', 'document_type' => 'boleta', 'vendor_name' => 'x']],
     ])->assertForbidden();
 
     expect(Expense::where('description', 'Intento')->exists())->toBeFalse();

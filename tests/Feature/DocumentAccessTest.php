@@ -59,6 +59,7 @@ it('stores uploaded receipts outside the public disk', function () {
         'currency' => 'CLP',
         'items' => [[
             'description' => 'Ítem',
+            'expense_date' => now()->toDateString(),
             'amount' => 1000,
             'currency' => 'CLP',
             'document_type' => 'boleta',

@@ -2,14 +2,137 @@
 
 namespace App\Services;
 
+use App\Models\Document;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Account;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ExpenseService
 {
+    /**
+     * Crea o actualiza una rendición con sus ítems y comprobantes.
+     *
+     * - Los ítems que vienen con id se actualizan; los nuevos se crean; los que faltan se eliminan.
+     * - Los comprobantes existentes se conservan salvo los marcados en remove_documents.
+     * - Una rendición rechazada que se corrige vuelve a quedar enviada.
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     * @param  array<int, UploadedFile[]>  $filesByItem  archivos nuevos por índice de ítem
+     */
+    public function save(?Expense $expense, Account $account, string $description, array $items, array $filesByItem, int $userId): Expense
+    {
+        return DB::transaction(function () use ($expense, $account, $description, $items, $filesByItem, $userId) {
+            if (! $account->person_id) {
+                throw new \DomainException('La cuenta seleccionada no tiene una persona asociada.');
+            }
+
+            if ($expense) {
+                $expense = Expense::whereKey($expense->id)->lockForUpdate()->firstOrFail();
+                if (! $expense->isEditable()) {
+                    throw new \DomainException('Esta rendición ya fue aprobada y no se puede modificar.');
+                }
+                $expense->update([
+                    'account_id' => $account->id,
+                    'submitted_by' => $account->person_id,
+                    'description' => $description,
+                    ...($expense->status === 'rejected' ? [
+                        'status' => 'submitted',
+                        'submitted_at' => now(),
+                        'reviewed_by' => null,
+                        'reviewed_at' => null,
+                        'rejection_reason' => null,
+                    ] : []),
+                ]);
+            } else {
+                $expense = Expense::create([
+                    'account_id' => $account->id,
+                    'submitted_by' => $account->person_id,
+                    'description' => $description,
+                    'total_amount' => 0,
+                    'expense_date' => now()->toDateString(),
+                    'status' => 'submitted',
+                    'submitted_at' => now(),
+                ]);
+            }
+
+            $keptItemIds = [];
+            foreach (array_values($items) as $index => $data) {
+                $fields = [
+                    'description' => $data['description'],
+                    'amount' => $data['amount'],
+                    'document_type' => $data['document_type'],
+                    'vendor_name' => $data['vendor_name'],
+                    'document_number' => $data['receipt_number'] ?? null,
+                    'expense_category_id' => $data['expense_category_id'] ?? null,
+                    'expense_date' => $data['expense_date'],
+                ];
+
+                $item = ! empty($data['id']) ? $expense->items()->whereKey($data['id'])->first() : null;
+                if ($item) {
+                    $item->update($fields);
+                } else {
+                    $item = $expense->items()->create($fields);
+                }
+                $keptItemIds[] = $item->id;
+
+                $toRemove = array_map('intval', $data['remove_documents'] ?? []);
+                $item->documents()->whereIn('id', $toRemove)->get()->each(fn (Document $doc) => $this->deleteDocument($doc));
+
+                foreach ($filesByItem[$index] ?? [] as $file) {
+                    $this->storeDocument($expense, $item, $file, $userId);
+                }
+            }
+
+            $expense->items()->whereNotIn('id', $keptItemIds)->get()->each(function (ExpenseItem $item) {
+                $item->documents()->get()->each(fn (Document $doc) => $this->deleteDocument($doc));
+                $item->delete();
+            });
+
+            $expense->update([
+                'total_amount' => $expense->items()->sum('amount'),
+                // La rendición toma la fecha del comprobante más reciente
+                'expense_date' => $expense->items()->max('expense_date'),
+            ]);
+
+            return $expense->refresh();
+        });
+    }
+
+    private function storeDocument(Expense $expense, ExpenseItem $item, UploadedFile $file, int $userId): Document
+    {
+        $disk = Storage::disk(Document::DISK);
+        $dir = "expenses/{$expense->id}/items/{$item->id}";
+        $original = $file->getClientOriginalName();
+        $name = pathinfo($original, PATHINFO_FILENAME);
+        $ext = pathinfo($original, PATHINFO_EXTENSION);
+
+        $candidate = $original;
+        for ($n = 1; $disk->exists("$dir/$candidate"); $n++) {
+            $candidate = $name . " ($n)" . ($ext ? ".$ext" : '');
+        }
+
+        return Document::create([
+            'name' => $original,
+            'file_path' => $file->storeAs($dir, $candidate, Document::DISK),
+            'mime_type' => $file->getClientMimeType(),
+            'file_size' => $file->getSize(),
+            'document_type' => $item->document_type,
+            'expense_item_id' => $item->id,
+            'uploaded_by' => $userId,
+            'is_enabled' => true,
+        ]);
+    }
+
+    private function deleteDocument(Document $document): void
+    {
+        Storage::disk(Document::DISK)->delete($document->file_path);
+        $document->delete();
+    }
+
     /**
      * Crear una nueva rendición de gastos
      */

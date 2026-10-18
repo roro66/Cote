@@ -28,6 +28,7 @@ it('stores expense with items including expense_category_id', function () {
         'items' => [
             [
                 'description' => 'Item 1',
+                'expense_date' => now()->subDays(3)->toDateString(),
                 'amount' => 1000,
                 'currency' => 'CLP',
                 'document_type' => 'boleta',

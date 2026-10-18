@@ -5,186 +5,58 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\ExpenseItem;
 use App\Models\Account;
-use App\Models\Document;
+use App\Services\ExpenseService;
+use App\Support\ErrorMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class ExpenseController extends Controller
 {
-    /**
-     * Display a listing of expenses
-     */
+    public function __construct(private ExpenseService $expenses)
+    {
+    }
+
     public function index(): View
     {
         return view('expenses.index');
     }
 
-    /**
-     * Show the form for creating a new expense
-     */
     public function create(): View
     {
-        // Solo cuentas personales para rendiciones (se rebajará saldo de la persona)
-        $accounts = Account::visibleTo(auth()->user())->where('is_enabled', true)->where('type', 'person')->get();
-        return view('expenses.create', compact('accounts'));
+        return view('expenses.create', ['accounts' => $this->accountsForForm()]);
     }
 
-    /**
-     * Store a newly created expense
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'account_id' => 'required|exists:accounts,id',
-            'description' => 'required|string|max:500',
-            'reference' => 'nullable|string|max:255',
-            'currency' => 'required|in:CLP',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.amount' => 'required|numeric|min:0.01',
-            'items.*.currency' => 'required|in:CLP',
-            'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
-            'items.*.vendor_name' => 'required|string|max:255',
-            'items.*.receipt_number' => 'nullable|string|max:100',
-            'items.*.expense_category_id' => 'nullable|exists:expense_categories,id',
-            'items.*.files' => 'nullable|array',
-            'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
-        ]);
+        $this->validateExpense($request);
+        $account = Account::findOrFail($request->account_id);
+        $this->authorize('view', $account);
 
-        $this->authorize('view', Account::findOrFail($request->account_id));
+        if ($errors = $this->validateDuplicateDocuments($request->items)) {
+            return $this->duplicateResponse($request, $errors);
+        }
 
         try {
-            // Duplicate document validation (in-request and against DB)
-            $dupErrors = $this->validateDuplicateDocuments($request->items);
-            if (!empty($dupErrors)) {
-                $payload = [
-                    'success' => false,
-                    'message' => 'Se encontraron documentos duplicados (tipo + proveedor + número).',
-                    'errors' => $dupErrors,
-                ];
-                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                    return response()->json($payload, 422);
-                }
-                return redirect()->back()->withErrors($dupErrors)->withInput();
-            }
+            $expense = $this->expenses->save(null, $account, $request->description, $request->items, $this->filesByItem($request), auth()->id());
 
-            // Calculate total amount
-            $totalAmount = collect($request->items)->sum('amount');
-
-            // Derivar la persona desde la cuenta seleccionada (propietario de la cuenta)
-            $account = Account::with('person')->findOrFail($request->account_id);
-            $person = $account->person;
-
-            if (!$person) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'La cuenta seleccionada no tiene una persona asociada.'
-                ], 400);
-            }
-
-            // Create expense
-            $expense = Expense::create([
-                'account_id' => $request->account_id,
-                'description' => $request->description,
-                'reference' => $request->reference,
-                'total_amount' => $totalAmount,
-                'currency' => $request->currency,
-                'status' => 'submitted',
-                'submitted_by' => $person->id,
-                'submitted_at' => now(),
-                'expense_date' => now()->toDateString(),
-            ]);
-
-            // Create expense items
-            foreach ($request->items as $index => $item) {
-                $expenseItem = $expense->expenseItems()->create([
-                    'description' => $item['description'],
-                    'amount' => $item['amount'],
-                    'document_type' => $item['document_type'],
-                    'vendor_name' => $item['vendor_name'],
-                    'expense_date' => now()->toDateString(), // Fecha del gasto
-                    'document_number' => $item['receipt_number'] ?? null,
-                    'category' => null, // Campo opcional (legacy)
-                    'expense_category_id' => $item['expense_category_id'] ?? null,
-                ]);
-
-                // Handle attached files for this item (if any)
-                $files = $request->file("items.$index.files", []);
-                if ($files && is_array($files)) {
-                    foreach ($files as $file) {
-                        if (!$file) { continue; }
-                        $originalName = $file->getClientOriginalName();
-                        $mime = $file->getClientMimeType();
-                        $size = $file->getSize();
-                        // Build storage path keeping human-readable name, avoid overwriting
-                        $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
-                        $fileName = $this->uniqueFileName($baseDir, $originalName);
-                        $storedPath = $file->storeAs($baseDir, $fileName, Document::DISK);
-
-                        Document::create([
-                            'name' => $originalName, // keep user's original name
-                            'file_path' => $storedPath,
-                            'mime_type' => $mime,
-                            'file_size' => $size,
-                            'document_type' => $expenseItem->document_type,
-                            'expense_item_id' => $expenseItem->id,
-                            'uploaded_by' => auth()->id(),
-                            'is_enabled' => true,
-                        ]);
-                    }
-                }
-            }
-
-            $payload = [
-                'success' => true,
-                'message' => 'Rendición creada correctamente.',
-                'expense' => $expense,
-            ];
-
-            // Si la petición espera JSON (AJAX/Fetch), devolvemos JSON; de lo contrario redirigimos
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json($payload);
-            }
-
-            return redirect()->route('expenses.index')
-                ->with('toastr', [
-                    'type' => 'success',
-                    'message' => $payload['message'],
-                ]);
-        } catch (\Exception $e) {
-            $message = \App\Support\ErrorMessage::for($e, 'Error al crear la rendición');
-
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $message,
-                ], 500);
-            }
-
-            return redirect()->back()
-                ->with('toastr', [
-                    'type' => 'error',
-                    'message' => $message,
-                ])
-                ->withInput();
+            return $this->savedResponse($request, $expense, 'Rendición creada correctamente.');
+        } catch (\Throwable $e) {
+            return $this->failedResponse($request, ErrorMessage::for($e, 'Error al crear la rendición'));
         }
     }
 
-    /**
-     * Display the specified expense
-     */
     public function show(Expense $expense): View
     {
         $this->authorize('view', $expense);
-    $expense->load(['account.person', 'submittedBy', 'items.documents']);
+        $expense->load(['account.person', 'submittedBy', 'items.documents']);
+
         return view('expenses.show', compact('expense'));
     }
 
     /**
-     * Return expense details as JSON (HTML fragment) for AJAX modal
+     * Detalle como fragmento HTML para el modal de aprobaciones
      */
     public function details(Expense $expense): JsonResponse
     {
@@ -193,242 +65,186 @@ class ExpenseController extends Controller
         try {
             $expense->load(['account.person', 'submittedBy', 'items.documents']);
             $html = view('expenses.partials.details_modal', compact('expense'))->render();
+
             return response()->json(['success' => true, 'html' => $html]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => \App\Support\ErrorMessage::for($e, 'Error al renderizar detalles')], 500);
+            return response()->json(['success' => false, 'message' => ErrorMessage::for($e, 'Error al renderizar detalles')], 500);
         }
     }
 
-    /**
-     * Show the form for editing the specified expense
-     */
     public function edit(Expense $expense): View
     {
         $this->authorize('update', $expense);
+        $expense->load('items.documents');
 
-        $accounts = Account::visibleTo(auth()->user())->where('is_enabled', true)->get();
-        $expense->load(['items']);
-        return view('expenses.edit', compact('expense', 'accounts'));
+        return view('expenses.edit', ['expense' => $expense, 'accounts' => $this->accountsForForm()]);
     }
 
-    /**
-     * Update the specified expense
-     */
     public function update(Request $request, Expense $expense)
     {
         $this->authorize('update', $expense);
+        $this->validateExpense($request);
+        $account = Account::findOrFail($request->account_id);
+        $this->authorize('view', $account);
 
-        $request->validate([
-            'account_id' => 'required|exists:accounts,id',
-            'description' => 'required|string|max:500',
-            'reference' => 'nullable|string|max:255',
-            'currency' => 'required|in:CLP',
-            'items' => 'required|array|min:1',
-            'items.*.description' => 'required|string|max:255',
-            'items.*.amount' => 'required|numeric|min:0.01',
-            'items.*.currency' => 'required|in:CLP',
-            'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
-            'items.*.vendor_name' => 'required|string|max:255',
-            'items.*.receipt_number' => 'nullable|string|max:100',
-            'items.*.files' => 'nullable|array',
-            'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
-        ]);
-
-        $this->authorize('view', Account::findOrFail($request->account_id));
+        if ($errors = $this->validateDuplicateDocuments($request->items, $expense->id)) {
+            return $this->duplicateResponse($request, $errors);
+        }
 
         try {
-            // Duplicate document validation (in-request and against DB, excluding current expense)
-            $dupErrors = $this->validateDuplicateDocuments($request->items, $expense->id);
-            if (!empty($dupErrors)) {
-                return redirect()->back()->withErrors($dupErrors)->withInput();
-            }
+            $expense = $this->expenses->save($expense, $account, $request->description, $request->items, $this->filesByItem($request), auth()->id());
 
-            // Calculate total amount
-            $totalAmount = collect($request->items)->sum('amount');
-
-            // Una rendición rechazada que se corrige vuelve a quedar enviada para aprobación
-            $resubmit = $expense->status === 'rejected' ? [
-                'status' => 'submitted',
-                'submitted_at' => now(),
-                'reviewed_by' => null,
-                'reviewed_at' => null,
-                'rejection_reason' => null,
-            ] : [];
-
-            $expense->update([
-                'account_id' => $request->account_id,
-                'description' => $request->description,
-                'reference' => $request->reference,
-                'total_amount' => $totalAmount,
-                ...$resubmit,
-            ]);
-
-            // Delete existing items and documents, then recreate
-            foreach ($expense->expenseItems as $oldItem) {
-                $oldItem->documents()->delete();
-            }
-            $expense->expenseItems()->delete();
-
-            foreach ($request->items as $index => $item) {
-                $expenseItem = $expense->expenseItems()->create([
-                    'description' => $item['description'],
-                    'amount' => $item['amount'],
-                    'document_type' => $item['document_type'],
-                    'vendor_name' => $item['vendor_name'],
-                    'expense_date' => now()->toDateString(),
-                    'document_number' => $item['receipt_number'] ?? null,
-                    'category' => null,
-                    'expense_category_id' => $item['expense_category_id'] ?? null,
-                ]);
-
-                $files = $request->file("items.$index.files", []);
-                if ($files && is_array($files)) {
-                    foreach ($files as $file) {
-                        if (!$file) { continue; }
-                        $originalName = $file->getClientOriginalName();
-                        $mime = $file->getClientMimeType();
-                        $size = $file->getSize();
-                        $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
-                        $fileName = $this->uniqueFileName($baseDir, $originalName);
-                        $storedPath = $file->storeAs($baseDir, $fileName, Document::DISK);
-
-                        Document::create([
-                            'name' => $originalName,
-                            'file_path' => $storedPath,
-                            'mime_type' => $mime,
-                            'file_size' => $size,
-                            'document_type' => $expenseItem->document_type,
-                            'expense_item_id' => $expenseItem->id,
-                            'uploaded_by' => auth()->id(),
-                            'is_enabled' => true,
-                        ]);
-                    }
-                }
-            }
-
-            return redirect()->route('expenses.index')
-                ->with('toastr', [
-                    'type' => 'success',
-                    'message' => 'Rendición actualizada correctamente.'
-                ]);
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('toastr', [
-                    'type' => 'error',
-                    'message' => \App\Support\ErrorMessage::for($e, 'Error al actualizar la rendición')
-                ])
-                ->withInput();
+            return $this->savedResponse($request, $expense, 'Rendición actualizada correctamente.');
+        } catch (\Throwable $e) {
+            return $this->failedResponse($request, ErrorMessage::for($e, 'Error al actualizar la rendición'));
         }
     }
 
-    /**
-     * Remove the specified expense
-     */
     public function destroy(Expense $expense)
     {
         $this->authorize('delete', $expense);
 
         try {
-            Log::info('Intentando eliminar expense ID: ' . $expense->id);
-
             $expense->update(['is_enabled' => false]);
-
-            Log::info('Expense eliminado exitosamente: ' . $expense->id);
+            Log::info('Rendición eliminada', ['expense_id' => $expense->id, 'user_id' => auth()->id()]);
 
             return redirect()->route('expenses.index')
-                ->with('toastr', [
-                    'type' => 'success',
-                    'message' => 'Rendición eliminada correctamente.'
-                ]);
+                ->with('toastr', ['type' => 'success', 'message' => 'Rendición eliminada correctamente.']);
         } catch (\Exception $e) {
             return redirect()->route('expenses.index')
-                ->with('toastr', [
-                    'type' => 'error',
-                    'message' => \App\Support\ErrorMessage::for($e, 'Error al eliminar la rendición')
-                ]);
+                ->with('toastr', ['type' => 'error', 'message' => ErrorMessage::for($e, 'Error al eliminar la rendición')]);
         }
     }
 
-    // Helper methods
-    private function uniqueFileName(string $baseDir, string $originalName): string
+    private function accountsForForm()
     {
-        $disk = Storage::disk(Document::DISK);
-        $name = pathinfo($originalName, PATHINFO_FILENAME);
-        $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-        $candidate = $originalName;
-        $counter = 1;
-        while ($disk->exists("$baseDir/$candidate")) {
-            $suffix = " ($counter)";
-            $candidate = $name . $suffix . ($ext ? ".$ext" : '');
-            $counter++;
+        return Account::visibleTo(auth()->user())
+            ->with('person')
+            ->where('is_enabled', true)
+            ->where('type', 'person')
+            ->whereNotNull('person_id')
+            ->get();
+    }
+
+    private function validateExpense(Request $request): void
+    {
+        $request->validate([
+            'account_id' => 'required|exists:accounts,id',
+            'description' => 'required|string|max:500',
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|integer',
+            'items.*.expense_date' => 'required|date|before_or_equal:today',
+            'items.*.description' => 'required|string|max:255',
+            'items.*.amount' => 'required|numeric|min:1',
+            'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
+            'items.*.vendor_name' => 'required|string|max:255',
+            'items.*.receipt_number' => 'nullable|string|max:100',
+            'items.*.expense_category_id' => 'nullable|exists:expense_categories,id',
+            'items.*.remove_documents' => 'nullable|array',
+            'items.*.remove_documents.*' => 'integer',
+            'items.*.files' => 'nullable|array',
+            'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+        ], [], [
+            'account_id' => 'cuenta',
+            'description' => 'descripción',
+            'items' => 'ítems',
+            'items.*.expense_date' => 'fecha del gasto',
+            'items.*.description' => 'descripción del ítem',
+            'items.*.amount' => 'monto',
+            'items.*.document_type' => 'tipo de documento',
+            'items.*.vendor_name' => 'proveedor',
+            'items.*.receipt_number' => 'número de documento',
+            'items.*.files.*' => 'comprobante',
+        ]);
+    }
+
+    /** @return array<int, \Illuminate\Http\UploadedFile[]> archivos nuevos por posición de ítem */
+    private function filesByItem(Request $request): array
+    {
+        $files = [];
+        foreach (array_keys($request->items) as $position => $key) {
+            $files[$position] = array_filter((array) $request->file("items.$key.files", []));
         }
-        return $candidate;
+
+        return $files;
+    }
+
+    private function savedResponse(Request $request, Expense $expense, string $message)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => $message, 'redirect' => route('expenses.show', $expense)]);
+        }
+
+        return redirect()->route('expenses.show', $expense)->with('toastr', ['type' => 'success', 'message' => $message]);
+    }
+
+    private function failedResponse(Request $request, string $message)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $message], 422);
+        }
+
+        return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message])->withInput();
+    }
+
+    private function duplicateResponse(Request $request, array $errors)
+    {
+        $message = 'Se encontraron documentos duplicados (tipo + proveedor + número).';
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => false, 'message' => $message, 'errors' => $errors], 422);
+        }
+
+        return redirect()->back()->withErrors($errors)->withInput();
     }
 
     /**
-     * Validate duplicate documents by (document_type, vendor_name, receipt_number)
-     * - Detects duplicates inside the current payload
-     * - Detects duplicates already stored in DB (globally), optionally excluding an expense ID
-     * Returns an array of field errors keyed by dot-notation (items.X.receipt_number)
+     * Comprobantes repetidos por (tipo, proveedor, número), dentro de la rendición y contra
+     * rendiciones vigentes (se ignoran las rechazadas y eliminadas, que pueden rehacerse).
+     * Devuelve errores por campo (items.X.receipt_number).
      */
     private function validateDuplicateDocuments(array $items, ?int $excludeExpenseId = null): array
     {
         $errors = [];
-
-        // Normalize and track in-request duplicates
         $seen = [];
         $comboToIndices = [];
         foreach ($items as $idx => $item) {
-            $number = trim((string)($item['receipt_number'] ?? ''));
-            if ($number === '') { continue; } // No number -> no duplicate check
-            $type = (string)$item['document_type'];
-            $vendor = (string)$item['vendor_name'];
-            $key = $this->docKey($type, $vendor, $number);
-            $comboToIndices[$key] = $comboToIndices[$key] ?? [];
-            $comboToIndices[$key][] = (int)$idx;
+            $number = trim((string) ($item['receipt_number'] ?? ''));
+            if ($number === '') {
+                continue;
+            }
+            $key = $this->docKey((string) $item['document_type'], (string) $item['vendor_name'], $number);
+            $comboToIndices[$key][] = $idx;
             if (isset($seen[$key])) {
-                // Duplicate within the same request
-                $errors["items.$idx.receipt_number"] = [
-                    'Documento duplicado dentro de la rendición (mismo tipo, proveedor y número).',
-                ];
-                // Also mark the first occurrence to guide the user
-                $firstIdx = $seen[$key];
-                $errors["items.$firstIdx.receipt_number"] = $errors["items.$firstIdx.receipt_number"] ?? [
-                    'Documento duplicado dentro de la rendición.',
-                ];
+                $errors["items.$idx.receipt_number"] = ['Documento duplicado dentro de la rendición (mismo tipo, proveedor y número).'];
+                $errors["items.{$seen[$key]}.receipt_number"] ??= ['Documento duplicado dentro de la rendición.'];
             } else {
-                $seen[$key] = (int)$idx;
+                $seen[$key] = $idx;
             }
         }
 
-        // Check against DB only if we have any combos
-        if (!empty($comboToIndices)) {
-            $existing = ExpenseItem::query()
-                ->select(['document_type', 'vendor_name', 'document_number', 'expense_id'])
-                ->whereNotNull('document_number')
-                ->when($excludeExpenseId !== null, function ($q) use ($excludeExpenseId) {
-                    $q->where('expense_id', '!=', $excludeExpenseId);
-                })
-                ->where(function ($q) use ($comboToIndices) {
-                    foreach (array_keys($comboToIndices) as $key) {
-                        [$type, $vendorNorm, $numberNorm] = explode('|', $key);
-                        $q->orWhere(function ($qq) use ($type, $vendorNorm, $numberNorm) {
-                            $qq->where('document_type', $type)
-                                ->whereRaw('LOWER(TRIM(vendor_name)) = ?', [$vendorNorm])
-                                ->whereRaw('LOWER(TRIM(document_number)) = ?', [$numberNorm]);
-                        });
-                    }
-                })
-                ->limit(50)
-                ->get();
+        if (empty($comboToIndices)) {
+            return $errors;
+        }
 
-            foreach ($existing as $row) {
-                $key = $this->docKey($row->document_type, $row->vendor_name, $row->document_number);
-                if (!isset($comboToIndices[$key])) { continue; }
-                foreach ($comboToIndices[$key] as $idx) {
-                    $errors["items.$idx.receipt_number"] = $errors["items.$idx.receipt_number"] ?? [];
-                    $errors["items.$idx.receipt_number"][] = 'Documento ya registrado en otra rendición (mismo tipo, proveedor y número).';
+        $existing = ExpenseItem::query()
+            ->select(['document_type', 'vendor_name', 'document_number', 'expense_id'])
+            ->whereNotNull('document_number')
+            ->whereHas('expense', fn ($q) => $q->where('is_enabled', true)->where('status', '!=', 'rejected'))
+            ->when($excludeExpenseId !== null, fn ($q) => $q->where('expense_id', '!=', $excludeExpenseId))
+            ->where(function ($q) use ($comboToIndices) {
+                foreach (array_keys($comboToIndices) as $key) {
+                    [$type, $vendorNorm, $numberNorm] = explode('|', $key);
+                    $q->orWhere(fn ($qq) => $qq->where('document_type', $type)
+                        ->whereRaw('LOWER(TRIM(vendor_name)) = ?', [$vendorNorm])
+                        ->whereRaw('LOWER(TRIM(document_number)) = ?', [$numberNorm]));
                 }
+            })
+            ->limit(50)
+            ->get();
+
+        foreach ($existing as $row) {
+            foreach ($comboToIndices[$this->docKey($row->document_type, $row->vendor_name, $row->document_number)] ?? [] as $idx) {
+                $errors["items.$idx.receipt_number"][] = 'Documento ya registrado en otra rendición (mismo tipo, proveedor y número).';
             }
         }
 
@@ -439,6 +255,7 @@ class ExpenseController extends Controller
     {
         $normVendor = mb_strtolower(trim(preg_replace('/\s+/', ' ', $vendor)), 'UTF-8');
         $normNumber = mb_strtolower(trim($number), 'UTF-8');
+
         return $type . '|' . $normVendor . '|' . $normNumber;
     }
 }
