@@ -73,19 +73,40 @@
                             
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="balance" class="form-label">Saldo *</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control @error('balance') is-invalid @enderror" 
-                                               id="balance" name="balance" value="{{ old('balance', $account->balance) }}" 
-                                               step="0.01" min="0" required>
-                                        @error('balance')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                    <label for="balance" class="form-label">Saldo</label>
+                                    @role('boss')
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control @error('balance') is-invalid @enderror"
+                                                   id="balance" name="balance" value="{{ old('balance', $account->balance) }}"
+                                                   step="0.01" min="0">
+                                            @error('balance')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="form-text">Cambiarlo es un ajuste manual: queda registrado con su motivo.</div>
+                                    @else
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="text" class="form-control" id="balance" value="{{ number_format($account->balance, 0, ',', '.') }}" readonly>
+                                        </div>
+                                        <div class="form-text">El saldo cambia solo mediante transacciones y rendiciones aprobadas.</div>
+                                    @endrole
                                 </div>
                             </div>
                         </div>
+
+                        @role('boss')
+                            <div class="mb-3">
+                                <label for="balance_adjustment_reason" class="form-label">Motivo del ajuste de saldo</label>
+                                <input type="text" class="form-control @error('balance_adjustment_reason') is-invalid @enderror"
+                                       id="balance_adjustment_reason" name="balance_adjustment_reason" maxlength="255"
+                                       value="{{ old('balance_adjustment_reason') }}" placeholder="Obligatorio solo si cambias el saldo">
+                                @error('balance_adjustment_reason')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        @endrole
                         
                         <div class="mb-3">
                             <label for="notes" class="form-label">Notas</label>

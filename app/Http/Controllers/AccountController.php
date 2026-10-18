@@ -158,13 +158,32 @@ class AccountController extends Controller
             'name' => 'required|string|max:255',
             'type' => 'required|in:treasury,person',
             'person_id' => 'nullable|required_if:type,person|exists:people,id',
-            'balance' => 'required|numeric|min:0',
+            'balance' => 'nullable|numeric|min:0',
+            'balance_adjustment_reason' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
             'is_enabled' => 'in:0,1',
             'is_fondeo' => 'in:0,1',
         ]);
 
-        $data = $request->only(['name', 'type', 'person_id', 'balance', 'notes', 'is_fondeo']);
+        $data = $request->only(['name', 'type', 'person_id', 'notes', 'is_fondeo']);
+
+        // El saldo solo cambia por transacciones; un ajuste manual exige rol boss y motivo
+        $balanceAdjustment = null;
+        if ($request->filled('balance') && round((float) $request->input('balance'), 2) !== round((float) $account->balance, 2)) {
+            if (! $request->user()->hasRole('boss')) {
+                return back()->withErrors(['balance' => 'Solo el jefe puede ajustar saldos manualmente.'])->withInput();
+            }
+            if (! $request->filled('balance_adjustment_reason')) {
+                return back()->withErrors(['balance_adjustment_reason' => 'Indica el motivo del ajuste de saldo.'])->withInput();
+            }
+            $data['balance'] = $request->input('balance');
+            $balanceAdjustment = [
+                'old' => (float) $account->balance,
+                'new' => (float) $request->input('balance'),
+                'reason' => $request->input('balance_adjustment_reason'),
+            ];
+        }
+
         // Validación extra: evitar convertir otra cuenta en 'treasury' si ya existe una diferente
         if ($data['type'] === 'treasury') {
             $existing = Account::where('type', 'treasury')->where('id', '<>', $account->id)->first();
@@ -192,6 +211,14 @@ class AccountController extends Controller
 
         try {
             $account->update($data);
+
+            if ($balanceAdjustment) {
+                activity('balance_adjustment')
+                    ->performedOn($account)
+                    ->causedBy($request->user())
+                    ->withProperties($balanceAdjustment)
+                    ->log('Ajuste manual de saldo');
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
                 return back()->withErrors(['balance' => 'El valor del saldo excede el máximo permitido por la base de datos.'])->withInput();
