@@ -93,6 +93,28 @@
         </div>
     </div>
 
+    <!-- Modal de confirmación de aprobación -->
+    <div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveModalLabel">Confirmar aprobación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Revisa el detalle antes de aprobar. Al aprobar se actualizan los saldos.</p>
+                    <dl class="row mb-0" id="approveDetails"></dl>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="confirmApprove()">
+                        <i class="fas fa-check me-2"></i>Aprobar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal para Motivo de Rechazo -->
     <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -459,14 +481,67 @@
                 });
             });
 
+            let pendingApproval = null;
+
+            function plainText(html) {
+                const withSeparators = String(html ?? '').replace(/<br\s*\/?>/gi, ' · ');
+                return new DOMParser().parseFromString(withSeparators, 'text/html').body.textContent.replace(/\s+/g, ' ').trim();
+            }
+
+            function clp(amount) {
+                return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(Number(amount) || 0);
+            }
+
+            function findRow(table, id) {
+                return table.rows().data().toArray().find(row => row.id === id);
+            }
+
+            /**
+             * Muestra el detalle (como texto) y ejecuta onConfirm solo si el usuario confirma
+             */
+            function askApproval(title, details, onConfirm) {
+                document.getElementById('approveModalLabel').textContent = title;
+                const list = document.getElementById('approveDetails');
+                list.replaceChildren();
+                details.forEach(([label, value]) => {
+                    const dt = document.createElement('dt');
+                    dt.className = 'col-sm-4';
+                    dt.textContent = label;
+                    const dd = document.createElement('dd');
+                    dd.className = 'col-sm-8';
+                    dd.textContent = value || '—';
+                    list.append(dt, dd);
+                });
+                pendingApproval = onConfirm;
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('approveModal')).show();
+            }
+
+            document.getElementById('approveModal').addEventListener('hidden.bs.modal', () => {
+                pendingApproval = null;
+            });
+
+            function confirmApprove() {
+                const action = pendingApproval;
+                pendingApproval = null;
+                bootstrap.Modal.getInstance(document.getElementById('approveModal')).hide();
+                if (action) action();
+            }
+
             /**
              * Aprueba una transferencia
              */
             function approveTransaction(transactionId) {
-                if (!confirm('¿Está seguro que desea aprobar esta transferencia?')) {
-                    return;
-                }
+                const row = findRow(transactionsTable, transactionId);
+                askApproval('Aprobar transferencia', [
+                    ['N°', row?.transaction_number],
+                    ['Desde', plainText(row?.from_account)],
+                    ['Hacia', plainText(row?.to_account)],
+                    ['Monto', row ? clp(row.amount) : ''],
+                    ['Descripción', plainText(row?.description)],
+                ], () => sendTransactionApproval(transactionId));
+            }
 
+            function sendTransactionApproval(transactionId) {
                 fetch(`/approvals/transactions/${transactionId}/approve`, {
                         method: 'POST',
                         headers: {
@@ -507,10 +582,17 @@
              * Aprueba una rendición
              */
             function approveExpense(expenseId) {
-                if (!confirm('¿Está seguro que desea aprobar esta rendición?')) {
-                    return;
-                }
+                const row = findRow(expensesTable, expenseId);
+                askApproval('Aprobar rendición', [
+                    ['Persona', plainText(row?.person_name)],
+                    ['Fecha', String(row?.expense_date ?? '').slice(0, 10).split('-').reverse().join('/')],
+                    ['Descripción', plainText(row?.description)],
+                    ['Ítems', plainText(row?.items_count)],
+                    ['Monto', row ? clp(row.total_amount) : ''],
+                ], () => sendExpenseApproval(expenseId));
+            }
 
+            function sendExpenseApproval(expenseId) {
                 fetch(`/approvals/expenses/${expenseId}/approve`, {
                         method: 'POST',
                         headers: {
