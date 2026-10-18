@@ -91,10 +91,10 @@ class TransactionController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al crear la transacción: ' . $e->getMessage()
+                    'message' => \App\Support\ErrorMessage::for($e, 'Error al crear la transacción')
                 ], 500);
             }
-            return redirect()->back()->with('error', 'Error al crear la transacción: ' . $e->getMessage());
+            return redirect()->back()->with('error', \App\Support\ErrorMessage::for($e, 'Error al crear la transacción'));
         }
     }
 

@@ -114,7 +114,7 @@ class BankList extends Component
             $this->resetForm();
             $this->dispatch('showToastr', type: 'success', message: $message);
         } catch (\Exception $e) {
-            $this->dispatch('showToastr', type: 'error', message: 'Error al guardar el banco: ' . $e->getMessage());
+            $this->dispatch('showToastr', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al guardar el banco'));
         }
     }
 
@@ -132,7 +132,7 @@ class BankList extends Component
             $bank->delete();
             $this->dispatch('showToastr', type: 'success', message: 'Banco eliminado exitosamente.');
         } catch (\Exception $e) {
-            $this->dispatch('showToastr', type: 'error', message: 'Error al eliminar el banco: ' . $e->getMessage());
+            $this->dispatch('showToastr', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al eliminar el banco'));
         }
     }
 

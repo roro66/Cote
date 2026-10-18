@@ -62,7 +62,7 @@ class User extends Authenticatable
                 || $user->reviewedExpenses()->exists()
                 || $user->uploadedDocuments()->exists()
             ) {
-                throw new \Exception('No se puede eliminar el usuario porque tiene registros históricos (transacciones, aprobaciones, gastos o documentos). Desactiva el usuario en su lugar.');
+                throw new \DomainException('No se puede eliminar el usuario porque tiene registros históricos (transacciones, aprobaciones, gastos o documentos). Desactiva el usuario en su lugar.');
             }
             return true;
         });

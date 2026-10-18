@@ -47,7 +47,7 @@ class TransactionService
             }
         } while ($attempt < $maxAttempts);
 
-        throw new \Exception('No se pudo generar un número de transacción único después de varios intentos. Intenta de nuevo.');
+        throw new \DomainException('No se pudo generar un número de transacción único después de varios intentos. Intenta de nuevo.');
     }
     
     /**

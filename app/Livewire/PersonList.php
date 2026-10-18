@@ -205,7 +205,7 @@ class PersonList extends Component
             $this->dispatch('showToastr', type: 'success', message: 'Persona eliminada exitosamente');
             
         } catch (\Exception $e) {
-            $this->dispatch('showToastr', type: 'error', message: 'Error al eliminar la persona: ' . $e->getMessage());
+            $this->dispatch('showToastr', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al eliminar la persona'));
         }
     }
 

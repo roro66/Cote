@@ -124,7 +124,7 @@ class UserController extends Controller
         try {
             $user->delete();
         } catch (\Throwable $e) {
-            $msg = $e->getMessage() ?: 'No se pudo eliminar el usuario.';
+            $msg = \App\Support\ErrorMessage::for($e, 'No se pudo eliminar el usuario');
             if (request()->ajax()) {
                 return response()->json(['success' => false, 'message' => $msg], 400);
             }

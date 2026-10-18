@@ -99,14 +99,9 @@ class ReportsController extends Controller
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            \Log::error('Error generating monthly expense report: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            
             return response()->json([
                 'success' => false,
-                'message' => 'Error interno del servidor: ' . $e->getMessage()
+                'message' => \App\Support\ErrorMessage::for($e, 'No se pudo generar el informe')
             ], 500);
         }
     }

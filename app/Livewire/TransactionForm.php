@@ -198,7 +198,7 @@ class TransactionForm extends Component
 
             return redirect()->route('transactions.index');
         } catch (\Exception $e) {
-            session()->flash('error', 'Error al procesar la transacción: ' . $e->getMessage());
+            session()->flash('error', \App\Support\ErrorMessage::for($e, 'Error al procesar la transacción'));
         }
     }
 

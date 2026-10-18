@@ -99,7 +99,7 @@ class AccountTypeList extends Component
             $this->resetForm();
             $this->dispatch('showToastr', type: 'success', message: $message);
         } catch (\Exception $e) {
-            $this->dispatch('showToastr', type: 'error', message: 'Error al guardar el tipo de cuenta: ' . $e->getMessage());
+            $this->dispatch('showToastr', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al guardar el tipo de cuenta'));
         }
     }
 
@@ -117,7 +117,7 @@ class AccountTypeList extends Component
             $accountType->delete();
             $this->dispatch('showToastr', type: 'success', message: 'Tipo de cuenta eliminado exitosamente.');
         } catch (\Exception $e) {
-            $this->dispatch('showToastr', type: 'error', message: 'Error al eliminar el tipo de cuenta: ' . $e->getMessage());
+            $this->dispatch('showToastr', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al eliminar el tipo de cuenta'));
         }
     }
 

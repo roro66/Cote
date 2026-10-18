@@ -41,13 +41,13 @@ class PersonDataTableController extends Controller
                             'cooperativa' => 'bg-warning',
                             default => 'bg-secondary'
                         };
-                        return '<span class="badge ' . $badge . '">' . $row->bank->name . '</span>';
+                        return '<span class="badge ' . $badge . '">' . e($row->bank->name) . '</span>';
                     }
                     return '<span class="text-muted">Sin banco</span>';
                 })
                 ->addColumn('account_info', function ($row) {
                     if ($row->accountType) {
-                        return '<span class="badge bg-secondary">' . $row->accountType->name . '</span>';
+                        return '<span class="badge bg-secondary">' . e($row->accountType->name) . '</span>';
                     }
                     return '<span class="text-muted">Sin tipo</span>';
                 })

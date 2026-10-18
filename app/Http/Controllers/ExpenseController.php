@@ -153,7 +153,7 @@ class ExpenseController extends Controller
                     'message' => $payload['message'],
                 ]);
         } catch (\Exception $e) {
-            $message = 'Error al crear la rendición: ' . $e->getMessage();
+            $message = \App\Support\ErrorMessage::for($e, 'Error al crear la rendición');
 
             if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
                 return response()->json([
@@ -190,7 +190,7 @@ class ExpenseController extends Controller
             $html = view('expenses.partials.details_modal', compact('expense'))->render();
             return response()->json(['success' => true, 'html' => $html]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al renderizar detalles: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => \App\Support\ErrorMessage::for($e, 'Error al renderizar detalles')], 500);
         }
     }
 
@@ -295,7 +295,7 @@ class ExpenseController extends Controller
             return redirect()->back()
                 ->with('toastr', [
                     'type' => 'error',
-                    'message' => 'Error al actualizar la rendición: ' . $e->getMessage()
+                    'message' => \App\Support\ErrorMessage::for($e, 'Error al actualizar la rendición')
                 ])
                 ->withInput();
         }
@@ -319,12 +319,10 @@ class ExpenseController extends Controller
                     'message' => 'Rendición eliminada correctamente.'
                 ]);
         } catch (\Exception $e) {
-            Log::error('Error al eliminar expense: ' . $e->getMessage());
-
             return redirect()->route('expenses.index')
                 ->with('toastr', [
                     'type' => 'error',
-                    'message' => 'Error al eliminar la rendición: ' . $e->getMessage()
+                    'message' => \App\Support\ErrorMessage::for($e, 'Error al eliminar la rendición')
                 ]);
         }
     }

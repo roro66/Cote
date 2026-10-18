@@ -107,7 +107,7 @@ class Account extends Model
         // Prevent incrementing past DB maximum
         $new = $this->balance + $amount;
         if ($new > self::MAX_BALANCE) {
-            throw new \RuntimeException('Balance update would exceed maximum allowed value');
+            throw new \DomainException('Operación cancelada: el saldo resultante excede el máximo permitido.');
         }
         $this->increment('balance', $amount);
     }

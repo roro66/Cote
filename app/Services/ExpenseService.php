@@ -51,7 +51,7 @@ class ExpenseService
     public function submitExpense(Expense $expense): bool
     {
         if ($expense->status !== 'draft') {
-            throw new \Exception('Solo se pueden enviar rendiciones en borrador.');
+            throw new \DomainException('Solo se pueden enviar rendiciones en borrador.');
         }
 
         $expense->update([
@@ -138,7 +138,7 @@ class ExpenseService
     public function addExpenseItem(Expense $expense, array $itemData): ExpenseItem
     {
         if ($expense->status !== 'draft') {
-            throw new \Exception('Solo se pueden agregar items a rendiciones en borrador.');
+            throw new \DomainException('Solo se pueden agregar items a rendiciones en borrador.');
         }
 
         $itemData['expense_id'] = $expense->id;

@@ -73,10 +73,10 @@ class PersonController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al crear la persona: ' . $e->getMessage()
+                    'message' => \App\Support\ErrorMessage::for($e, 'Error al crear la persona')
                 ], 500);
             }
-            return back()->with('error', 'Error al crear la persona: ' . $e->getMessage())->withInput();
+            return back()->with('error', \App\Support\ErrorMessage::for($e, 'Error al crear la persona'))->withInput();
         }
     }
 
@@ -120,10 +120,10 @@ class PersonController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al actualizar la persona: ' . $e->getMessage()
+                    'message' => \App\Support\ErrorMessage::for($e, 'Error al actualizar la persona')
                 ], 500);
             }
-            return back()->with('error', 'Error al actualizar la persona: ' . $e->getMessage())->withInput();
+            return back()->with('error', \App\Support\ErrorMessage::for($e, 'Error al actualizar la persona'))->withInput();
         }
     }
 
@@ -139,7 +139,7 @@ class PersonController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar la persona: ' . $e->getMessage()
+                'message' => \App\Support\ErrorMessage::for($e, 'Error al eliminar la persona')
             ], 500);
         }
     }
@@ -157,7 +157,7 @@ class PersonController extends Controller
             return response()->json(['data' => $data]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'Error al exportar los datos: ' . $e->getMessage()
+                'error' => \App\Support\ErrorMessage::for($e, 'Error al exportar los datos')
             ], 500);
         }
     }
