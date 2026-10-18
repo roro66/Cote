@@ -8,6 +8,7 @@ use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AccountTypeController;
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DataTables\PersonDataTableController;
 use App\Http\Controllers\DataTables\AccountDataTableController;
 use App\Http\Controllers\DataTables\TransactionDataTableController;
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'verified', 'enabled'])->group(function () {
     Route::resource('expenses', ExpenseController::class);
     Route::get('expenses/{expense}/details', [ExpenseController::class, 'details'])->name('expenses.details');
     Route::get('datatables/expenses', [ExpenseDataTableController::class, 'index'])->name('datatables.expenses');
+    Route::get('documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
 
     // Lecturas que necesita el formulario de rendiciones
     Route::get('accounts/{account}', [AccountController::class, 'show'])->whereNumber('account')->name('accounts.show');

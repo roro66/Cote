@@ -144,7 +144,7 @@
                                                             <div class="d-flex flex-wrap gap-2">
                                                                 @foreach($item->documents as $doc)
                                                                     @php
-                                                                        $url = asset('storage/' . $doc->file_path);
+                                                                        $url = $doc->url;
                                                                         $isImage = str_starts_with($doc->mime_type, 'image/');
                                                                     @endphp
                                                                     <a href="{{ $url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary" title="Ver {{ $doc->name }}">

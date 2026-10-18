@@ -120,7 +120,7 @@ class ExpenseController extends Controller
                         // Build storage path keeping human-readable name, avoid overwriting
                         $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
                         $fileName = $this->uniqueFileName($baseDir, $originalName);
-                        $storedPath = $file->storeAs($baseDir, $fileName, 'public');
+                        $storedPath = $file->storeAs($baseDir, $fileName, Document::DISK);
 
                         Document::create([
                             'name' => $originalName, // keep user's original name
@@ -270,7 +270,7 @@ class ExpenseController extends Controller
                         $size = $file->getSize();
                         $baseDir = "expenses/{$expense->id}/items/{$expenseItem->id}";
                         $fileName = $this->uniqueFileName($baseDir, $originalName);
-                        $storedPath = $file->storeAs($baseDir, $fileName, 'public');
+                        $storedPath = $file->storeAs($baseDir, $fileName, Document::DISK);
 
                         Document::create([
                             'name' => $originalName,
@@ -332,7 +332,7 @@ class ExpenseController extends Controller
     // Helper methods
     private function uniqueFileName(string $baseDir, string $originalName): string
     {
-        $disk = Storage::disk('public');
+        $disk = Storage::disk(Document::DISK);
         $name = pathinfo($originalName, PATHINFO_FILENAME);
         $ext = pathinfo($originalName, PATHINFO_EXTENSION);
         $candidate = $originalName;

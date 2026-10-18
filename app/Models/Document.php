@@ -11,6 +11,9 @@ class Document extends Model
 {
     use LogsActivity;
 
+    /** Disco privado: los comprobantes solo se sirven vía DocumentController. */
+    public const DISK = 'local';
+
     protected $fillable = [
         'name',
         'file_path',
@@ -53,6 +56,22 @@ class Document extends Model
     }
 
     // Accessors
+    public function getUrlAttribute(): string
+    {
+        return route('documents.show', $this);
+    }
+
+    public function isViewableBy(User $user): bool
+    {
+        if ($user->hasAnyRole(['boss', 'treasurer']) || (int) $this->uploaded_by === (int) $user->id) {
+            return true;
+        }
+
+        $submittedBy = $this->expenseItem?->expense?->submitted_by;
+
+        return $submittedBy !== null && $user->person_id !== null && (int) $submittedBy === (int) $user->person_id;
+    }
+
     public function getDocumentTypeSpanishAttribute(): string
     {
         return match($this->document_type) {

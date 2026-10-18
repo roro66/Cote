@@ -150,7 +150,7 @@ class ReportService
                     foreach ($item->documents as $doc) {
                         $documentsArray[] = [
                             'filename' => $doc->name,
-                            'url' => asset('storage/' . $doc->file_path),
+                            'url' => $doc->url,
                             'mime_type' => $doc->mime_type,
                             'size' => $doc->file_size
                         ];
