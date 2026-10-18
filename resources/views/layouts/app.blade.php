@@ -7,19 +7,7 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Tema: preferencia guardada o preferencia del sistema -->
-        <script>
-            (function() {
-                try {
-                    var theme = localStorage.getItem('theme');
-                    if (!theme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-                        theme = 'dark';
-                    theme = theme || 'light';
-                    document.documentElement.setAttribute('data-bs-theme', theme);
-                    document.documentElement.classList.toggle('dark', theme === 'dark');
-                } catch (e) { /* ignore */ }
-            })();
-        </script>
+        @include('partials.theme-init')
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -76,21 +64,9 @@
                         document.getElementById('sidebar-overlay').classList.toggle('sidebar-overlay-show');
                     });
                 }
-
-                // Toggle modo oscuro / claro
-                var themeToggle = document.getElementById('theme-toggle');
-                if (themeToggle) {
-                    themeToggle.addEventListener('click', function() {
-                        var html = document.documentElement;
-                        var current = html.getAttribute('data-bs-theme') || 'light';
-                        var next = current === 'dark' ? 'light' : 'dark';
-                        html.setAttribute('data-bs-theme', next);
-                        html.classList.toggle('dark', next === 'dark');
-                        try { localStorage.setItem('theme', next); } catch (e) {}
-                    });
-                }
             });
         </script>
+        @include('partials.theme-toggle-script')
         
         <!-- jQuery PRIMERO -->
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>

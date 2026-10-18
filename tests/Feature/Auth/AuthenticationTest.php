@@ -39,3 +39,16 @@ test('users can logout', function () {
     $this->assertGuest();
     $response->assertRedirect('/');
 });
+
+test('login screen offers the theme toggle and is in spanish', function () {
+    $this->get('/login')
+        ->assertOk()
+        ->assertSee('data-theme-toggle', false)
+        ->assertSee('Iniciar sesión')
+        ->assertSee('Contraseña');
+});
+
+test('failed login shows the spanish message', function () {
+    $this->post('/login', ['email' => 'nadie@cote.com', 'password' => 'incorrecta'])
+        ->assertSessionHasErrors(['email' => 'Estas credenciales no coinciden con nuestros registros.']);
+});

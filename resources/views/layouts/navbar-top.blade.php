@@ -15,7 +15,7 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-link text-dark navbar-theme-btn hover-bg-light rounded p-2" id="theme-toggle" aria-label="Cambiar tema (claro/oscuro)" title="Cambiar tema">
+            <button type="button" class="btn btn-link text-dark navbar-theme-btn hover-bg-light rounded p-2" id="theme-toggle" data-theme-toggle aria-label="Cambiar tema (claro/oscuro)" title="Cambiar tema">
                 <i class="fas fa-moon fa-lg theme-icon-light" aria-hidden="true"></i>
                 <i class="fas fa-sun fa-lg theme-icon-dark d-none" aria-hidden="true"></i>
             </button>

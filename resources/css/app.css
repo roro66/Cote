@@ -203,3 +203,35 @@ body { overflow-x: hidden; }
 .theme-icon-light { display: inline-block !important; }
 [data-bs-theme="dark"] .theme-icon-light { display: none !important; }
 [data-bs-theme="dark"] .theme-icon-dark { display: inline-block !important; }
+
+/* Pantallas de invitado (login, recuperar contraseña): botón de tema y modo oscuro */
+.guest-theme-toggle { background-color: rgba(255,255,255,0.85); color: #374151; line-height: 0; }
+.guest-theme-toggle:hover { background-color: #fff; }
+[data-bs-theme="dark"] .guest-theme-toggle { background-color: #343a40; color: #f8f9fa; border: 1px solid #495057; }
+[data-bs-theme="dark"] .guest-theme-toggle:hover { background-color: #495057; }
+[data-bs-theme="dark"] .guest-page {
+    background-color: #16191c !important;
+    background-image: linear-gradient(rgba(22,25,28,0.9), rgba(22,25,28,0.9)), url('/assets/img/pattern-bills.svg') !important;
+}
+/* El subtítulo del logo es negro: en oscuro va sobre una placa clara */
+[data-bs-theme="dark"] .guest-logo { background-color: rgba(255,255,255,0.92); border-radius: 1rem; padding: 0.75rem 1.25rem; }
+[data-bs-theme="dark"] .guest-card { background-color: rgba(43,48,53,0.95) !important; color: #e9ecef; }
+[data-bs-theme="dark"] .guest-card .text-gray-900,
+[data-bs-theme="dark"] .guest-card .text-gray-800 { color: #f8f9fa !important; }
+[data-bs-theme="dark"] .guest-card .text-gray-700 { color: #dee2e6 !important; }
+[data-bs-theme="dark"] .guest-card .text-gray-600,
+[data-bs-theme="dark"] .guest-card .text-gray-500 { color: #ced4da !important; }
+[data-bs-theme="dark"] .guest-card a:hover { color: #fff !important; }
+[data-bs-theme="dark"] .guest-card input[type="email"],
+[data-bs-theme="dark"] .guest-card input[type="password"],
+[data-bs-theme="dark"] .guest-card input[type="text"] {
+    background-color: #212529; color: #f8f9fa; border-color: #6c757d;
+}
+[data-bs-theme="dark"] .guest-card input::placeholder { color: #adb5bd; }
+[data-bs-theme="dark"] .guest-card input:focus { border-color: #818cf8; }
+[data-bs-theme="dark"] .guest-card input[type="checkbox"] { background-color: #212529; border-color: #6c757d; }
+[data-bs-theme="dark"] .guest-card input[type="checkbox"]:checked { background-color: #6366f1; border-color: #6366f1; }
+[data-bs-theme="dark"] .guest-card .bg-gray-800 { background-color: #4f46e5 !important; color: #fff !important; }
+[data-bs-theme="dark"] .guest-card .bg-gray-800:hover { background-color: #6366f1 !important; }
+[data-bs-theme="dark"] .guest-card .text-red-600 { color: #fca5a5 !important; }
+[data-bs-theme="dark"] .guest-card .text-green-600 { color: #86efac !important; }
