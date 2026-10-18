@@ -28,7 +28,7 @@ class ExpenseController extends Controller
     public function create(): View
     {
         // Solo cuentas personales para rendiciones (se rebajará saldo de la persona)
-        $accounts = Account::where('is_enabled', true)->where('type', 'person')->get();
+        $accounts = Account::visibleTo(auth()->user())->where('is_enabled', true)->where('type', 'person')->get();
         return view('expenses.create', compact('accounts'));
     }
 
@@ -53,6 +53,8 @@ class ExpenseController extends Controller
             'items.*.files' => 'nullable|array',
             'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
+
+        $this->authorize('view', Account::findOrFail($request->account_id));
 
         try {
             // Duplicate document validation (in-request and against DB)
@@ -176,6 +178,7 @@ class ExpenseController extends Controller
      */
     public function show(Expense $expense): View
     {
+        $this->authorize('view', $expense);
     $expense->load(['account.person', 'submittedBy', 'items.documents']);
         return view('expenses.show', compact('expense'));
     }
@@ -185,6 +188,8 @@ class ExpenseController extends Controller
      */
     public function details(Expense $expense): JsonResponse
     {
+        $this->authorize('view', $expense);
+
         try {
             $expense->load(['account.person', 'submittedBy', 'items.documents']);
             $html = view('expenses.partials.details_modal', compact('expense'))->render();
@@ -199,7 +204,9 @@ class ExpenseController extends Controller
      */
     public function edit(Expense $expense): View
     {
-        $accounts = Account::where('is_enabled', true)->get();
+        $this->authorize('update', $expense);
+
+        $accounts = Account::visibleTo(auth()->user())->where('is_enabled', true)->get();
         $expense->load(['items']);
         return view('expenses.edit', compact('expense', 'accounts'));
     }
@@ -209,6 +216,8 @@ class ExpenseController extends Controller
      */
     public function update(Request $request, Expense $expense)
     {
+        $this->authorize('update', $expense);
+
         $request->validate([
             'account_id' => 'required|exists:accounts,id',
             'description' => 'required|string|max:500',
@@ -224,6 +233,8 @@ class ExpenseController extends Controller
             'items.*.files' => 'nullable|array',
             'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
+
+        $this->authorize('view', Account::findOrFail($request->account_id));
 
         try {
             // Duplicate document validation (in-request and against DB, excluding current expense)
@@ -306,6 +317,8 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense)
     {
+        $this->authorize('delete', $expense);
+
         try {
             Log::info('Intentando eliminar expense ID: ' . $expense->id);
 

@@ -20,6 +20,7 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'is_enabled' => ['nullable', 'boolean'],
+            'person_id' => ['nullable', 'integer', Rule::exists('people', 'id')],
             'roles' => ['nullable', 'array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
         ];

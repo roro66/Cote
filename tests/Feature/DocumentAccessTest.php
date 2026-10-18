@@ -53,7 +53,7 @@ it('stores uploaded receipts outside the public disk', function () {
     $person = Person::factory()->create();
     $account = Account::factory()->create(['type' => 'person', 'person_id' => $person->id]);
 
-    $this->actingAs(User::factory()->create())->post(route('expenses.store'), [
+    $this->actingAs(User::factory()->create(['person_id' => $person->id]))->post(route('expenses.store'), [
         'account_id' => $account->id,
         'description' => 'Compra con boleta',
         'currency' => 'CLP',

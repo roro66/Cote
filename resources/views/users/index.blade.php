@@ -81,6 +81,8 @@
                             </div>
                         </div>
 
+                        @include('users.partials.person-select', ['id' => 'create_person_id'])
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="form-check mt-4">
@@ -150,6 +152,8 @@
                                 <div class="invalid-feedback"></div>
                             </div>
                         </div>
+
+                        @include('users.partials.person-select', ['id' => 'edit_person_id'])
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
@@ -282,6 +286,7 @@
                     document.getElementById('edit_name').value = user.name;
                     document.getElementById('edit_email').value = user.email;
                     document.getElementById('edit_is_enabled').checked = !!user.is_enabled;
+                    document.getElementById('edit_person_id').value = user.person_id ?? '';
                     // Clear roles checks
                     document.querySelectorAll('#edit_roles_container input[type="checkbox"]').forEach(cb => cb.checked = false);
                     if (Array.isArray(user.roles)) {

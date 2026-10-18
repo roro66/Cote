@@ -9,9 +9,6 @@ use App\Models\User;
 uses(RefreshDatabase::class);
 
 it('stores expense with items including expense_category_id', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
     $person = \App\Models\Person::create([
         'first_name' => 'Persona',
         'last_name' => 'Prueba',
@@ -19,6 +16,8 @@ it('stores expense with items including expense_category_id', function () {
         'role_type' => 'trabajador',
         'is_enabled' => true,
     ]);
+    $user = User::factory()->create(['person_id' => $person->id]);
+    $this->actingAs($user);
     $account = Account::factory()->create(['person_id' => $person->id, 'type' => 'person']);
     $category = ExpenseCategory::factory()->create();
 

@@ -66,6 +66,16 @@ class Account extends Model
     }
 
     // Scopes
+    /** Mismo criterio que AccountPolicy::view, para listados. */
+    public function scopeVisibleTo($query, User $user)
+    {
+        if ($user->hasAnyRole(['boss', 'treasurer'])) {
+            return $query;
+        }
+
+        return $query->where('accounts.person_id', $user->person_id ?? 0);
+    }
+
     public function scopeEnabled($query)
     {
         return $query->where('is_enabled', true);

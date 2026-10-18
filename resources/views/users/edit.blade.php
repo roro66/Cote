@@ -38,6 +38,7 @@
                         <label class="block text-sm font-medium">Confirmar contraseña</label>
                         <input type="password" name="password_confirmation" class="mt-1 w-full border rounded px-3 py-2">
                     </div>
+                    @include('users.partials.person-select', ['id' => 'person_id', 'selected' => old('person_id', $user->person_id)])
                     <div>
                         <label class="block text-sm font-medium">Activo</label>
                         <input type="checkbox" name="is_enabled" value="1" class="mt-1" @checked(old('is_enabled', $user->is_enabled))> Sí

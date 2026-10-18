@@ -11,6 +11,7 @@
         </div>
     @endif
 
+    @hasanyrole('boss|treasurer')
     <!-- Resumen de Cuentas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div class="bg-white overflow-hidden shadow rounded-lg">
@@ -95,7 +96,6 @@
         </div>
     </div>
 
-    @hasanyrole('boss|treasurer')
         <div class="bg-white shadow rounded-lg mb-8">
             <div class="px-4 py-5 sm:p-6">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Requiere atención</h3>
@@ -124,7 +124,6 @@
                 </div>
             </div>
         </div>
-    @endhasanyrole
 
     <!-- Resumen por tipo de cuenta -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -204,6 +203,8 @@
             </div>
         </div>
     </div>
+
+    @endhasanyrole
 
     <!-- Rendiciones Recientes -->
     <div class="bg-white shadow rounded-lg">

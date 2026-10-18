@@ -16,6 +16,7 @@ class ExpenseDataTableController extends Controller
             // Calificar is_enabled con el nombre de la tabla para evitar
             // ambigüedades cuando se hacen joins (por ejemplo people tiene is_enabled)
             $data = Expense::with(['account', 'submitter', 'reviewedBy'])
+                ->visibleTo($request->user())
                 ->where('expenses.is_enabled', true)
                 ->select('expenses.*');
 

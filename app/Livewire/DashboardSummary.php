@@ -29,6 +29,22 @@ class DashboardSummary extends Component
 
     public function loadSummaryData()
     {
+        $user = auth()->user();
+
+        $this->recentExpenses = Expense::with(['account', 'submitter'])
+            ->visibleTo($user)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        // Las propiedades públicas viajan en el HTML de Livewire: no cargar datos globales sin rol
+        if (! $user->hasAnyRole(['boss', 'treasurer'])) {
+            $this->recentTransactions = collect();
+            $this->accountsByType = collect();
+            $this->negativeAccounts = collect();
+            return;
+        }
+
         // Cuentas
         $this->totalAccounts = Account::where('is_enabled', true)->count();
         $this->totalBalance = Account::where('is_enabled', true)->sum('balance');
@@ -54,10 +70,6 @@ class DashboardSummary extends Component
             ->where('is_enabled', true)
             ->where('balance', '<', 0)
             ->orderBy('balance')
-            ->take(5)
-            ->get();
-        $this->recentExpenses = Expense::with(['account', 'submitter'])
-            ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
     }

@@ -143,6 +143,8 @@ class AccountController extends Controller
 
     public function show(Account $account)
     {
+        $this->authorize('view', $account);
+
         return response()->json($account->load('person'));
     }
 

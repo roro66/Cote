@@ -41,6 +41,8 @@
                             </div>
                         </div>
 
+                        @include('users.partials.person-select', ['id' => 'person_id', 'selected' => old('person_id')])
+
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <div class="form-check mt-4">

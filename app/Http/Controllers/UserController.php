@@ -21,13 +21,15 @@ class UserController extends Controller
     {
         // La vista usa DataTables para cargar usuarios; solo necesita los roles para los modales
         $roles = Role::orderBy('name')->get();
-        return view('users.index', compact('roles'));
+        $people = $this->people();
+        return view('users.index', compact('roles', 'people'));
     }
 
     public function create()
     {
         $roles = Role::orderBy('name')->get();
-        return view('users.create', compact('roles'));
+        $people = $this->people();
+        return view('users.create', compact('roles', 'people'));
     }
 
     public function store(StoreUserRequest $request)
@@ -39,6 +41,7 @@ class UserController extends Controller
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
             'is_enabled' => $request->boolean('is_enabled'),
+            'person_id' => $data['person_id'] ?? null,
         ]);
 
         if (!empty($data['roles'])) {
@@ -65,7 +68,8 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::orderBy('name')->get();
-        return view('users.edit', compact('user', 'roles'));
+        $people = $this->people();
+        return view('users.edit', compact('user', 'roles', 'people'));
     }
 
     public function update(UpdateUserRequest $request, User $user)
@@ -77,6 +81,7 @@ class UserController extends Controller
         $user->name = $data['name'];
         $user->email = $data['email'];
         $user->is_enabled = $request->boolean('is_enabled');
+        $user->person_id = $data['person_id'] ?? null;
         if (!empty($data['password'])) {
             $user->password = bcrypt($data['password']);
         }
@@ -148,7 +153,13 @@ class UserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'is_enabled' => (bool) $user->is_enabled,
+            'person_id' => $user->person_id,
             'roles' => $user->roles->pluck('name')->values(),
         ]);
+    }
+
+    private function people()
+    {
+        return \App\Models\Person::where('is_enabled', true)->orderBy('first_name')->orderBy('last_name')->get();
     }
 }

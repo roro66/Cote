@@ -78,6 +78,16 @@ class Expense extends Model
     }
 
     // Scopes
+    /** Mismo criterio que ExpensePolicy::view, para listados. */
+    public function scopeVisibleTo($query, User $user)
+    {
+        if ($user->hasAnyRole(['boss', 'treasurer'])) {
+            return $query;
+        }
+
+        return $query->where('expenses.submitted_by', $user->person_id ?? 0);
+    }
+
     public function scopeEnabled($query)
     {
         return $query->where('is_enabled', true);
