@@ -29,6 +29,7 @@ Thumbs.db
 *.sqlite
 .env.old*
 docker-compose.yml.old*
+docker-compose.override.yml
 
 # Documentación interna (no subir al repo)
 /docs

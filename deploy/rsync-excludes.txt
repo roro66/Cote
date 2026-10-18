@@ -1,0 +1,16 @@
+.git
+node_modules
+/vendor/
+.env
+.env.old*
+docker-compose.override.yml
+/storage/
+bootstrap/cache/*.php
+*.sql
+*.sql.gz
+*.dump
+*.sqlite
+/docs/
+/public/storage
+/public/hot
+.phpunit.result.cache
