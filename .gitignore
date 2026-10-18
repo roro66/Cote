@@ -26,7 +26,9 @@ Thumbs.db
 # Backups y dumps (no versionar)
 *.sql
 *.dump
+*.sqlite
 .env.old*
+docker-compose.yml.old*
 
 # Documentación interna (no subir al repo)
 /docs
