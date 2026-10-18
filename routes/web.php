@@ -68,6 +68,7 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
     Route::post('/reports/export-monthly-expenses', [ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
 
     Route::resource('accounts', AccountController::class)->except(['show']);
+    Route::get('accounts/{account}/movements', [AccountController::class, 'movements'])->name('accounts.movements');
     Route::resource('transactions', TransactionController::class);
 
     // Personas y sus cuentas bancarias

@@ -314,7 +314,7 @@
             }
 
             function viewTransactions(id) {
-                window.location.href = '/transactions?account_id=' + id;
+                window.location.href = '/accounts/' + id + '/movements';
             }
 
             // Mostrar/ocultar campo persona según el tipo de cuenta

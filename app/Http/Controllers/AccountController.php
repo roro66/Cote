@@ -146,6 +146,13 @@ class AccountController extends Controller
         return response()->json($account->load('person'));
     }
 
+    public function movements(Account $account, \App\Services\AccountStatementService $statements)
+    {
+        $account->load('person');
+
+        return view('accounts.movements', ['account' => $account, ...$statements->build($account)]);
+    }
+
     public function edit(Account $account)
     {
         $people = Person::where('is_enabled', true)->get();
