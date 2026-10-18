@@ -11,48 +11,35 @@
                 <div class="p-6 text-gray-900">
 
                     <!-- Estadísticas -->
-                    <div class="row mb-4">
-                        <div class="col-md-2">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Cuentas</h5>
-                                    <h2 class="mb-0">{{ $stats['total'] ?? 0 }}</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="card bg-success text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Activas</h5>
-                                    <h2 class="mb-0">{{ $stats['enabled'] ?? 0 }}</h2>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div class="row g-3 mb-4">
                         <div class="col-md-3">
-                            <div class="card bg-secondary text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total (todas las cuentas)</h5>
-                                    <h2 class="mb-0">${{ number_format($stats['total_balance_all'] ?? 0, 0, ',', '.') }} CLP</h2>
-                                </div>
-                            </div>
+                            <div class="card bg-primary text-white h-100"><div class="card-body">
+                                <h5 class="card-title">Saldo Tesorería</h5>
+                                <h2 class="mb-0">${{ number_format($stats['treasury_balance'], 0, ',', '.') }}</h2>
+                                <div class="small">Disponible para entregar</div>
+                            </div></div>
                         </div>
-
                         <div class="col-md-3">
-                            <div class="card bg-primary text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Tesorería + Fondeo</h5>
-                                    <h2 class="mb-0">${{ number_format($stats['total_balance_special'] ?? 0, 0, ',', '.') }} CLP</h2>
-                                </div>
-                            </div>
+                            <div class="card bg-warning text-dark h-100"><div class="card-body">
+                                <h5 class="card-title">Por rendir</h5>
+                                <h2 class="mb-0">${{ number_format($stats['to_render'], 0, ',', '.') }}</h2>
+                                <div class="small">En manos de trabajadores</div>
+                            </div></div>
                         </div>
-
-                        <div class="col-md-2">
-                            <div class="card bg-warning text-white">
-                                <div class="card-body">
-                                    <h5 class="card-title">Total Personas</h5>
-                                    <h2 class="mb-0">${{ number_format($stats['total_balance'] ?? 0, 0, ',', '.') }} CLP</h2>
-                                </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white h-100"><div class="card-body">
+                                <h5 class="card-title">Se les debe</h5>
+                                <h2 class="mb-0">${{ number_format($stats['owed'], 0, ',', '.') }}</h2>
+                                <div class="small">Gastaron de su bolsillo</div>
+                            </div></div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-secondary text-white h-100"><div class="card-body">
+                                <h5 class="card-title">Cuentas</h5>
+                                <h2 class="mb-0">{{ $stats['enabled'] }} <small class="fs-6">activas de {{ $stats['total'] }}</small></h2>
+                            </div></div>
+                        </div>
+                    </div>
                             </div>
                         </div>
                     </div>
@@ -474,13 +461,9 @@
 
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="create_balance" class="form-label">Saldo Inicial *</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control" id="create_balance"
-                                            name="balance" value="0" step="0.01" min="0" required>
-                                        <div class="invalid-feedback"></div>
-                                    </div>
+                                    <label class="form-label">Saldo inicial</label>
+                                    <div class="form-control-plaintext">$0</div>
+                                    <div class="form-text">El dinero entra con un ingreso a caja chica o una transferencia desde Tesorería.</div>
                                 </div>
                             </div>
                         </div>

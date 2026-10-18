@@ -24,8 +24,8 @@ class StoreTransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type' => 'required|in:transfer',
-            'from_account_id' => 'required|exists:accounts,id',
+            'type' => 'required|in:transfer,deposit',
+            'from_account_id' => 'nullable|required_if:type,transfer|prohibited_if:type,deposit|exists:accounts,id',
             'to_account_id' => 'required|exists:accounts,id|different:from_account_id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'required|string|max:500',
@@ -55,8 +55,9 @@ class StoreTransactionRequest extends FormRequest
     {
         return [
             'type.required' => 'El tipo de transacción es obligatorio.',
-            'type.in' => 'El tipo de transacción debe ser transferencia.',
-            'from_account_id.required' => 'Debe seleccionar una cuenta de origen.',
+            'type.in' => 'El tipo debe ser transferencia o ingreso a caja chica.',
+            'from_account_id.required_if' => 'Debe seleccionar una cuenta de origen.',
+            'from_account_id.prohibited_if' => 'Un ingreso a caja chica no tiene cuenta de origen.',
             'from_account_id.exists' => 'La cuenta de origen no existe.',
             'to_account_id.required' => 'Debe seleccionar una cuenta de destino.',
             'to_account_id.exists' => 'La cuenta de destino no existe.',
@@ -80,9 +81,16 @@ class StoreTransactionRequest extends FormRequest
                 return;
             }
 
-            $from = Account::find($this->from_account_id);
             $to = Account::find($this->to_account_id);
 
+            if ($this->type === 'deposit') {
+                if ($to->type !== 'treasury') {
+                    $validator->errors()->add('to_account_id', 'Los ingresos a caja chica solo pueden ir a Tesorería.');
+                }
+                return;
+            }
+
+            $from = Account::find($this->from_account_id);
             foreach (app(TransactionService::class)->transferViolations($from, $to, (float) $this->amount) as $field => $message) {
                 $validator->errors()->add($field, $message);
             }

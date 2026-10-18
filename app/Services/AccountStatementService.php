@@ -53,10 +53,12 @@ class AccountStatementService
 
                 return [
                     'date' => $tx->approved_at ?? $tx->updated_at,
-                    'kind' => $tx->type === 'adjustment' ? 'Ajuste' : 'Transferencia',
+                    'kind' => $tx->type_spanish,
                     'reference' => $tx->transaction_number,
                     'url' => route('transactions.show', $tx),
-                    'detail' => trim(($incoming ? 'Desde ' : 'Hacia ') . ($counterpart?->person?->full_name ?? $counterpart?->name ?? 'sin cuenta') . ' — ' . $tx->description),
+                    'detail' => $tx->type === 'deposit'
+                        ? $tx->description
+                        : trim(($incoming ? 'Desde ' : 'Hacia ') . ($counterpart?->person?->full_name ?? $counterpart?->name ?? 'sin cuenta') . ' — ' . $tx->description),
                     'in' => $incoming ? (float) $tx->amount : 0.0,
                     'out' => $incoming ? 0.0 : (float) $tx->amount,
                 ];

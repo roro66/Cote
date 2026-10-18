@@ -48,7 +48,7 @@ class TransactionForm extends Component
     protected function rules(): array
     {
         $base = [
-            'type' => 'required|in:transfer,adjustment',
+            'type' => 'required|in:transfer',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'required|string|max:500',
             'notes' => 'nullable|string',

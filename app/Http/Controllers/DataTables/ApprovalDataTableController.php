@@ -21,6 +21,12 @@ class ApprovalDataTableController extends Controller
             ->addColumn('transaction_number', fn($row) => $row->transaction_number)
             ->editColumn('created_at', fn($row) => $row->created_at)
             ->addColumn('from_account', function ($row) {
+                if ($row->type === 'deposit') {
+                    return '<div class="d-flex align-items-center">'
+                        . '<i class="fas fa-hand-holding-usd text-success me-2"></i>'
+                        . '<div><strong>Ingreso a caja chica</strong><br><small class="text-muted">Origen externo</small></div>'
+                        . '</div>';
+                }
                 $account = $row->fromAccount;
                 $personName = $account?->person?->name;
                 $accountName = $account?->name;

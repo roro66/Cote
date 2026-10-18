@@ -91,6 +91,8 @@ class Transaction extends Model
     {
         return match ($this->type) {
             'transfer' => 'Transferencia',
+            'deposit' => 'Ingreso a caja chica',
+            'adjustment' => 'Ajuste',
             default => 'Desconocido'
         };
     }

@@ -70,16 +70,9 @@
                             
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="balance" class="form-label">Saldo Inicial *</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control @error('balance') is-invalid @enderror" 
-                                               id="balance" name="balance" value="{{ old('balance', 0) }}" 
-                                               step="0.01" min="0" required>
-                                        @error('balance')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
+                                    <label class="form-label">Saldo inicial</label>
+                                    <div class="form-control-plaintext">$0</div>
+                                    <div class="form-text">El dinero entra con un ingreso a caja chica o una transferencia desde Tesorería.</div>
                                 </div>
                             </div>
                         </div>

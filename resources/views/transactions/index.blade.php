@@ -398,6 +398,21 @@
                     clearTransactionForm();
                 });
 
+                // Un ingreso no tiene cuenta origen y siempre entra a Tesorería
+                const treasuryId = @json(optional(\App\Models\Account::where('type', 'treasury')->first())->id);
+                function applyTransactionType() {
+                    const isDeposit = $('#create_type').val() === 'deposit';
+                    const from = $('#create_from_account_id');
+                    from.prop('disabled', isDeposit).prop('required', !isDeposit);
+                    from.closest('.col-md-6').toggle(!isDeposit);
+                    if (isDeposit && treasuryId) $('#create_to_account_id').val(String(treasuryId));
+                    $('#create_type_hint').text(isDeposit
+                        ? 'Registra dinero que entra a la caja chica. Indica en la descripción de dónde viene (ej. cheque, transferencia bancaria).'
+                        : 'De Tesorería a un trabajador (entrega) o de un trabajador a Tesorería (devolución).');
+                }
+                $('#create_type').on('change', applyTransactionType);
+                $('#createTransactionModal').on('shown.bs.modal', applyTransactionType);
+
                 // Validar que las cuentas origen y destino sean diferentes
                 $('#create_from_account_id, #create_to_account_id').change(function() {
                     const fromAccount = $('#create_from_account_id').val();
@@ -435,9 +450,10 @@
                                     <label for="create_type" class="form-label">Tipo de Transacción *</label>
                                     <select class="form-select" id="create_type" name="type" required>
                                         <option value="">Seleccionar tipo...</option>
-                                        <option value="transfer">Transferencia</option>
-
+                                        <option value="transfer">Transferencia (entrega o devolución)</option>
+                                        <option value="deposit">Ingreso a caja chica (entra dinero a Tesorería)</option>
                                     </select>
+                                    <div class="form-text" id="create_type_hint"></div>
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>

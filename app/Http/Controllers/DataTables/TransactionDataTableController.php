@@ -75,10 +75,7 @@ class TransactionDataTableController extends Controller
                         $delta = -(float) $row->amount; // egreso
                     }
 
-                    $typeText = match ($row->type) {
-                        'transfer' => 'Transferencia',
-                        default => ucfirst($row->type)
-                    };
+                    $typeText = $row->type_spanish;
                     $typeBadge = '<span class="badge bg-primary">' . e($typeText) . '</span>';
 
                     return [
@@ -86,7 +83,7 @@ class TransactionDataTableController extends Controller
                         'transaction_number' => $row->transaction_number,
                         'type_spanish' => $typeText,
                         'movement_type_badge' => $typeBadge,
-                        'from_account_name' => $row->fromAccount?->name ?: 'N/A',
+                        'from_account_name' => $row->fromAccount?->name ?: ($row->type === 'deposit' ? 'Ingreso externo' : 'N/A'),
                         'to_account_name' => $row->toAccount?->name ?: 'N/A',
                         'amount' => (float) $row->amount,
                         'amount_formatted' => '$' . number_format((float) $row->amount, 0, ',', '.'),
@@ -167,22 +164,14 @@ class TransactionDataTableController extends Controller
 
             return DataTables::of($data)
                 ->addIndexColumn()
-                ->addColumn('type_spanish', function ($row) {
-                    return match ($row->type) {
-                        'transfer' => 'Transferencia',
-                        default => ucfirst($row->type)
-                    };
-                })
+                ->addColumn('type_spanish', fn ($row) => $row->type_spanish)
                 ->addColumn('movement_type_badge', function ($row) {
-                    $text = match ($row->type) {
-                        'transfer' => 'Transferencia',
-                        default => ucfirst($row->type)
-                    };
-                    return '<span class="badge bg-primary">' . e($text) . '</span>';
+                    $class = $row->type === 'deposit' ? 'bg-success' : 'bg-primary';
+                    return '<span class="badge ' . $class . '">' . e($row->type_spanish) . '</span>';
                 })
                 ->addColumn('from_account_name', function ($row) {
                     // Preferir alias cuando exista por join (mejor para ordenar)
-                    return $row->from_acc_name ?? ($row->fromAccount ? $row->fromAccount->name : 'N/A');
+                    return $row->from_acc_name ?? ($row->fromAccount?->name ?? ($row->type === 'deposit' ? 'Ingreso externo' : 'N/A'));
                 })
                 ->addColumn('to_account_name', function ($row) {
                     return $row->to_acc_name ?? ($row->toAccount ? $row->toAccount->name : 'N/A');

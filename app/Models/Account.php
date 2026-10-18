@@ -91,11 +91,6 @@ class Account extends Model
         return $query->where('type', 'person');
     }
 
-    public function scopeFondeo($query)
-    {
-        return $query->where('is_fondeo', true);
-    }
-
     // Accessors
     public function getTypeSpanishAttribute(): string
     {
