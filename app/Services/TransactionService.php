@@ -196,6 +196,41 @@ class TransactionService
     }
     
     /**
+     * Reglas de negocio de una transferencia.
+     *
+     * @return array<string, string> campo => mensaje (vacío si es válida)
+     */
+    public function transferViolations(Account $from, Account $to, float $amount): array
+    {
+        $errors = [];
+        $fondeoName = config('cote.fondeo_account_name');
+
+        if ((float) $from->balance < $amount) {
+            $errors['amount'] = 'La cuenta origen no tiene fondos suficientes para esta transacción.';
+        }
+
+        $isTreasuryToPerson = $from->type === 'treasury' && $to->type === 'person';
+        $isPersonToTreasury = $from->type === 'person' && $to->type === 'treasury';
+        if (! ($isTreasuryToPerson || $isPersonToTreasury)) {
+            $errors['to_account_id'] = 'Solo se permiten transferencias entre Tesorería y cuentas personales (en ambos sentidos).';
+        }
+
+        if ($from->is_fondeo && $to->type !== 'treasury') {
+            $errors['to_account_id'] = "Las transferencias desde \"{$fondeoName}\" solo pueden enviarse a Tesorería.";
+        }
+
+        // El dueño de la cuenta Fondeo solo puede operar desde esa cuenta
+        if ($from->person_id && ! $from->is_fondeo) {
+            $fondeo = Account::where('is_fondeo', true)->first();
+            if ($fondeo && $fondeo->person_id && (int) $fondeo->person_id === (int) $from->person_id) {
+                $errors['from_account_id'] = "Esta persona solo puede operar desde la cuenta \"{$fondeoName}\".";
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
      * Verificar si una cuenta tiene fondos suficientes
      */
     public function hasSufficientFunds(int $accountId, float $amount): bool

@@ -131,6 +131,17 @@ class TransactionForm extends Component
                 return;
             }
 
+            if ($this->type === 'transfer' && $from && $to) {
+                $violations = $transactionService->transferViolations($from, $to, (float) $this->amount);
+                if ($violations) {
+                    foreach ($violations as $field => $message) {
+                        $this->addError($field, $message);
+                    }
+                    session()->flash('error', reset($violations));
+                    return;
+                }
+            }
+
             if ($this->transactionId) {
                 // Update existing transaction
                 $transaction = Transaction::findOrFail($this->transactionId);
@@ -153,12 +164,6 @@ class TransactionForm extends Component
             } else {
                 // Nueva transacción
                 if ($this->type === 'transfer') {
-                    // Verificar fondos suficientes para transferencias
-                    if (!$transactionService->hasSufficientFunds($this->from_account_id, $this->amount)) {
-                        session()->flash('error', 'La cuenta origen no tiene fondos suficientes.');
-                        return;
-                    }
-
                     $payload = [
                         'type' => $this->type,
                         'from_account_id' => $this->from_account_id,

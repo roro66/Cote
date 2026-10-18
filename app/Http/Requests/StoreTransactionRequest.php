@@ -76,46 +76,15 @@ class StoreTransactionRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            // Verificar fondos suficientes para transferencias
-            if ($this->type === 'transfer') {
-                $transactionService = new TransactionService();
-                if (!$transactionService->hasSufficientFunds($this->from_account_id, $this->amount)) {
-                    $validator->errors()->add('amount', 'La cuenta origen no tiene fondos suficientes para esta transacción.');
-                }
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
 
-                // Validar que la transferencia sea únicamente Tesorería -> Persona o Persona -> Tesorería
-                $from = Account::find($this->from_account_id);
-                $to = Account::find($this->to_account_id);
-                if ($from && $to) {
-                    $isTreasuryToPerson = $from->type === 'treasury' && $to->type === 'person';
-                    $isPersonToTreasury = $from->type === 'person' && $to->type === 'treasury';
-                    if (!($isTreasuryToPerson || $isPersonToTreasury)) {
-                        $validator->errors()->add('to_account_id', 'Solo se permiten transferencias entre Tesorería y cuentas personales (en ambos sentidos).');
-                    }
-                }
+            $from = Account::find($this->from_account_id);
+            $to = Account::find($this->to_account_id);
 
-                // Regla especial: Si la cuenta origen es la cuenta de fondeo configurada,
-                // solo puede transferir a una cuenta tipo 'treasury'. Esto evita que el proveedor
-                // (owner de la cuenta Fondeo) transfiera a otras cuentas personales.
-                // Si la cuenta origen está marcada como fondeo, solo puede transferir a treasury
-                if ($from && $from->is_fondeo) {
-                    if ($to->type !== 'treasury') {
-                        $fondeoName = config('cote.fondeo_account_name');
-                        $validator->errors()->add('to_account_id', "Las transferencias desde \"{$fondeoName}\" solo pueden enviarse a Tesorería.");
-                    }
-                }
-
-                // Seguridad adicional: si la cuenta origen tiene un owner que hemos designado
-                // como proveedor (es decir, la cuenta "Fondeo del Sistema"), evitamos que esa
-                // persona sea usada para transferir desde otras cuentas distintas a la cuenta Fondeo.
-                if ($from && $from->person_id) {
-                    // Buscar la cuenta Fondeo actual para comparar person_id
-                    $fondeo = Account::where('is_fondeo', true)->first();
-                    if ($fondeo && $fondeo->person_id && $fondeo->person_id == $from->person_id && $from->id !== $fondeo->id) {
-                        $fondeoName = config('cote.fondeo_account_name');
-                        $validator->errors()->add('from_account_id', "Esta persona solo puede operar desde la cuenta \"{$fondeoName}\".");
-                    }
-                }
+            foreach (app(TransactionService::class)->transferViolations($from, $to, (float) $this->amount) as $field => $message) {
+                $validator->errors()->add($field, $message);
             }
         });
     }
