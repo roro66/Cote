@@ -7,7 +7,14 @@
 # En el servidor, .env, docker-compose.override.yml y storage/ son propios y nunca se sobrescriben.
 set -euo pipefail
 
-SERVER="${COTE_SERVER_USER:-rodrigo}@${COTE_SERVER_HOST:-10.244.249.148}"
+# Headscale (VPN propia) primero; ZeroTier como respaldo. Forzar otra IP con COTE_SERVER_HOST.
+if [ -z "${COTE_SERVER_HOST:-}" ]; then
+    for host in 100.64.0.7 10.244.249.148; do
+        if timeout 4 bash -c "</dev/tcp/$host/22" 2>/dev/null; then COTE_SERVER_HOST=$host; break; fi
+    done
+fi
+: "${COTE_SERVER_HOST:?Servidor no alcanzable por Headscale (100.64.0.7) ni ZeroTier (10.244.249.148)}"
+SERVER="${COTE_SERVER_USER:-rodrigo}@${COTE_SERVER_HOST}"
 REMOTE_DIR=/home/rodrigo/projects/laravel/coteso
 SECRETS="$HOME/.config/cote/secrets.env"
 
@@ -37,7 +44,7 @@ fi
 echo "==> Compilando assets"
 ./vendor/bin/sail npm run build >/dev/null
 
-echo "==> Copiando archivos ($(git rev-parse --short HEAD))"
+echo "==> Copiando archivos ($(git rev-parse --short HEAD)) a $COTE_SERVER_HOST"
 LOCK_BEFORE=$(remote "md5sum composer.lock" | cut -d' ' -f1)
 "${RSYNC[@]}" ./ "$SERVER:$REMOTE_DIR/"
 
@@ -58,6 +65,6 @@ remote "./vendor/bin/sail artisan migrate --force && \
     ./vendor/bin/sail artisan cache:clear"
 
 echo "==> Verificación"
-STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${COTE_SERVER_HOST:-10.244.249.148}:8090/up")
+STATUS=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${COTE_SERVER_HOST}:8090/up")
 echo "Salud (/up): $STATUS"
 [ "$STATUS" = "200" ]
