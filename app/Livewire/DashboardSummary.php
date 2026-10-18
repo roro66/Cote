@@ -18,6 +18,9 @@ class DashboardSummary extends Component
     public $recentTransactions;
     public $recentExpenses;
     public $accountsByType;
+    public $pendingTransactionsAmount;
+    public $pendingExpensesAmount;
+    public $negativeAccounts;
 
     public function mount()
     {
@@ -44,6 +47,15 @@ class DashboardSummary extends Component
 
         // Gastos
         $this->pendingExpenses = Expense::whereIn('status', ['submitted', 'reviewed'])->count();
+
+        $this->pendingTransactionsAmount = (float) Transaction::where('status', 'pending')->sum('amount');
+        $this->pendingExpensesAmount = (float) Expense::whereIn('status', ['submitted', 'reviewed'])->sum('total_amount');
+        $this->negativeAccounts = Account::with('person')
+            ->where('is_enabled', true)
+            ->where('balance', '<', 0)
+            ->orderBy('balance')
+            ->take(5)
+            ->get();
         $this->recentExpenses = Expense::with(['account', 'submitter'])
             ->orderBy('created_at', 'desc')
             ->take(5)

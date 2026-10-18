@@ -58,3 +58,20 @@ it('forbids users without role from viewing account movements', function () {
         ->get(route('accounts.movements', $account))
         ->assertForbidden();
 });
+
+it('shows pending amounts and negative accounts on the dashboard for the treasurer', function () {
+    $person = Person::factory()->create(['first_name' => 'Rosa', 'last_name' => 'Negativa']);
+    Account::factory()->create(['type' => 'person', 'person_id' => $person->id, 'balance' => -15_000, 'is_enabled' => true]);
+
+    $this->actingAs(create_treasurer_user())
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertSee('Requiere atención')
+        ->assertSee('Rosa Negativa')
+        ->assertSee('-$15.000');
+
+    $this->actingAs(User::factory()->create())
+        ->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSee('Requiere atención');
+});

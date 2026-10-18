@@ -95,6 +95,37 @@
         </div>
     </div>
 
+    @hasanyrole('boss|treasurer')
+        <div class="bg-white shadow rounded-lg mb-8">
+            <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Requiere atención</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <a href="{{ route('approvals.index') }}" class="block p-3 bg-gray-50 rounded text-decoration-none">
+                        <p class="text-sm text-gray-500 mb-1">Transferencias por aprobar</p>
+                        <p class="text-lg font-medium text-gray-900 mb-0">${{ number_format($pendingTransactionsAmount, 0, ',', '.') }}</p>
+                        <p class="text-xs text-gray-500 mb-0">{{ $pendingTransactions }} pendiente(s)</p>
+                    </a>
+                    <a href="{{ route('approvals.index') }}" class="block p-3 bg-gray-50 rounded text-decoration-none">
+                        <p class="text-sm text-gray-500 mb-1">Rendiciones por aprobar</p>
+                        <p class="text-lg font-medium text-gray-900 mb-0">${{ number_format($pendingExpensesAmount, 0, ',', '.') }}</p>
+                        <p class="text-xs text-gray-500 mb-0">{{ $pendingExpenses }} pendiente(s)</p>
+                    </a>
+                    <div class="p-3 bg-gray-50 rounded">
+                        <p class="text-sm text-gray-500 mb-1">Cuentas con saldo negativo</p>
+                        @forelse($negativeAccounts as $account)
+                            <a href="{{ route('accounts.movements', $account) }}" class="d-flex justify-content-between text-sm text-decoration-none">
+                                <span class="text-gray-900">{{ $account->person?->full_name ?? $account->name }}</span>
+                                <span class="text-danger">-${{ number_format(abs($account->balance), 0, ',', '.') }}</span>
+                            </a>
+                        @empty
+                            <p class="text-sm text-gray-900 mb-0">Ninguna</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endhasanyrole
+
     <!-- Resumen por tipo de cuenta -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div class="bg-white shadow rounded-lg">
