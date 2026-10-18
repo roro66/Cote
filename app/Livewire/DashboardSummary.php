@@ -50,36 +50,38 @@ class DashboardSummary extends Component
             ->get();
     }
 
-    public function approveTransaction($transactionId)
+    public function approveTransaction($transactionId, TransactionService $transactionService)
     {
+        abort_unless(auth()->user()?->hasAnyRole(['boss', 'treasurer']), 403);
+
         try {
-            $transaction = Transaction::findOrFail($transactionId);
-            $transactionService = new TransactionService();
-            
-            $transactionService->approveTransaction($transaction, auth()->id());
-            
+            $transactionService->approveTransaction(Transaction::findOrFail($transactionId), auth()->id());
             session()->flash('message', 'Transacción aprobada correctamente.');
-            $this->loadSummaryData(); // Refrescar datos
-            
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error al aprobar transacción: ' . $e->getMessage());
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Error inesperado al aprobar la transacción.');
         }
+
+        $this->loadSummaryData();
     }
 
-    public function rejectTransaction($transactionId)
+    public function rejectTransaction($transactionId, TransactionService $transactionService)
     {
+        abort_unless(auth()->user()?->hasAnyRole(['boss', 'treasurer']), 403);
+
         try {
-            $transaction = Transaction::findOrFail($transactionId);
-            $transactionService = new TransactionService();
-            
-            $transactionService->rejectTransaction($transaction, auth()->id(), 'Rechazada desde dashboard');
-            
+            $transactionService->rejectTransaction(Transaction::findOrFail($transactionId), auth()->id(), 'Rechazada desde dashboard');
             session()->flash('message', 'Transacción rechazada.');
-            $this->loadSummaryData(); // Refrescar datos
-            
-        } catch (\Exception $e) {
-            session()->flash('error', 'Error al rechazar transacción: ' . $e->getMessage());
+        } catch (\DomainException $e) {
+            session()->flash('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+            session()->flash('error', 'Error inesperado al rechazar la transacción.');
         }
+
+        $this->loadSummaryData();
     }
 
     public function render()

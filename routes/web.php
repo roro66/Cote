@@ -7,10 +7,8 @@ use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\AccountTypeController;
-// use App\Http\Controllers\TeamController; // Comentado - controlador eliminado
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\DataTables\PersonDataTableController;
-// use App\Http\Controllers\DataTables\TeamDataTableController; // Comentado - controlador eliminado
 use App\Http\Controllers\DataTables\AccountDataTableController;
 use App\Http\Controllers\DataTables\TransactionDataTableController;
 use App\Http\Controllers\DataTables\ExpenseDataTableController;
@@ -25,20 +23,35 @@ use App\Http\Controllers\StatisticsController;
 use App\Http\Controllers\ExpenseCategoryController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\DataTables\ExpenseCategoryDataTableController;
-use App\Livewire\TransactionList;
-use App\Livewire\AccountList;
-use App\Livewire\ExpenseList;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+// Cualquier usuario autenticado y habilitado (incluye técnicos que rinden gastos)
+Route::middleware(['auth', 'verified', 'enabled'])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
+    // Rendiciones de gastos
+    Route::resource('expenses', ExpenseController::class);
+    Route::get('expenses/{expense}/details', [ExpenseController::class, 'details'])->name('expenses.details');
+    Route::get('datatables/expenses', [ExpenseDataTableController::class, 'index'])->name('datatables.expenses');
+
+    // Lecturas que necesita el formulario de rendiciones
+    Route::get('accounts/{account}', [AccountController::class, 'show'])->whereNumber('account')->name('accounts.show');
+    Route::get('datatables/expense-categories', [ExpenseCategoryDataTableController::class, 'index'])->name('datatables.expense-categories');
+
+    // Perfil
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Gestión de tesorería: solo jefe y tesorero
+Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group(function () {
     // Estadísticas
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
     Route::get('/statistics/person/{person}/monthly', [StatisticsController::class, 'personMonthly'])->name('statistics.person.monthly');
@@ -48,73 +61,52 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/statistics/technicians-monthly', [StatisticsController::class, 'techniciansMonthly'])->name('statistics.technicians.monthly');
     Route::get('/statistics/categories', [StatisticsController::class, 'categories'])->name('statistics.categories');
 
-    // Rutas de Informes
-    Route::get('/reports', [App\Http\Controllers\ReportsController::class, 'index'])->name('reports.index');
-    Route::get('/reports/test-filters', [App\Http\Controllers\ReportsController::class, 'testFilters'])->name('reports.test-filters');
-    Route::post('/reports/monthly-expenses', [App\Http\Controllers\ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
-    Route::post('/reports/export-monthly-expenses', [App\Http\Controllers\ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
+    // Informes
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('/reports/test-filters', [ReportsController::class, 'testFilters'])->name('reports.test-filters');
+    Route::post('/reports/monthly-expenses', [ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
+    Route::post('/reports/export-monthly-expenses', [ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
 
-    // Rutas de Cuentas
-    Route::resource('accounts', AccountController::class);
-
-    // Rutas de Transacciones  
+    Route::resource('accounts', AccountController::class)->except(['show']);
     Route::resource('transactions', TransactionController::class);
 
-    // Rutas de Gastos
-    Route::resource('expenses', ExpenseController::class);
-    // AJAX endpoint to fetch expense details (used by approvals view)
-    Route::get('expenses/{expense}/details', [ExpenseController::class, 'details'])->name('expenses.details');
-
-    // Rutas de Personas
+    // Personas y sus cuentas bancarias
     Route::resource('people', PersonController::class);
     Route::get('people-export', [PersonController::class, 'export'])->name('people.export');
-    // Cuentas bancarias personales por persona (AJAX)
     Route::get('people/{person}/personal-accounts', [PersonBankAccountController::class, 'index'])->name('people.personal-accounts.index');
     Route::post('people/{person}/personal-accounts', [PersonBankAccountController::class, 'store'])->name('people.personal-accounts.store');
     Route::put('people/{person}/personal-accounts/{account}', [PersonBankAccountController::class, 'update'])->name('people.personal-accounts.update');
     Route::delete('people/{person}/personal-accounts/{account}', [PersonBankAccountController::class, 'destroy'])->name('people.personal-accounts.destroy');
 
-    // Rutas de Bancos
+    // Configuración
     Route::resource('banks', BankController::class);
-
-    // Categorías de gasto (plan de cuentas simplificado)
     Route::resource('expense-categories', ExpenseCategoryController::class);
-    Route::get('datatables/expense-categories', [ExpenseCategoryDataTableController::class, 'index'])->name('datatables.expense-categories');
-
-    // Rutas de Tipos de Cuenta
     Route::resource('account-types', AccountTypeController::class);
 
-    // Rutas de Usuarios (solo admin/boss)
-    Route::resource('users', UserController::class)->middleware('role:boss');
-    Route::get('datatables/users', [UserDataTableController::class, 'index'])->name('datatables.users')->middleware('role:boss');
-
-    // Rutas de Equipos (comentado - controlador eliminado)
-    // Route::resource('teams', TeamController::class);
-
-    // Rutas para Aprobaciones
+    // Aprobaciones
     Route::get('approvals', [ApprovalController::class, 'index'])->name('approvals.index');
-    Route::post('approvals/transactions/{transaction}/approve', [ApprovalController::class, 'approveTransaction'])->name('approvals.transactions.approve');
-    Route::post('approvals/transactions/{transaction}/reject', [ApprovalController::class, 'rejectTransaction'])->name('approvals.transactions.reject');
-    Route::post('approvals/expenses/{expense}/approve', [ApprovalController::class, 'approveExpense'])->name('approvals.expenses.approve');
-    Route::post('approvals/expenses/{expense}/reject', [ApprovalController::class, 'rejectExpense'])->name('approvals.expenses.reject');
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::post('approvals/transactions/{transaction}/approve', [ApprovalController::class, 'approveTransaction'])->name('approvals.transactions.approve');
+        Route::post('approvals/transactions/{transaction}/reject', [ApprovalController::class, 'rejectTransaction'])->name('approvals.transactions.reject');
+        Route::post('approvals/expenses/{expense}/approve', [ApprovalController::class, 'approveExpense'])->name('approvals.expenses.approve');
+        Route::post('approvals/expenses/{expense}/reject', [ApprovalController::class, 'rejectExpense'])->name('approvals.expenses.reject');
+    });
 
-    // Rutas DataTables AJAX
+    // DataTables AJAX
     Route::get('datatables/people', [PersonDataTableController::class, 'index'])->name('datatables.people');
     Route::get('datatables/approvals/transactions', [ApprovalDataTableController::class, 'transactions'])->name('datatables.approvals.transactions');
     Route::get('datatables/approvals/expenses', [ApprovalDataTableController::class, 'expenses'])->name('datatables.approvals.expenses');
-    // Route::get('datatables/teams', [TeamDataTableController::class, 'index'])->name('datatables.teams'); // Comentado - controlador eliminado
     Route::get('datatables/accounts', [AccountDataTableController::class, 'index'])->name('datatables.accounts');
     Route::get('datatables/transactions', [TransactionDataTableController::class, 'index'])->name('datatables.transactions');
-    Route::get('datatables/expenses', [ExpenseDataTableController::class, 'index'])->name('datatables.expenses');
     Route::get('datatables/banks', [BankDataTableController::class, 'index'])->name('datatables.banks');
     Route::get('datatables/account-types', [AccountTypeDataTableController::class, 'index'])->name('datatables.account-types');
+});
 
-    // Rutas de Perfil
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Administración: solo jefe
+Route::middleware(['auth', 'verified', 'enabled', 'role:boss'])->group(function () {
+    Route::resource('users', UserController::class);
+    Route::get('datatables/users', [UserDataTableController::class, 'index'])->name('datatables.users');
 
-    // Herramientas de Administración
     Route::get('/admin/tools', [ToolsController::class, 'index'])->name('admin.tools');
     Route::post('/admin/tools/normalize', [ToolsController::class, 'normalizeLegacyTransactions'])->name('admin.tools.normalize');
 });

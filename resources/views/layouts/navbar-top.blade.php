@@ -28,12 +28,12 @@
                     </button>
                 </x-slot>
                 <x-slot name="content">
-                    @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@cote.com'))
+                    @role('boss')
                         <x-dropdown-link :href="route('users.index')">
                             {{ __('Administrar usuarios') }}
                         </x-dropdown-link>
                         <div class="border-top my-1"></div>
-                    @endif
+                    @endrole
                     <x-dropdown-link :href="route('profile.edit')">
                         {{ __('Perfil') }}
                     </x-dropdown-link>

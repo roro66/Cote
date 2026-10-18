@@ -36,33 +36,20 @@ class ApprovalController extends Controller
     public function approveTransaction(Request $request, Transaction $transaction): JsonResponse
     {
         try {
-            if ($transaction->status !== 'pending') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Solo se pueden aprobar transacciones pendientes.'
-                ], 400);
-            }
-
-            // Verificar fondos suficientes antes de aprobar
-            if ($transaction->type === 'transfer') {
-                if (!$this->transactionService->hasSufficientFunds($transaction->from_account_id, $transaction->amount)) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'La cuenta origen no tiene fondos suficientes para esta transacción.'
-                    ], 400);
-                }
-            }
-
             $this->transactionService->approveTransaction($transaction, Auth::id());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Transacción aprobada correctamente.'
             ]);
-        } catch (\Exception $e) {
+        } catch (\DomainException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al aprobar la transacción: ' . $e->getMessage()
+                'message' => 'Error inesperado al aprobar la transacción.'
             ], 500);
         }
     }
@@ -77,27 +64,20 @@ class ApprovalController extends Controller
         ]);
 
         try {
-            if ($transaction->status !== 'pending') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Solo se pueden rechazar transacciones pendientes.'
-                ], 400);
-            }
-
-            $this->transactionService->rejectTransaction(
-                $transaction,
-                Auth::id(),
-                $request->rejection_reason
-            );
+            $this->transactionService->rejectTransaction($transaction, Auth::id(), $request->rejection_reason);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Transacción rechazada correctamente.'
             ]);
-        } catch (\Exception $e) {
+        } catch (\DomainException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            report($e);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al rechazar la transacción: ' . $e->getMessage()
+                'message' => 'Error inesperado al rechazar la transacción.'
             ], 500);
         }
     }
@@ -108,39 +88,15 @@ class ApprovalController extends Controller
     public function approveExpense(Request $request, Expense $expense)
     {
         try {
-            if ($expense->status !== 'submitted') {
-                $payload = [
-                    'success' => false,
-                    'message' => 'Solo se pueden aprobar rendiciones enviadas.'
-                ];
-                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                    return response()->json($payload, 400);
-                }
-                return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $payload['message']]);
-            }
-
             $this->expenseService->approveExpense($expense, Auth::id());
 
-            $payload = [
-                'success' => true,
-                'message' => 'Rendición aprobada correctamente.'
-            ];
+            return $this->expenseResponse($request, $expense, true, 'Rendición aprobada correctamente.');
+        } catch (\DomainException $e) {
+            return $this->expenseResponse($request, $expense, false, $e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            report($e);
 
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json($payload);
-            }
-
-            return redirect()->route('expenses.show', $expense)
-                ->with('toastr', ['type' => 'success', 'message' => $payload['message']]);
-        } catch (\Exception $e) {
-            $message = 'Error al aprobar la rendición: ' . $e->getMessage();
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $message
-                ], 500);
-            }
-            return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message]);
+            return $this->expenseResponse($request, $expense, false, 'Error inesperado al aprobar la rendición.', 500);
         }
     }
 
@@ -154,42 +110,29 @@ class ApprovalController extends Controller
         ]);
 
         try {
-            if ($expense->status !== 'submitted') {
-                $payload = [
-                    'success' => false,
-                    'message' => 'Solo se pueden rechazar rendiciones enviadas.'
-                ];
-                if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                    return response()->json($payload, 400);
-                }
-                return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $payload['message']]);
-            }
+            $this->expenseService->rejectExpense($expense, Auth::id(), $request->rejection_reason);
 
-            $expense->update([
-                'status' => 'rejected',
-                'reviewed_by' => Auth::id(),
-                'reviewed_at' => now(),
-                'rejection_reason' => $request->rejection_reason
-            ]);
+            return $this->expenseResponse($request, $expense, true, 'Rendición rechazada correctamente.');
+        } catch (\DomainException $e) {
+            return $this->expenseResponse($request, $expense, false, $e->getMessage(), 422);
+        } catch (\Throwable $e) {
+            report($e);
 
-            $payload = [
-                'success' => true,
-                'message' => 'Rendición rechazada correctamente.'
-            ];
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json($payload);
-            }
-            return redirect()->route('expenses.show', $expense)
-                ->with('toastr', ['type' => 'success', 'message' => $payload['message']]);
-        } catch (\Exception $e) {
-            $message = 'Error al rechazar la rendición: ' . $e->getMessage();
-            if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $message
-                ], 500);
-            }
-            return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message]);
+            return $this->expenseResponse($request, $expense, false, 'Error inesperado al rechazar la rendición.', 500);
         }
+    }
+
+    private function expenseResponse(Request $request, Expense $expense, bool $success, string $message, int $status = 200)
+    {
+        if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => $success, 'message' => $message], $status);
+        }
+
+        if ($success) {
+            return redirect()->route('expenses.show', $expense)
+                ->with('toastr', ['type' => 'success', 'message' => $message]);
+        }
+
+        return redirect()->back()->with('toastr', ['type' => 'error', 'message' => $message]);
     }
 }

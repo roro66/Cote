@@ -53,88 +53,86 @@ class TransactionService
     /**
      * Aprobar una transacción y actualizar saldos
      */
+    /**
+     * Las reglas de negocio violadas se lanzan como \DomainException para que
+     * los controladores puedan mostrarlas al usuario sin exponer errores internos.
+     */
     public function approveTransaction(Transaction $transaction, int $approvedBy): bool
     {
-        if ($transaction->status !== 'pending') {
-            throw new \Exception('Solo se pueden aprobar transacciones pendientes.');
-        }
-        
-        return DB::transaction(function () use ($transaction, $approvedBy) {
-            // Actualizar estado de la transacción
-            $transaction->update([
+        DB::transaction(function () use ($transaction, $approvedBy) {
+            $locked = Transaction::whereKey($transaction->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== 'pending') {
+                throw new \DomainException('Solo se pueden aprobar transacciones pendientes.');
+            }
+
+            // Bloquear en orden de id para evitar deadlocks entre aprobaciones cruzadas
+            $accounts = Account::whereIn('id', array_filter([$locked->from_account_id, $locked->to_account_id]))
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            $fromAccount = $accounts->get($locked->from_account_id);
+            $toAccount = $accounts->get($locked->to_account_id);
+
+            if ($fromAccount && $locked->type === 'transfer' && (float) $fromAccount->balance < (float) $locked->amount) {
+                throw new \DomainException('La cuenta origen no tiene fondos suficientes para esta transacción.');
+            }
+
+            if ($toAccount && (float) $toAccount->balance + (float) $locked->amount > Account::MAX_BALANCE) {
+                throw new \DomainException('Operación cancelada: el saldo resultante excede el máximo permitido.');
+            }
+
+            $locked->update([
                 'status' => 'approved',
                 'approved_by' => $approvedBy,
                 'approved_at' => now(),
             ]);
-            
-            // Actualizar saldos de cuentas
-            $this->updateAccountBalances($transaction);
-            
+
+            $fromAccount?->decrement('balance', $locked->amount);
+            $toAccount?->increment('balance', $locked->amount);
+
             Log::info('Transacción aprobada', [
-                'transaction_id' => $transaction->id,
+                'transaction_id' => $locked->id,
                 'approved_by' => $approvedBy
             ]);
-            
-            return true;
         });
+
+        $transaction->refresh();
+
+        return true;
     }
-    
+
     /**
      * Rechazar una transacción
      */
-    public function rejectTransaction(Transaction $transaction, int $rejectedBy, string $reason = null): bool
+    public function rejectTransaction(Transaction $transaction, int $rejectedBy, ?string $reason = null): bool
     {
-        if ($transaction->status !== 'pending') {
-            throw new \Exception('Solo se pueden rechazar transacciones pendientes.');
-        }
-        
-        $transaction->update([
-            'status' => 'rejected',
-            'approved_by' => $rejectedBy,
-            'approved_at' => now(),
-            'notes' => $transaction->notes . ($reason ? "\n\nMotivo de rechazo: " . $reason : ''),
-        ]);
-        
-        Log::info('Transacción rechazada', [
-            'transaction_id' => $transaction->id,
-            'rejected_by' => $rejectedBy,
-            'reason' => $reason
-        ]);
-        
+        DB::transaction(function () use ($transaction, $rejectedBy, $reason) {
+            $locked = Transaction::whereKey($transaction->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== 'pending') {
+                throw new \DomainException('Solo se pueden rechazar transacciones pendientes.');
+            }
+
+            $locked->update([
+                'status' => 'rejected',
+                'approved_by' => $rejectedBy,
+                'approved_at' => now(),
+                'notes' => $locked->notes . ($reason ? "\n\nMotivo de rechazo: " . $reason : ''),
+            ]);
+
+            Log::info('Transacción rechazada', [
+                'transaction_id' => $locked->id,
+                'rejected_by' => $rejectedBy,
+                'reason' => $reason
+            ]);
+        });
+
+        $transaction->refresh();
+
         return true;
-    }
-    
-    /**
-     * Actualizar saldos de cuentas después de aprobar transacción
-     */
-    private function updateAccountBalances(Transaction $transaction): void
-    {
-        if ($transaction->from_account_id) {
-            $fromAccount = Account::find($transaction->from_account_id);
-            if ($fromAccount) {
-                // Ensure decrement won't go below allowed negative if business forbids it
-                $fromAccount->decrement('balance', $transaction->amount);
-            }
-        }
-        
-        if ($transaction->to_account_id) {
-            $toAccount = Account::find($transaction->to_account_id);
-            if ($toAccount) {
-                // Prevent overflow when incrementing toAccount balance
-                $newBalance = $toAccount->balance + $transaction->amount;
-                if ($newBalance > Account::MAX_BALANCE) {
-                    throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
-                }
-                try {
-                    $toAccount->increment('balance', $transaction->amount);
-                } catch (\Illuminate\Database\QueryException $e) {
-                    if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
-                        throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
-                    }
-                    throw $e;
-                }
-            }
-        }
     }
     
     /**

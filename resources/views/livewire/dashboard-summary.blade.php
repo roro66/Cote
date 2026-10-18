@@ -152,7 +152,7 @@
                                         @default {{ ucfirst($transaction->status) }}
                                     @endswitch
                                 </span>
-                                @if($transaction->status === 'pending')
+                                @if($transaction->status === 'pending' && auth()->user()->hasAnyRole(['boss', 'treasurer']))
                                     <div class="mt-1 flex space-x-1">
                                         <button wire:click="approveTransaction({{ $transaction->id }})" 
                                                class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded">

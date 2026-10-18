@@ -71,40 +71,34 @@ class ExpenseService
      */
     public function approveExpense(Expense $expense, int $reviewedBy): bool
     {
-        if (!in_array($expense->status, ['submitted', 'reviewed'])) {
-            throw new \Exception('Solo se pueden aprobar rendiciones enviadas o en revisión.');
-        }
+        DB::transaction(function () use ($expense, $reviewedBy) {
+            $locked = Expense::whereKey($expense->id)->lockForUpdate()->firstOrFail();
 
-        return DB::transaction(function () use ($expense, $reviewedBy) {
-            // Aprobar rendición
-            $expense->update([
+            if (!in_array($locked->status, ['submitted', 'reviewed'])) {
+                throw new \DomainException('Solo se pueden aprobar rendiciones enviadas o en revisión.');
+            }
+
+            $locked->update([
                 'status' => 'approved',
                 'reviewed_by' => $reviewedBy,
                 'reviewed_at' => now(),
             ]);
 
             // Rebajar el monto desde la cuenta de la persona (puede quedar negativa)
-            $account = Account::lockForUpdate()->find($expense->account_id);
-            if ($account) {
-                try {
-                    $account->decrement('balance', $expense->total_amount);
-                } catch (\Illuminate\Database\QueryException $e) {
-                    if (str_contains($e->getMessage(), 'numeric field overflow') || str_contains($e->getMessage(), 'numeric value out of range')) {
-                        throw new \RuntimeException('Operacion cancelada: el saldo resultante excede el máximo permitido por la base de datos.');
-                    }
-                    throw $e;
-                }
-            }
+            $account = Account::lockForUpdate()->find($locked->account_id);
+            $account?->decrement('balance', $locked->total_amount);
 
             Log::info('Rendición aprobada y saldo rebajado', [
-                'expense_id' => $expense->id,
-                'account_id' => $expense->account_id,
-                'amount' => $expense->total_amount,
+                'expense_id' => $locked->id,
+                'account_id' => $locked->account_id,
+                'amount' => $locked->total_amount,
                 'reviewed_by' => $reviewedBy
             ]);
-
-            return true;
         });
+
+        $expense->refresh();
+
+        return true;
     }
 
     /**
@@ -112,22 +106,28 @@ class ExpenseService
      */
     public function rejectExpense(Expense $expense, int $reviewedBy, string $reason): bool
     {
-        if (!in_array($expense->status, ['submitted', 'reviewed'])) {
-            throw new \Exception('Solo se pueden rechazar rendiciones enviadas o en revisión.');
-        }
+        DB::transaction(function () use ($expense, $reviewedBy, $reason) {
+            $locked = Expense::whereKey($expense->id)->lockForUpdate()->firstOrFail();
 
-        $expense->update([
-            'status' => 'rejected',
-            'reviewed_by' => $reviewedBy,
-            'reviewed_at' => now(),
-            'rejection_reason' => $reason,
-        ]);
+            if (!in_array($locked->status, ['submitted', 'reviewed'])) {
+                throw new \DomainException('Solo se pueden rechazar rendiciones enviadas o en revisión.');
+            }
 
-        Log::info('Rendición rechazada', [
-            'expense_id' => $expense->id,
-            'reviewed_by' => $reviewedBy,
-            'reason' => $reason
-        ]);
+            $locked->update([
+                'status' => 'rejected',
+                'reviewed_by' => $reviewedBy,
+                'reviewed_at' => now(),
+                'rejection_reason' => $reason,
+            ]);
+
+            Log::info('Rendición rechazada', [
+                'expense_id' => $locked->id,
+                'reviewed_by' => $reviewedBy,
+                'reason' => $reason
+            ]);
+        });
+
+        $expense->refresh();
 
         return true;
     }

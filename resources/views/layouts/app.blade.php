@@ -249,7 +249,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        {{-- Alpine viene con Livewire; no cargar CDN para evitar "multiple instances" --}}
+        {{-- Alpine llega con Livewire: cargarlo en todas las páginas, no solo en las que tienen componentes --}}
+        @livewireStyles
     </head>
     <body class="font-sans antialiased">
         <div class="sidebar-overlay" id="sidebar-overlay" aria-hidden="true"></div>
@@ -645,5 +646,6 @@
         </script>
         
         @stack('scripts')
+        @livewireScripts
     </body>
 </html>

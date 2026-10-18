@@ -18,6 +18,7 @@
                     <span class="nav-text">Panel</span>
                 </a>
             </li>
+            @hasanyrole('boss|treasurer')
             <li class="nav-item">
                 <a href="{{ route('people.index') }}" class="nav-link {{ request()->routeIs('people.*') ? 'active' : '' }}">
                     <i class="fas fa-users nav-icon"></i>
@@ -36,12 +37,14 @@
                     <span class="nav-text">Transacciones</span>
                 </a>
             </li>
+            @endhasanyrole
             <li class="nav-item">
                 <a href="{{ route('expenses.index') }}" class="nav-link {{ request()->routeIs('expenses.*') ? 'active' : '' }}">
                     <i class="fas fa-file-invoice-dollar nav-icon"></i>
                     <span class="nav-text">Rendiciones</span>
                 </a>
             </li>
+            @hasanyrole('boss|treasurer')
             <li class="nav-item">
                 <a href="{{ route('approvals.index') }}" class="nav-link {{ request()->routeIs('approvals.*') ? 'active' : '' }}">
                     <i class="fas fa-check-circle nav-icon"></i>
@@ -81,14 +84,15 @@
                     <span class="nav-text">Informes</span>
                 </a>
             </li>
-            @if(auth()->check() && (auth()->user()->hasRole('boss') || strtolower(auth()->user()->email) === 'admin@cote.com'))
+            @endhasanyrole
+            @role('boss')
             <li class="nav-item">
                 <a href="{{ route('users.index') }}" class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <i class="fas fa-user-cog nav-icon"></i>
                     <span class="nav-text">Usuarios</span>
                 </a>
             </li>
-            @endif
+            @endrole
         </ul>
     </nav>
 
