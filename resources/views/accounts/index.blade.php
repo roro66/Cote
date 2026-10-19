@@ -186,7 +186,7 @@
                             text: '<i class="fas fa-copy"></i> Copiar',
                             className: 'btn btn-secondary btn-sm',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -195,7 +195,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'cuentas_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -204,7 +204,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'cuentas_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -214,7 +214,7 @@
                             filename: 'cuentas_' + new Date().toISOString().split('T')[0],
                             title: 'Lista de Cuentas - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -223,7 +223,7 @@
                             className: 'btn btn-secondary btn-sm',
                             title: 'Lista de Cuentas - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {

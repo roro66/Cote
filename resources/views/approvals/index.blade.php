@@ -267,7 +267,7 @@
                             text: '<i class="fas fa-copy"></i> Copiar',
                             className: 'btn btn-secondary btn-sm',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -276,7 +276,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -285,7 +285,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -295,7 +295,7 @@
                             filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
                             title: 'Transferencias Pendientes - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -304,7 +304,7 @@
                             className: 'btn btn-secondary btn-sm',
                             title: 'Transferencias Pendientes - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -411,7 +411,7 @@
                             text: '<i class="fas fa-copy"></i> Copiar',
                             className: 'btn btn-secondary btn-sm',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -420,7 +420,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -429,7 +429,7 @@
                             className: 'btn btn-secondary btn-sm',
                             filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -439,7 +439,7 @@
                             filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
                             title: 'Rendiciones Pendientes - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {
@@ -448,7 +448,7 @@
                             className: 'btn btn-secondary btn-sm',
                             title: 'Rendiciones Pendientes - COTE',
                             exportOptions: {
-                                columns: ':visible:not(:last-child)' // Solo columnas visibles, excepto Acciones
+                                columns: dtExportColumns
                             }
                         },
                         {

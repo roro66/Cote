@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\XlsxColumnWidths;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use OpenSpout\Common\Entity\Row as SpoutRow;
 use OpenSpout\Common\Entity\Style\Style;
@@ -16,6 +17,7 @@ class ExcelExportService
     private Style $categoryStyle;
     private Style $dataStyle;
     private Style $totalStyle;
+    private XlsxColumnWidths $widths;
 
     public function __construct()
     {
@@ -43,8 +45,10 @@ class ExcelExportService
             ->setFontSize(13);
 
         // Estilo para datos
+        // Con ajuste de texto para que los documentos (varias líneas) se vean uno bajo otro
         $this->dataStyle = (new Style())
-            ->setFontSize(10);
+            ->setFontSize(10)
+            ->setShouldWrapText();
 
         // Estilo para totales
         $this->totalStyle = (new Style())
@@ -82,8 +86,7 @@ class ExcelExportService
             $type = isset($doc['mime_type']) ? $this->getFileTypeDescription($doc['mime_type']) : '';
             
             // Formato más compacto
-            $filename = $this->truncateText($doc['filename'], 30);
-            $info = ($index + 1) . ". " . $filename;
+            $info = ($index + 1) . ". " . $doc['filename'];
             if ($type) {
                 $info .= " ({$type})";
             }
@@ -127,11 +130,22 @@ class ExcelExportService
     }
 
     /**
-     * Truncar texto para Excel
+     * Escribe una fila y registra su contenido para el ancho de las columnas.
+     * Los títulos de sección ($fitColumns = false) no ensanchan la columna A.
+     *
+     * @param array<int,mixed> $values
      */
-    private function truncateText(string $text, int $length = 50): string
+    private function addRow(XlsxWriter $writer, array $values, ?Style $style = null, bool $fitColumns = true): void
     {
-        return strlen($text) > $length ? substr($text, 0, $length) . '...' : $text;
+        if ($fitColumns) {
+            $this->widths->track($values, $style);
+        }
+
+        $row = SpoutRow::fromValues($values);
+        if ($style !== null) {
+            $row->setStyle($style);
+        }
+        $writer->addRow($row);
     }
 
     /**
@@ -168,13 +182,13 @@ class ExcelExportService
      */
     private function addDocumentsSummary($writer, array $data): void
     {
-        $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
-        $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
-        $writer->addRow(SpoutRow::fromValues(['RESUMEN DE DOCUMENTOS ADJUNTOS'])->setStyle($this->titleStyle));
-        $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
+        $this->addRow($writer, []); // Línea vacía
+        $this->addRow($writer, []); // Línea vacía
+        $this->addRow($writer, ['RESUMEN DE DOCUMENTOS ADJUNTOS'], $this->titleStyle, false);
+        $this->addRow($writer, []); // Línea vacía
         
         // Encabezados de la tabla de documentos con estilo
-        $writer->addRow(SpoutRow::fromValues([
+        $this->addRow($writer, [
             'N° Rendición', 
             'Fecha', 
             'Persona', 
@@ -184,7 +198,7 @@ class ExcelExportService
             'Tipo', 
             'Tamaño', 
             'URL Descarga'
-        ])->setStyle($this->headerStyle));
+        ], $this->headerStyle);
 
         $documentCount = 0;
         $totalWithDocs = 0;
@@ -196,27 +210,27 @@ class ExcelExportService
                     
                     foreach ($item['documents'] as $doc) {
                         $documentCount++;
-                        $writer->addRow(SpoutRow::fromValues([
+                        $this->addRow($writer, [
                             $item['expense_number'],
                             $item['expense_date'],
-                            $this->truncateText($item['submitter'], 25),
-                            $this->truncateText($item['item_description'], 40),
+                            $item['submitter'],
+                            $item['item_description'],
                             '$' . $this->formatChileanNumber($item['amount']),
-                            $this->truncateText($doc['filename'], 35),
+                            $doc['filename'],
                             $this->getFileTypeDescription($doc['mime_type'] ?? ''),
                             $this->formatFileSize($doc['size'] ?? 0),
                             $doc['url']
-                        ])->setStyle($this->dataStyle));
+                        ], $this->dataStyle);
                     }
                 }
             }
         }
 
-        $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
-        $writer->addRow(SpoutRow::fromValues(['ESTADÍSTICAS DE DOCUMENTOS'])->setStyle($this->categoryStyle));
-        $writer->addRow(SpoutRow::fromValues(['Total de documentos adjuntos:', $documentCount])->setStyle($this->totalStyle));
-        $writer->addRow(SpoutRow::fromValues(['Monto total con documentos:', '$' . $this->formatChileanNumber($totalWithDocs)])->setStyle($this->totalStyle));
-        $writer->addRow(SpoutRow::fromValues(['Porcentaje del total general:', round(($totalWithDocs / $data['total_amount']) * 100, 1) . '%'])->setStyle($this->totalStyle));
+        $this->addRow($writer, []); // Línea vacía
+        $this->addRow($writer, ['ESTADÍSTICAS DE DOCUMENTOS'], $this->categoryStyle, false);
+        $this->addRow($writer, ['Total de documentos adjuntos:', $documentCount], $this->totalStyle);
+        $this->addRow($writer, ['Monto total con documentos:', '$' . $this->formatChileanNumber($totalWithDocs)], $this->totalStyle);
+        $this->addRow($writer, ['Porcentaje del total general:', round(($totalWithDocs / $data['total_amount']) * 100, 1) . '%'], $this->totalStyle);
         
         // Estadísticas adicionales
         $itemsWithDocs = 0;
@@ -230,8 +244,8 @@ class ExcelExportService
             }
         }
         
-        $writer->addRow(SpoutRow::fromValues(['Items con documentos:', $itemsWithDocs . ' de ' . $totalItems])->setStyle($this->totalStyle));
-        $writer->addRow(SpoutRow::fromValues(['Cobertura de documentos:', round(($itemsWithDocs / $totalItems) * 100, 1) . '%'])->setStyle($this->totalStyle));
+        $this->addRow($writer, ['Items con documentos:', $itemsWithDocs . ' de ' . $totalItems], $this->totalStyle);
+        $this->addRow($writer, ['Cobertura de documentos:', round(($itemsWithDocs / $totalItems) * 100, 1) . '%'], $this->totalStyle);
     }
     /**
      * Stream an XLSX with headings and rows.
@@ -246,14 +260,17 @@ class ExcelExportService
             $writer = new XlsxWriter();
             // Write directly to output; Laravel handles headers
             $writer->openToFile('php://output');
+            $widths = new XlsxColumnWidths();
 
-            // Headings
+            $widths->track($headings);
             $writer->addRow(SpoutRow::fromValues($headings));
 
             foreach ($rows as $row) {
+                $widths->track($row);
                 $writer->addRow(SpoutRow::fromValues($row));
             }
 
+            $widths->applyTo($writer->getCurrentSheet());
             $writer->close();
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -269,68 +286,69 @@ class ExcelExportService
         return response()->streamDownload(function () use ($data, $reportInfo) {
             $writer = new XlsxWriter();
             $writer->openToFile('php://output');
+            $this->widths = new XlsxColumnWidths();
 
             // Título principal
-            $writer->addRow(SpoutRow::fromValues(['INFORME DE GASTOS MENSUALES'])->setStyle($this->titleStyle));
-            $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
+            $this->addRow($writer, ['INFORME DE GASTOS MENSUALES'], $this->titleStyle, false);
+            $this->addRow($writer, []); // Línea vacía
             
             // Información del informe con estilo
-            $writer->addRow(SpoutRow::fromValues(['Período:', $reportInfo['start_date'] . ' al ' . $reportInfo['end_date']]));
-            $writer->addRow(SpoutRow::fromValues(['Tipo:', $reportInfo['report_type'] === 'summary' ? 'Resumido' : 'Detallado']));
-            $writer->addRow(SpoutRow::fromValues(['Estado:', $reportInfo['approval_status'] === 'approved_only' ? 'Solo aprobadas' : 'Todas las rendiciones']));
+            $this->addRow($writer, ['Período:', $reportInfo['start_date'] . ' al ' . $reportInfo['end_date']]);
+            $this->addRow($writer, ['Tipo:', $reportInfo['report_type'] === 'summary' ? 'Resumido' : 'Detallado']);
+            $this->addRow($writer, ['Estado:', $reportInfo['approval_status'] === 'approved_only' ? 'Solo aprobadas' : 'Todas las rendiciones']);
             if ($reportInfo['include_documents'] ?? false) {
-                $writer->addRow(SpoutRow::fromValues(['Documentos:', 'Incluidos']));
+                $this->addRow($writer, ['Documentos:', 'Incluidos']);
             }
-            $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
+            $this->addRow($writer, []); // Línea vacía
 
             // Resumen general con estilos
-            $writer->addRow(SpoutRow::fromValues(['RESUMEN GENERAL'])->setStyle($this->categoryStyle));
-            $writer->addRow(SpoutRow::fromValues(['Total General:', '$' . $this->formatChileanNumber($data['total_amount'])])->setStyle($this->totalStyle));            
-            $writer->addRow(SpoutRow::fromValues(['Total Rendiciones:', $data['total_expenses']]));
-            $writer->addRow(SpoutRow::fromValues(['Total Items:', $data['total_items']]));
-            $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
+            $this->addRow($writer, ['RESUMEN GENERAL'], $this->categoryStyle, false);
+            $this->addRow($writer, ['Total General:', '$' . $this->formatChileanNumber($data['total_amount'])], $this->totalStyle);            
+            $this->addRow($writer, ['Total Rendiciones:', $data['total_expenses']]);
+            $this->addRow($writer, ['Total Items:', $data['total_items']]);
+            $this->addRow($writer, []); // Línea vacía
 
             if ($data['report_type'] === 'summary') {
                 // Informe resumido con estilos
-                $writer->addRow(SpoutRow::fromValues(['RESUMEN POR CATEGORÍA'])->setStyle($this->categoryStyle));
-                $writer->addRow(SpoutRow::fromValues(['Categoría', 'Total', 'Items', 'Rendiciones'])->setStyle($this->headerStyle));
+                $this->addRow($writer, ['RESUMEN POR CATEGORÍA'], $this->categoryStyle, false);
+                $this->addRow($writer, ['Categoría', 'Total', 'Items', 'Rendiciones'], $this->headerStyle);
 
                 foreach ($data['categories'] as $category) {
-                    $writer->addRow(SpoutRow::fromValues([
+                    $this->addRow($writer, [
                         $category['category'],
                         '$' . $this->formatChileanNumber($category['total_amount']),
                         $category['items_count'],
                         $category['expenses_count']
-                    ])->setStyle($this->dataStyle));
+                    ], $this->dataStyle);
                 }
             } else {
                 // Informe detallado con estilos mejorados
-                $writer->addRow(SpoutRow::fromValues(['DETALLE POR CATEGORÍA'])->setStyle($this->categoryStyle));
-                $writer->addRow(SpoutRow::fromValues([])); // Línea vacía
+                $this->addRow($writer, ['DETALLE POR CATEGORÍA'], $this->categoryStyle, false);
+                $this->addRow($writer, []); // Línea vacía
 
                 foreach ($data['categories'] as $categoryName => $category) {
                     // Título de categoría
-                    $writer->addRow(SpoutRow::fromValues([
-                        'CATEGORÍA: ' . $categoryName, 
-                        '', 
-                        '', 
-                        '', 
+                    $this->addRow($writer, [
+                        'CATEGORÍA: ' . $categoryName,
+                        '',
+                        '',
+                        '',
                         'Total: $' . $this->formatChileanNumber($category['total_amount'])
-                    ])->setStyle($this->categoryStyle));
+                    ], $this->categoryStyle, false);
                     
                     // Encabezados para items con estilo
                     $headers = ['N° Rendición', 'Fecha', 'Persona', 'Descripción', 'Monto', 'N° Recibo', 'Estado'];
                     if ($reportInfo['include_documents'] ?? false) {
                         $headers[] = 'Documentos';
                     }
-                    $writer->addRow(SpoutRow::fromValues($headers)->setStyle($this->headerStyle));
+                    $this->addRow($writer, $headers, $this->headerStyle);
 
                     foreach ($category['items'] as $item) {
                         $row = [
                             $item['expense_number'],
                             $item['expense_date'],
                             $item['submitter'],
-                            $this->truncateText($item['item_description'], 50),
+                            $item['item_description'],
                             '$' . $this->formatChileanNumber($item['amount']),
                             $item['receipt_number'] ?? '-',
                             $item['expense_status'] === 'approved' ? 'Aprobada' : 'Pendiente'
@@ -340,7 +358,7 @@ class ExcelExportService
                             $row[] = $this->formatDocumentsForExcelCompact($item['documents'] ?? []);
                         }
 
-                        $writer->addRow(SpoutRow::fromValues($row)->setStyle($this->dataStyle));
+                        $this->addRow($writer, $row, $this->dataStyle);
                     }
 
                     // Subtotal de categoría
@@ -348,8 +366,8 @@ class ExcelExportService
                     if ($reportInfo['include_documents'] ?? false) {
                         $subtotalRow[] = '';
                     }
-                    $writer->addRow(SpoutRow::fromValues($subtotalRow)->setStyle($this->totalStyle));
-                    $writer->addRow(SpoutRow::fromValues([])); // Línea vacía entre categorías
+                    $this->addRow($writer, $subtotalRow, $this->totalStyle);
+                    $this->addRow($writer, []); // Línea vacía entre categorías
                 }
 
                 // Si se incluyen documentos, agregar hoja resumen de documentos
@@ -358,6 +376,7 @@ class ExcelExportService
                 }
             }
 
+            $this->widths->applyTo($writer->getCurrentSheet());
             $writer->close();
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
