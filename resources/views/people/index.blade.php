@@ -120,7 +120,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="create_rut" class="form-label">RUT *</label>
-                                    <input type="text" class="form-control" id="create_rut" name="rut"
+                                    <input type="text" class="form-control" id="create_rut" name="rut" data-rut inputmode="text" autocomplete="off"
                                         placeholder="12345678-9" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -316,7 +316,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="edit_rut" class="form-label">RUT *</label>
-                                    <input type="text" class="form-control" id="edit_rut" name="rut"
+                                    <input type="text" class="form-control" id="edit_rut" name="rut" data-rut inputmode="text" autocomplete="off"
                                         placeholder="12345678-9" required>
                                     <div class="invalid-feedback"></div>
                                 </div>
@@ -997,6 +997,10 @@
                 clearValidationErrors('createPersonForm');
 
                 const form = document.getElementById('createPersonForm');
+                if (!Rut.checkForm(form)) {
+                    toastr.error('Revisa el RUT: el dígito verificador no corresponde.');
+                    return;
+                }
                 const formData = new FormData(form);
                 const submitButton = document.querySelector('#createPersonModal .btn-primary');
                 const originalText = submitButton.textContent;
@@ -1117,6 +1121,10 @@
             // Función para enviar formulario de edición
             function submitEditForm() {
                 clearValidationErrors('editPersonForm');
+                if (!Rut.checkForm(document.getElementById('editPersonForm'))) {
+                    toastr.error('Revisa el RUT: el dígito verificador no corresponde.');
+                    return;
+                }
 
                 const formData = new FormData(document.getElementById('editPersonForm'));
                 const personId = document.getElementById('edit_person_id').value;
@@ -1194,52 +1202,7 @@
                 });
             }
 
-            // Formateo de RUT para ambos modales (mejorado para FakeFiller)
-            function formatRut(input) {
-                let value = input.value.replace(/[^0-9kK]/g, ''); // Allow only numbers and K/k
-
-                if (value.length === 0) return;
-
-                // Handle case where K/k is typed
-                value = value.replace(/k/gi, 'K');
-
-                if (value.length > 1) {
-                    const rut = value.slice(0, -1);
-                    const dv = value.slice(-1);
-
-                    // Format with dots and dash
-                    let formattedRut = rut.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    input.value = formattedRut + '-' + dv;
-                } else {
-                    input.value = value;
-                }
-            }
-
-            // Enhanced event listeners for RUT formatting that work with FakeFiller
             document.addEventListener('DOMContentLoaded', function() {
-                // Multiple event types to catch FakeFiller
-                const rutEvents = ['input', 'change', 'blur', 'keyup', 'paste'];
-
-                const createRutInput = document.getElementById('create_rut');
-                const editRutInput = document.getElementById('edit_rut');
-
-                if (createRutInput) {
-                    rutEvents.forEach(eventType => {
-                        createRutInput.addEventListener(eventType, function() {
-                            // Delay formatting slightly to allow FakeFiller to complete
-                            setTimeout(() => formatRut(this), 10);
-                        });
-                    });
-                }
-
-                if (editRutInput) {
-                    rutEvents.forEach(eventType => {
-                        editRutInput.addEventListener(eventType, function() {
-                            setTimeout(() => formatRut(this), 10);
-                        });
-                    });
-                }
-
                 // Limpiar formulario al cerrar modal de creación
                 document.getElementById('createPersonModal').addEventListener('hidden.bs.modal', function() {
                     document.getElementById('createPersonForm').reset();

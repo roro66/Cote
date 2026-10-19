@@ -47,10 +47,8 @@
                                 <div class="mb-3">
                                     <label for="rut" class="form-label">RUT <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('rut') is-invalid @enderror" 
-                                           id="rut" name="rut" value="{{ old('rut') }}" placeholder="12.345.678-9" required>
-                                    @error('rut')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                           id="rut" name="rut" value="{{ old('rut') }}" placeholder="12.345.678-9" required data-rut autocomplete="off">
+                                    <div class="invalid-feedback">@error('rut'){{ $message }}@enderror</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -169,17 +167,6 @@
     @push('scripts')
     <script>
     $(document).ready(function() {
-        // Formatear RUT mientras se escribe
-        $('#rut').on('input', function() {
-            let rut = $(this).val().replace(/\D/g, '');
-            if (rut.length >= 7) {
-                let dv = rut.slice(-1);
-                let number = rut.slice(0, -1);
-                let formatted = number.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + '-' + dv;
-                $(this).val(formatted);
-            }
-        });
-
         // Mostrar mensajes de sesión como tostadas
         @if (session('success'))
             toastr.success('{{ session('success') }}');
