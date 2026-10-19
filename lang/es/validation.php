@@ -44,8 +44,8 @@ return [
     'doesnt_start_with' => 'El campo :attribute no puede comenzar con uno de los siguientes valores: :values.',
     'email' => 'El campo :attribute debe ser una dirección de correo válida.',
     'ends_with' => 'El campo :attribute debe terminar con uno de los siguientes valores: :values.',
-    'enum' => 'El :attribute seleccionado es inválido.',
-    'exists' => 'El :attribute seleccionado es inválido.',
+    'enum' => 'El valor elegido en :attribute no es válido.',
+    'exists' => 'El valor elegido en :attribute no es válido.',
     'extensions' => 'El campo :attribute debe tener una de las siguientes extensiones: :values.',
     'file' => 'El campo :attribute debe ser un archivo.',
     'filled' => 'El campo :attribute debe tener un valor.',
@@ -63,7 +63,7 @@ return [
     ],
     'hex_color' => 'El campo :attribute debe ser un color hexadecimal válido.',
     'image' => 'El campo :attribute debe ser una imagen.',
-    'in' => 'El :attribute seleccionado es inválido.',
+    'in' => 'El valor elegido en :attribute no es válido.',
     'in_array' => 'El campo :attribute debe existir en :other.',
     'integer' => 'El campo :attribute debe ser un número entero.',
     'ip' => 'El campo :attribute debe ser una dirección IP válida.',
@@ -107,7 +107,7 @@ return [
     'missing_with' => 'El campo :attribute debe estar ausente cuando :values esté presente.',
     'missing_with_all' => 'El campo :attribute debe estar ausente cuando :values estén presentes.',
     'multiple_of' => 'El campo :attribute debe ser un múltiplo de :value.',
-    'not_in' => 'El :attribute seleccionado es inválido.',
+    'not_in' => 'El valor elegido en :attribute no es válido.',
     'not_regex' => 'El formato del campo :attribute es inválido.',
     'numeric' => 'El campo :attribute debe ser un número.',
     'password' => [
@@ -115,7 +115,7 @@ return [
         'mixed' => 'El campo :attribute debe contener al menos una letra mayúscula y una minúscula.',
         'numbers' => 'El campo :attribute debe contener al menos un número.',
         'symbols' => 'El campo :attribute debe contener al menos un símbolo.',
-        'uncompromised' => 'El :attribute dado ha aparecido en una filtración de datos. Por favor, elija un :attribute diferente.',
+        'uncompromised' => 'Esta :attribute apareció en una filtración de datos. Elige otra.',
     ],
     'present' => 'El campo :attribute debe estar presente.',
     'present_if' => 'El campo :attribute debe estar presente cuando :other sea :value.',
@@ -146,8 +146,8 @@ return [
     'starts_with' => 'El campo :attribute debe comenzar con uno de los siguientes valores: :values.',
     'string' => 'El campo :attribute debe ser una cadena de caracteres.',
     'timezone' => 'El campo :attribute debe ser una zona horaria válida.',
-    'unique' => 'El :attribute ya ha sido tomado.',
-    'uploaded' => 'El :attribute no pudo ser subido.',
+    'unique' => 'Ya existe un registro con ese valor en :attribute.',
+    'uploaded' => 'No se pudo subir el archivo de :attribute.',
     'uppercase' => 'El campo :attribute debe estar en mayúsculas.',
     'url' => 'El campo :attribute debe ser una URL válida.',
     'ulid' => 'El campo :attribute debe ser un ULID válido.',
@@ -160,8 +160,25 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'items.*.expense_date' => [
+            'before_or_equal' => 'La fecha del comprobante no puede ser posterior a hoy.',
+        ],
+        'items.*.files.*' => [
+            'max' => 'Cada comprobante puede pesar como máximo 10 MB.',
+            'mimes' => 'Los comprobantes deben ser fotos (JPG, PNG o WEBP) o PDF.',
+            'uploaded' => 'No se pudo subir el comprobante; revisa que no supere los 10 MB.',
+        ],
+        'month' => [
+            'date_format' => 'El mes no es válido.',
+        ],
+        'email' => [
+            'unique' => 'Este correo electrónico ya está registrado.',
+        ],
+        'code' => [
+            'unique' => 'Ya existe un registro con este código.',
+        ],
+        'end_date' => [
+            'after_or_equal' => 'La fecha final debe ser igual o posterior a la fecha inicial.',
         ],
     ],
 
@@ -172,12 +189,62 @@ return [
     */
 
     'attributes' => [
+        // Personas y usuarios
+        'name' => 'nombre',
         'first_name' => 'nombre',
         'last_name' => 'apellido',
         'rut' => 'RUT',
         'email' => 'correo electrónico',
         'phone' => 'teléfono',
+        'address' => 'dirección',
         'role_type' => 'tipo de rol',
         'is_enabled' => 'activo',
+        'password' => 'contraseña',
+        'password_confirmation' => 'confirmación de contraseña',
+        'current_password' => 'contraseña actual',
+        'person_id' => 'persona vinculada',
+        'roles' => 'roles',
+        'roles.*' => 'rol',
+
+        // Cuentas, bancos y configuración
+        'type' => 'tipo',
+        'code' => 'código',
+        'notes' => 'notas',
+        'balance' => 'saldo',
+        'balance_adjustment_reason' => 'motivo del ajuste',
+        'bank_id' => 'banco',
+        'account_type_id' => 'tipo de cuenta',
+        'account_number' => 'número de cuenta',
+        'alias' => 'alias',
+        'is_default' => 'predeterminada',
+        'is_active' => 'activa',
+        'status' => 'estado',
+
+        // Transacciones, rendiciones y aprobaciones
+        'account_id' => 'cuenta',
+        'from_account_id' => 'cuenta de origen',
+        'to_account_id' => 'cuenta de destino',
+        'amount' => 'monto',
+        'description' => 'descripción',
+        'rejection_reason' => 'motivo del rechazo',
+        'items' => 'gastos',
+        'items.*.expense_date' => 'fecha del comprobante',
+        'items.*.description' => 'descripción del gasto',
+        'items.*.amount' => 'monto',
+        'items.*.document_type' => 'tipo de documento',
+        'items.*.vendor_name' => 'proveedor',
+        'items.*.receipt_number' => 'número de documento',
+        'items.*.expense_category_id' => 'categoría',
+        'items.*.without_receipt_reason' => 'motivo sin comprobante',
+        'items.*.files.*' => 'comprobante',
+
+        // Informes y cierres
+        'start_date' => 'fecha inicial',
+        'end_date' => 'fecha final',
+        'report_type' => 'tipo de informe',
+        'approval_status' => 'estado de aprobación',
+        'include_documents' => 'incluir documentos',
+        'month' => 'mes',
+        'treasury_counted' => 'dinero contado en Tesorería',
     ],
 ];

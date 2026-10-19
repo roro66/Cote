@@ -12,12 +12,6 @@
 
     <div class="py-8 users-page-wrapper">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-4 p-3 rounded bg-green-100 text-green-800">{{ session('success') }}</div>
-            @endif
-            @if(session('error'))
-                <div class="mb-4 p-3 rounded bg-red-100 text-red-800">{{ session('error') }}</div>
-            @endif
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="d-flex justify-content-between align-items-center mb-4">

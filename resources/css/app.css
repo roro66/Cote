@@ -165,10 +165,14 @@ body { overflow-x: hidden; }
 /* Enlaces en contenido: visibles en modo oscuro */
 [data-bs-theme="dark"] .main-content a:not(.btn) { color: #6ea8fe; }
 [data-bs-theme="dark"] .main-content a:not(.btn):hover { color: #9ec5fe; }
-/* Toastr en modo oscuro: texto legible */
+/* Toastr en modo oscuro: conserva el color del tipo de aviso */
 [data-bs-theme="dark"] #toast-container .toast { background-color: #343a40; color: #e9ecef; }
+[data-bs-theme="dark"] #toast-container .toast-error { background-color: #b02a37; }
+[data-bs-theme="dark"] #toast-container .toast-success { background-color: #146c43; }
+[data-bs-theme="dark"] #toast-container .toast-warning { background-color: #997404; }
+[data-bs-theme="dark"] #toast-container .toast-info { background-color: #087990; }
 [data-bs-theme="dark"] #toast-container .toast-title { color: #f8f9fa; }
-[data-bs-theme="dark"] #toast-container .toast-message { color: #e9ecef; }
+[data-bs-theme="dark"] #toast-container .toast-message { color: #f8f9fa; }
 [data-bs-theme="dark"] .btn-light { background-color: #495057; color: #f8f9fa; border-color: #495057; }
 [data-bs-theme="dark"] .btn-light:hover { background-color: #5a6268; color: #fff; }
 /* Modales de Informes (se insertan en body desde JS): modo oscuro por ID */

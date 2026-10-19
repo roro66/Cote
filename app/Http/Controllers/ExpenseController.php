@@ -153,17 +153,6 @@ class ExpenseController extends Controller
             'items.*.remove_documents.*' => 'integer',
             'items.*.files' => 'nullable|array',
             'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
-        ], [], [
-            'account_id' => 'cuenta',
-            'description' => 'descripción',
-            'items' => 'ítems',
-            'items.*.expense_date' => 'fecha del gasto',
-            'items.*.description' => 'descripción del ítem',
-            'items.*.amount' => 'monto',
-            'items.*.document_type' => 'tipo de documento',
-            'items.*.vendor_name' => 'proveedor',
-            'items.*.receipt_number' => 'número de documento',
-            'items.*.files.*' => 'comprobante',
         ]);
     }
 

@@ -456,7 +456,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-md-6 mb-2">
-                                                <label class="form-label">Banco</label>
+                                                <label class="form-label">Banco <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="bank_id" id="pa_bank_id">
                                                     <option value="">—</option>
                                                     @foreach ($banks as $bank)
@@ -465,7 +465,7 @@
                                                 </select>
                                             </div>
                                             <div class="col-md-6 mb-2">
-                                                <label class="form-label">Tipo de Cuenta</label>
+                                                <label class="form-label">Tipo de Cuenta <span class="text-danger">*</span></label>
                                                 <select class="form-select" name="account_type_id" id="pa_account_type_id">
                                                     <option value="">—</option>
                                                     @foreach ($accountTypes as $accountType)
@@ -475,7 +475,7 @@
                                             </div>
                                         </div>
                                         <div class="mb-2">
-                                            <label class="form-label">Número de Cuenta</label>
+                                            <label class="form-label">Número de Cuenta <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control" name="account_number" id="pa_account_number" />
                                         </div>
                                         <div class="form-check form-check-inline">
@@ -935,10 +935,15 @@
                     toastr.success('Cuenta guardada');
                 })
                 .catch(err => {
-                    const msg = err?.data?.message || 'Error al guardar la cuenta';
-                    toastr.error(msg);
+                    Object.keys(err?.data?.errors || {}).forEach(field => {
+                        document.getElementById('pa_' + field)?.classList.add('is-invalid');
+                    });
+                    toastr.error(err?.data?.message || 'Error al guardar la cuenta');
                 });
             }
+
+            document.getElementById('personalAccountForm')?.addEventListener('input', e => e.target.classList.remove('is-invalid'));
+            document.getElementById('personalAccountForm')?.addEventListener('change', e => e.target.classList.remove('is-invalid'));
 
             function deletePersonalAccount(id) {
                 const personId = window.currentPersonId;
@@ -1211,13 +1216,6 @@
             });
 
             // Mostrar mensajes de sesión como tostadas
-            @if (session('success'))
-                toastr.success('{{ session('success') }}');
-            @endif
-
-            @if (session('error'))
-                toastr.error('{{ session('error') }}');
-            @endif
         </script>
     @endpush
 </x-app-layout>

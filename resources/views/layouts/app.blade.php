@@ -100,6 +100,31 @@
         <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js" integrity="sha384-T6YQaHyTPTbybQQV23jtlugHCneQYjePXdcEU+KMWGQY8EUQygBW9pRx0zpSU0/i" crossorigin="anonymous"></script>
         
         
+        {{-- Avisos de la sesión (éxito, error y resumen de validación), una sola vez por página --}}
+        @php
+            $flash = session('toastr');
+            $validationSummary = $errors->any()
+                ? ($errors->count() > 1 ? 'Revisa los campos marcados. ' . $errors->first() : $errors->first())
+                : null;
+        @endphp
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                if (!window.toastr) return;
+                @if (is_array($flash) && ! empty($flash['message']))
+                    (toastr[@json($flash['type'] ?? 'info')] || toastr.info)(@json($flash['message']));
+                @endif
+                @if (session('success'))
+                    toastr.success(@json(session('success')));
+                @endif
+                @if (session('error'))
+                    toastr.error(@json(session('error')));
+                @endif
+                @if ($validationSummary)
+                    toastr.error(@json($validationSummary));
+                @endif
+            });
+        </script>
+
         @stack('scripts')
         @livewireScripts
     </body>

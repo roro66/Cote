@@ -188,10 +188,6 @@
     <script>
     $(document).ready(function() {
         // Mostrar mensajes toastr desde la sesión
-        @if(session('toastr'))
-            @php $toastr = session('toastr'); @endphp
-            toastr.{{ $toastr['type'] }}('{{ $toastr['message'] }}');
-        @endif
     });
     </script>
     @endpush

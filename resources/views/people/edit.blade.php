@@ -170,13 +170,6 @@
     <script>
     $(document).ready(function() {
         // Mostrar mensajes de sesión como tostadas
-        @if (session('success'))
-            toastr.success('{{ session('success') }}');
-        @endif
-
-        @if (session('error'))
-            toastr.error('{{ session('error') }}');
-        @endif
     });
     </script>
     @endpush

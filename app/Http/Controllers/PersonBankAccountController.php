@@ -18,9 +18,9 @@ class PersonBankAccountController extends Controller
     public function store(Request $request, Person $person): JsonResponse
     {
         $data = $request->validate([
-            'bank_id' => 'nullable|exists:banks,id',
-            'account_type_id' => 'nullable|exists:account_types,id',
-            'account_number' => 'nullable|string|max:50',
+            'bank_id' => 'required|exists:banks,id',
+            'account_type_id' => 'required|exists:account_types,id',
+            'account_number' => 'required|string|max:50',
             'alias' => 'nullable|string|max:100',
             'is_default' => 'sometimes|boolean',
             'is_active' => 'sometimes|boolean',
@@ -46,9 +46,9 @@ class PersonBankAccountController extends Controller
         abort_unless($account->person_id === $person->id, 404);
 
         $data = $request->validate([
-            'bank_id' => 'nullable|exists:banks,id',
-            'account_type_id' => 'nullable|exists:account_types,id',
-            'account_number' => 'nullable|string|max:50',
+            'bank_id' => 'sometimes|required|exists:banks,id',
+            'account_type_id' => 'sometimes|required|exists:account_types,id',
+            'account_number' => 'sometimes|required|string|max:50',
             'alias' => 'nullable|string|max:100',
             'is_default' => 'sometimes|boolean',
             'is_active' => 'sometimes|boolean',

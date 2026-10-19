@@ -25,5 +25,9 @@
     "This is a secure area of the application. Please confirm your password before continuing.": "Esta es un área protegida. Confirma tu contraseña para continuar.",
     "Update Password": "Actualizar contraseña",
     "Your email address is unverified.": "Tu correo electrónico no está verificado.",
-    "Update your account's profile information and email address.": "Actualiza tu nombre y correo electrónico."
+    "Update your account's profile information and email address.": "Actualiza tu nombre y correo electrónico.",
+    "(and :count more error)": "(y :count error más)",
+    "(and :count more errors)": "(y :count errores más)",
+    "The given data was invalid.": "Los datos enviados no son válidos.",
+    "Whoops! Something went wrong.": "Algo salió mal."
 }

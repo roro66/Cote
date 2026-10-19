@@ -50,10 +50,6 @@
     <script>
     $(document).ready(function() {
         // Mostrar mensajes toastr desde la sesión
-        @if(session('toastr'))
-            @php $toastr = session('toastr'); @endphp
-            toastr.{{ $toastr['type'] }}('{{ $toastr['message'] }}');
-        @endif
         
         // Inicializar DataTable para Gastos
         let table = $('#expenses-table').DataTable({

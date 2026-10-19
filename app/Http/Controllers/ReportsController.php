@@ -62,7 +62,7 @@ class ReportsController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Datos de entrada inválidos',
+                'message' => $e->getMessage(),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
