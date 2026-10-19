@@ -1,4 +1,3 @@
-import './bootstrap';
 import './rut';
 import './datatables-export';
 
