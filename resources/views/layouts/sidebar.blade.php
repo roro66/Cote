@@ -84,6 +84,12 @@
                     <span class="nav-text">Informes</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('closings.index') }}" class="nav-link {{ request()->routeIs('closings.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-check nav-icon"></i>
+                    <span class="nav-text">Cierre de mes</span>
+                </a>
+            </li>
             @endhasanyrole
             @role('boss')
             <li class="nav-item">

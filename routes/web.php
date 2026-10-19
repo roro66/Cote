@@ -9,6 +9,7 @@ use App\Http\Controllers\BankController;
 use App\Http\Controllers\AccountTypeController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\PeriodClosingController;
 use App\Http\Controllers\DataTables\PersonDataTableController;
 use App\Http\Controllers\DataTables\AccountDataTableController;
 use App\Http\Controllers\DataTables\TransactionDataTableController;
@@ -66,6 +67,11 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
     Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::post('/reports/monthly-expenses', [ReportsController::class, 'monthlyExpenses'])->name('reports.monthly-expenses');
     Route::post('/reports/export-monthly-expenses', [ReportsController::class, 'exportMonthlyExpenses'])->name('reports.export-monthly-expenses');
+
+    // Cierres de mes
+    Route::get('/closings', [PeriodClosingController::class, 'index'])->name('closings.index');
+    Route::post('/closings', [PeriodClosingController::class, 'store'])->name('closings.store');
+    Route::delete('/closings/{closing}', [PeriodClosingController::class, 'destroy'])->name('closings.destroy');
 
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::get('accounts/{account}/movements', [AccountController::class, 'movements'])->name('accounts.movements');
