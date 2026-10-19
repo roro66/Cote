@@ -16,15 +16,18 @@
 
 ## Características
 
-- **Panel de tesorería** — Resumen de cuentas, saldos, transacciones y rendiciones pendientes
-- **Personas y cuentas** — Gestión de personas, cuentas por tipo (Personal, Tesorería, Cuadrillas) y saldos
-- **Transacciones** — Registro y aprobación de transferencias y movimientos
-- **Rendiciones de gastos** — Carga, envío y flujo de aprobación con documentos adjuntos
-- **Aprobaciones** — Cola de transacciones y rendiciones pendientes de revisión
-- **Estadísticas e informes** — Gráficos por persona, categoría y exportación a Excel
-- **Usuarios y roles** — Permisos (boss, tesorero) con Spatie Permission
-- **Modo oscuro** — Tema claro/oscuro con persistencia de preferencia
-- **DataTables** — Tablas con búsqueda, orden, exportación (CSV, Excel, PDF)
+Control de caja chica: la empresa ingresa dinero a Tesorería, Tesorería lo entrega a los trabajadores, ellos rinden sus gastos con fotos de las boletas o facturas y devuelven lo que sobra. Cada peso queda trazado.
+
+- **Ingreso a caja chica** — Registro del dinero que entra a Tesorería, con su origen y aprobación
+- **Entregas y devoluciones** — Transferencias Tesorería ↔ trabajador, aprobadas antes de mover saldos
+- **Rendiciones** — Gastos con fecha y monto de cada comprobante; foto o PDF obligatorio (excepción con motivo)
+- **Aprobaciones** — Confirmación con el detalle a aprobar; una rendición aprobada ya no se edita ni elimina
+- **Saldos claros** — Por trabajador: *Por rendir* (tiene dinero de la empresa) o *Se le debe* (gastó de su bolsillo)
+- **Cartola por cuenta** — Movimientos con saldo resultante; marca el saldo que ningún movimiento respalda
+- **Cierre de mes** — Resumen por cuenta, arqueo de Tesorería y foto fija del mes cerrado
+- **Permisos** — Jefe y tesorero gestionan todo; cada trabajador ve solo sus rendiciones y su cuenta
+- **Estadísticas e informes** — Gráficos por persona y categoría, exportación a Excel
+- **Modo oscuro** — En la app y en el login, con la preferencia recordada
 
 ## Stack
 
@@ -88,14 +91,18 @@ npm install && npm run build
 php artisan serve
 ```
 
-## Usuarios por defecto (seeder)
+## Datos iniciales
 
-| Email             | Rol     | Uso típico     |
-|-------------------|--------|----------------|
-| `admin@cote.com`  | boss   | Administración |
-| `tesorero@cote.com` | tesorero | Operación   |
+`php artisan db:seed` (o `sail artisan db:seed`) carga solo datos base y se puede repetir sin riesgo: roles, bancos, tipos de cuenta, categorías de gasto, la cuenta Tesorería en $0 y dos usuarios:
 
-Contraseña por defecto: `password123` (cambiar en producción).
+| Email | Rol |
+|-------|-----|
+| `admin@cote.com` | boss (jefe) |
+| `tesorero@cote.com` | treasurer (tesorero) |
+
+La contraseña se toma de `COTE_BOSS_PASSWORD` y `COTE_TREASURER_PASSWORD` en `.env`; si no están, se genera una al azar y se muestra una sola vez en la consola. Los emails se pueden cambiar con `COTE_BOSS_EMAIL` y `COTE_TREASURER_EMAIL`.
+
+Para desarrollo local hay personas de ejemplo con su cuenta en $0: `php artisan db:seed --class=DemoDataSeeder`. Los saldos se generan usando la app (ingreso → entrega → rendición), así siempre cuadran.
 
 ## Donaciones
 
