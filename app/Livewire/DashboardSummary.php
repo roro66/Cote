@@ -21,6 +21,7 @@ class DashboardSummary extends Component
     public $pendingTransactionsAmount;
     public $pendingExpensesAmount;
     public $negativeAccounts;
+    public $toRender = 0;
 
     public function mount()
     {
@@ -66,6 +67,7 @@ class DashboardSummary extends Component
 
         $this->pendingTransactionsAmount = (float) Transaction::where('status', 'pending')->sum('amount');
         $this->pendingExpensesAmount = (float) Expense::whereIn('status', ['submitted', 'reviewed'])->sum('total_amount');
+        $this->toRender = (float) Account::where('type', 'person')->where('is_enabled', true)->where('balance', '>', 0)->sum('balance');
         $this->negativeAccounts = Account::with('person')
             ->where('is_enabled', true)
             ->where('balance', '<', 0)

@@ -99,7 +99,12 @@
         <div class="bg-white shadow rounded-lg mb-8">
             <div class="px-4 py-5 sm:p-6">
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Requiere atención</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <a href="{{ route('accounts.index') }}" class="block p-3 bg-gray-50 rounded text-decoration-none">
+                        <p class="text-sm text-gray-500 mb-1">Por rendir</p>
+                        <p class="text-lg font-medium text-gray-900 mb-0">${{ number_format($toRender, 0, ',', '.') }}</p>
+                        <p class="text-xs text-gray-500 mb-0">En manos de trabajadores</p>
+                    </a>
                     <a href="{{ route('approvals.index') }}" class="block p-3 bg-gray-50 rounded text-decoration-none">
                         <p class="text-sm text-gray-500 mb-1">Transferencias por aprobar</p>
                         <p class="text-lg font-medium text-gray-900 mb-0">${{ number_format($pendingTransactionsAmount, 0, ',', '.') }}</p>
@@ -111,11 +116,11 @@
                         <p class="text-xs text-gray-500 mb-0">{{ $pendingExpenses }} pendiente(s)</p>
                     </a>
                     <div class="p-3 bg-gray-50 rounded">
-                        <p class="text-sm text-gray-500 mb-1">Cuentas con saldo negativo</p>
+                        <p class="text-sm text-gray-500 mb-1">Se les debe (gastaron de su bolsillo)</p>
                         @forelse($negativeAccounts as $account)
                             <a href="{{ route('accounts.movements', $account) }}" class="d-flex justify-content-between text-sm text-decoration-none">
                                 <span class="text-gray-900">{{ $account->person?->full_name ?? $account->name }}</span>
-                                <span class="text-danger">-${{ number_format(abs($account->balance), 0, ',', '.') }}</span>
+                                <span class="text-danger">{{ $account->balance_abs_formatted }}</span>
                             </a>
                         @empty
                             <p class="text-sm text-gray-900 mb-0">Ninguna</p>

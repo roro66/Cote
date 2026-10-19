@@ -106,19 +106,27 @@ class Account extends Model
         return '$' . number_format($this->balance, 0, ',', '.') . ' CLP';
     }
 
-    // Métodos de negocio
-    public function updateBalance(float $amount): void
+    /**
+     * Lectura del saldo de un trabajador: positivo = tiene dinero de la empresa por rendir o devolver;
+     * negativo = gastó de su bolsillo y la empresa le debe.
+     *
+     * @return array{label: string, class: string}
+     */
+    public function getBalanceStatusAttribute(): array
     {
-        // Prevent incrementing past DB maximum
-        $new = $this->balance + $amount;
-        if ($new > self::MAX_BALANCE) {
-            throw new \DomainException('Operación cancelada: el saldo resultante excede el máximo permitido.');
+        if ($this->type === 'treasury') {
+            return ['label' => 'Disponible', 'class' => 'bg-primary'];
         }
-        $this->increment('balance', $amount);
+
+        return match (true) {
+            (float) $this->balance > 0 => ['label' => 'Por rendir', 'class' => 'bg-warning text-dark'],
+            (float) $this->balance < 0 => ['label' => 'Se le debe', 'class' => 'bg-danger'],
+            default => ['label' => 'Al día', 'class' => 'bg-success'],
+        };
     }
 
-    public function canDebit(float $amount): bool
+    public function getBalanceAbsFormattedAttribute(): string
     {
-        return $this->balance >= $amount;
+        return '$' . number_format(abs((float) $this->balance), 0, ',', '.');
     }
 }

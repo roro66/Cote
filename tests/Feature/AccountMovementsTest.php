@@ -68,7 +68,8 @@ it('shows pending amounts and negative accounts on the dashboard for the treasur
         ->assertOk()
         ->assertSee('Requiere atención')
         ->assertSee('Rosa Negativa')
-        ->assertSee('-$15.000');
+        ->assertSee('$15.000')
+        ->assertSee('Por rendir');
 
     $this->actingAs(User::factory()->create())
         ->get(route('dashboard'))

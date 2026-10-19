@@ -27,7 +27,10 @@ class AccountDataTableController extends Controller
                     return $row->type === 'treasury' ? 'Tesorería General' : 'Sin propietario';
                 })
                 ->addColumn('balance_formatted', function ($row) {
-                    return $row->balance_formatted;
+                    $status = $row->balance_status;
+
+                    return '<span class="text-nowrap">' . e($row->balance_abs_formatted) . '</span> '
+                        . '<span class="badge ' . $status['class'] . '">' . e($status['label']) . '</span>';
                 })
                 ->addColumn('action', function ($row) {
                     $html  = '<div class="btn-group btn-group-sm" role="group" style="white-space:nowrap">';
@@ -63,7 +66,7 @@ class AccountDataTableController extends Controller
                 ->orderColumn('balance_formatted', 'accounts.balance $1')
                 // Soporte para ordenar por estado (is_enabled)
                 ->orderColumn('status', 'accounts.is_enabled $1')
-                ->rawColumns(['action', 'status'])
+                ->rawColumns(['action', 'status', 'balance_formatted'])
                 ->make(true);
         }
 

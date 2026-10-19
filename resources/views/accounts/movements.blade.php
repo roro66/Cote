@@ -21,7 +21,9 @@
                 <div class="col-md-3">
                     <div class="card h-100"><div class="card-body">
                         <div class="text-muted small">Saldo actual</div>
-                        <div class="fs-4 fw-semibold">{{ $clp($account->balance) }}</div>
+                        <div class="fs-4 fw-semibold">{{ $account->balance_abs_formatted }}
+                            <span class="badge fs-6 align-middle {{ $account->balance_status['class'] }}">{{ $account->balance_status['label'] }}</span>
+                        </div>
                     </div></div>
                 </div>
                 <div class="col-md-3">
