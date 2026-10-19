@@ -60,6 +60,16 @@ class ExpenseController extends Controller
     }
 
     /**
+     * Rendición en PDF para imprimir y firmar, con las imágenes de los comprobantes
+     */
+    public function pdf(Expense $expense, \App\Services\ExpensePdfService $pdfs)
+    {
+        $this->authorize('view', $expense);
+
+        return $pdfs->download($expense);
+    }
+
+    /**
      * Detalle como fragmento HTML para el modal de aprobaciones
      */
     public function details(Expense $expense): JsonResponse

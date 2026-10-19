@@ -88,6 +88,14 @@ class AccountController extends Controller
         return view('accounts.movements', ['account' => $account, ...$statements->build($account)]);
     }
 
+    public function exportMovements(Account $account, \App\Services\AccountStatementService $statements, \App\Services\ExcelExportService $excel)
+    {
+        $account->load('person');
+        $filename = 'cartola_' . \Illuminate\Support\Str::slug($account->person?->full_name ?? $account->name) . '_' . now()->format('Y-m-d') . '.xlsx';
+
+        return $excel->exportAccountStatement($account, $statements->build($account), $filename);
+    }
+
     public function edit(Account $account)
     {
         $people = Person::where('is_enabled', true)->get();

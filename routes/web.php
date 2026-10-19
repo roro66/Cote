@@ -40,6 +40,7 @@ Route::middleware(['auth', 'verified', 'enabled'])->group(function () {
     // Rendiciones de gastos
     Route::resource('expenses', ExpenseController::class);
     Route::get('expenses/{expense}/details', [ExpenseController::class, 'details'])->name('expenses.details');
+    Route::get('expenses/{expense}/pdf', [ExpenseController::class, 'pdf'])->name('expenses.pdf');
     Route::get('datatables/expenses', [ExpenseDataTableController::class, 'index'])->name('datatables.expenses');
     Route::get('documents/{document}', [DocumentController::class, 'show'])->name('documents.show');
 
@@ -70,11 +71,13 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
 
     // Cierres de mes
     Route::get('/closings', [PeriodClosingController::class, 'index'])->name('closings.index');
+    Route::get('/closings/export', [PeriodClosingController::class, 'export'])->name('closings.export');
     Route::post('/closings', [PeriodClosingController::class, 'store'])->name('closings.store');
     Route::delete('/closings/{closing}', [PeriodClosingController::class, 'destroy'])->name('closings.destroy');
 
     Route::resource('accounts', AccountController::class)->except(['show']);
     Route::get('accounts/{account}/movements', [AccountController::class, 'movements'])->name('accounts.movements');
+    Route::get('accounts/{account}/movements/export', [AccountController::class, 'exportMovements'])->name('accounts.movements.export');
     Route::resource('transactions', TransactionController::class);
 
     // Personas y sus cuentas bancarias

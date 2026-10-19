@@ -18,8 +18,9 @@ final class XlsxColumnWidths
 
     /**
      * @param array<int,mixed> $values
+     * @param array<int,Style> $cellStyles estilos por columna (índice desde 0), p. ej. formato de monto
      */
-    public function track(array $values, ?Style $style = null): void
+    public function track(array $values, ?Style $style = null, array $cellStyles = []): void
     {
         $scale = 1.0;
         if ($style !== null) {
@@ -30,7 +31,8 @@ final class XlsxColumnWidths
         }
 
         foreach (array_values($values) as $i => $value) {
-            $length = self::displayLength($value) * $scale;
+            $format = ($cellStyles[$i] ?? null)?->getFormat() ?? $style?->getFormat();
+            $length = self::displayLength($value, $format) * $scale;
             $column = $i + 1;
             if ($length > ($this->lengths[$column] ?? 0)) {
                 $this->lengths[$column] = $length;
@@ -58,17 +60,21 @@ final class XlsxColumnWidths
         return (float) min(self::MAX_WIDTH, max(self::MIN_WIDTH, ceil($length * 1.1) + 2));
     }
 
-    public static function displayLength(mixed $value): int
+    public static function displayLength(mixed $value, ?string $format = null): int
     {
         if ($value === null || $value === '') {
             return 0;
         }
-        if (is_int($value) || is_float($value)) {
-            // Excel los muestra con separador de miles
-            $value = number_format((float) $value, is_float($value) && floor($value) != $value ? 2 : 0, ',', '.');
-        }
         if ($value instanceof \DateTimeInterface) {
-            return 10;
+            // Con formato tipo dd/mm/yyyy hh:mm el texto mide lo mismo que el formato
+            return $format ? mb_strlen(str_replace(['\\', '"'], '', explode(';', $format)[0])) : 10;
+        }
+        if (is_int($value) || is_float($value)) {
+            // Excel los muestra con separador de miles (y el signo $ si el formato lo trae)
+            $decimals = $format !== null
+                ? (str_contains($format, '.00') ? 2 : 0)
+                : (is_float($value) && floor($value) != $value ? 2 : 0);
+            $value = number_format((float) $value, $decimals, ',', '.') . ($format && str_contains($format, '$') ? '$' : '');
         }
 
         $lines = preg_split('/\R/u', (string) $value) ?: [''];

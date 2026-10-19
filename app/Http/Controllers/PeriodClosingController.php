@@ -27,6 +27,15 @@ class PeriodClosingController extends Controller
         ]);
     }
 
+    public function export(Request $request, \App\Services\ExcelExportService $excel)
+    {
+        $month = $this->monthFrom($request->query('month')) ?? now()->subMonthNoOverflow()->startOfMonth();
+        $closing = PeriodClosing::with('closedBy')->whereDate('period', $month)->first();
+        $report = $closing ? $closing->snapshot : $this->reports->build($month);
+
+        return $excel->exportPeriodClosing($month, $report, $closing, 'cierre_' . $month->format('Y-m') . ($closing ? '' : '_provisorio') . '.xlsx');
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

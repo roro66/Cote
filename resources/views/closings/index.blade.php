@@ -19,6 +19,10 @@
                     <input type="month" id="month" name="month" class="form-control" value="{{ $month->format('Y-m') }}" max="{{ now()->format('Y-m') }}">
                 </div>
                 <button type="submit" class="btn btn-secondary">Ver</button>
+                <a href="{{ route('closings.export', ['month' => $month->format('Y-m')]) }}" class="btn btn-success"
+                   title="{{ $closing ? 'Resumen guardado al cerrar el mes' : 'Resumen provisorio: el mes aún no está cerrado' }}">
+                    <i class="fas fa-file-excel me-1"></i>Exportar a Excel
+                </a>
                 <div class="ms-auto">
                     @if ($closing)
                         <span class="badge bg-success fs-6"><i class="fas fa-lock me-1"></i>Cerrado</span>

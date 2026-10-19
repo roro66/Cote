@@ -16,6 +16,9 @@
                         </a>
                         
                         <div class="d-flex gap-2">
+                            <a href="{{ route('expenses.pdf', $expense) }}" target="_blank" rel="noopener" class="btn btn-outline-secondary">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
                             @if($expense->status === 'submitted' && auth()->user()->hasAnyRole(['boss', 'treasurer']))
                                 <form action="{{ route('approvals.expenses.approve', $expense) }}" method="POST" class="d-inline">
                                     @csrf

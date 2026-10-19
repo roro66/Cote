@@ -17,6 +17,8 @@ class ExcelExportService
     private Style $categoryStyle;
     private Style $dataStyle;
     private Style $totalStyle;
+    private Style $moneyFormat;
+    private Style $dateTimeFormat;
     private XlsxColumnWidths $widths;
 
     public function __construct()
@@ -54,6 +56,10 @@ class ExcelExportService
         $this->totalStyle = (new Style())
             ->setFontBold()
             ->setFontSize(11);
+
+        // Formatos por celda (se combinan con el estilo de la fila): números reales, sumables en Excel
+        $this->moneyFormat = (new Style())->setFormat('"$"#,##0;-"$"#,##0');
+        $this->dateTimeFormat = (new Style())->setFormat('dd/mm/yyyy hh:mm');
     }
 
     /**
@@ -134,18 +140,142 @@ class ExcelExportService
      * Los títulos de sección ($fitColumns = false) no ensanchan la columna A.
      *
      * @param array<int,mixed> $values
+     * @param array<int,Style> $cellStyles formato por columna (índice desde 0)
      */
-    private function addRow(XlsxWriter $writer, array $values, ?Style $style = null, bool $fitColumns = true): void
+    private function addRow(XlsxWriter $writer, array $values, ?Style $style = null, bool $fitColumns = true, array $cellStyles = []): void
     {
+        $values = array_values($values);
         if ($fitColumns) {
-            $this->widths->track($values, $style);
+            $this->widths->track($values, $style, $cellStyles);
         }
 
-        $row = SpoutRow::fromValues($values);
-        if ($style !== null) {
-            $row->setStyle($style);
-        }
-        $writer->addRow($row);
+        $writer->addRow(SpoutRow::fromValuesWithStyles($values, $style, $cellStyles));
+    }
+
+    /**
+     * Descarga un XLSX de una hoja; las columnas se ajustan a lo escrito con addRow().
+     *
+     * @param callable(XlsxWriter):void $build
+     */
+    private function stream(string $filename, callable $build): StreamedResponse
+    {
+        return response()->streamDownload(function () use ($build) {
+            $writer = new XlsxWriter();
+            $writer->openToFile('php://output');
+            $this->widths = new XlsxColumnWidths();
+
+            $build($writer);
+
+            $this->widths->applyTo($writer->getCurrentSheet());
+            $writer->close();
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
+        ]);
+    }
+
+    /**
+     * Cartola de una cuenta: movimientos aprobados en orden cronológico con el saldo después de cada uno.
+     *
+     * @param array{movements: \Illuminate\Support\Collection, total_in: float, total_out: float, opening_balance: float} $statement
+     */
+    public function exportAccountStatement(\App\Models\Account $account, array $statement, string $filename): StreamedResponse
+    {
+        return $this->stream($filename, function (XlsxWriter $writer) use ($account, $statement) {
+            $money = [4 => $this->moneyFormat, 5 => $this->moneyFormat, 6 => $this->moneyFormat];
+
+            $this->addRow($writer, ['CARTOLA DE CUENTA'], $this->titleStyle, false);
+            $this->addRow($writer, []);
+            $this->addRow($writer, ['Cuenta:', $account->person?->full_name ?? $account->name], null, false);
+            if ($account->person?->rut) {
+                $this->addRow($writer, ['RUT:', $account->person->rut], null, false);
+            }
+            $this->addRow($writer, ['Saldo actual:', (float) $account->balance, $account->balance_status['label']], null, true, [1 => $this->moneyFormat]);
+            $this->addRow($writer, ['Generada:', now()->format('d/m/Y H:i')], null, false);
+            $this->addRow($writer, []);
+
+            $this->addRow($writer, ['Fecha', 'Tipo', 'Referencia', 'Detalle', 'Ingreso', 'Egreso', 'Saldo'], $this->headerStyle);
+            $this->addRow($writer, ['', 'Saldo inicial', '', 'Saldo sin movimiento que lo respalde', '', '', $statement['opening_balance']], $this->dataStyle, true, $money);
+
+            foreach ($statement['movements']->reverse() as $movement) {
+                $this->addRow($writer, [
+                    $movement['date'],
+                    $movement['kind'],
+                    $movement['reference'] ?? '',
+                    $movement['detail'],
+                    $movement['in'] > 0 ? $movement['in'] : '',
+                    $movement['out'] > 0 ? $movement['out'] : '',
+                    $movement['balance_after'],
+                ], $this->dataStyle, true, [0 => $this->dateTimeFormat] + $money);
+            }
+
+            $this->addRow($writer, ['', '', '', 'TOTALES', $statement['total_in'], $statement['total_out'], (float) $account->balance], $this->totalStyle, true, $money);
+        });
+    }
+
+    /**
+     * Cierre (o resumen provisorio) de un mes por cuenta, con el arqueo de Tesorería si se registró.
+     *
+     * @param array{rows: array<int,array<string,mixed>>, totals: array<string,float>} $report
+     */
+    public function exportPeriodClosing(\Carbon\CarbonInterface $month, array $report, ?\App\Models\PeriodClosing $closing, string $filename): StreamedResponse
+    {
+        return $this->stream($filename, function (XlsxWriter $writer) use ($month, $report, $closing) {
+            $money = [2 => $this->moneyFormat, 3 => $this->moneyFormat, 4 => $this->moneyFormat, 5 => $this->moneyFormat, 6 => $this->moneyFormat, 7 => $this->moneyFormat];
+            $totals = $report['totals'];
+
+            $this->addRow($writer, ['CIERRE DE MES: ' . mb_strtoupper($month->translatedFormat('F Y'))], $this->titleStyle, false);
+            $this->addRow($writer, []);
+            $this->addRow($writer, ['Estado:', $closing
+                ? 'Cerrado por ' . ($closing->closedBy?->name ?? 'N/A') . ' el ' . $closing->closed_at->format('d/m/Y H:i')
+                : 'Abierto (resumen provisorio, puede cambiar)'], null, false);
+            $this->addRow($writer, ['Generado:', now()->format('d/m/Y H:i')], null, false);
+            $this->addRow($writer, []);
+
+            $this->addRow($writer, ['Cuenta', 'Tipo', 'Saldo inicial', 'Entradas', 'Salidas', 'Rendido', 'Ajustes', 'Saldo final', 'Situación'], $this->headerStyle);
+            foreach ($report['rows'] as $row) {
+                $isTreasury = $row['type'] === 'treasury';
+                $this->addRow($writer, [
+                    $row['name'],
+                    $isTreasury ? 'Tesorería' : 'Persona',
+                    (float) $row['opening'],
+                    (float) $row['in'],
+                    (float) $row['out'],
+                    (float) $row['rendered'],
+                    (float) $row['adjustments'],
+                    (float) $row['closing'],
+                    $isTreasury ? 'Disponible' : ($row['closing'] > 0 ? 'Por rendir' : ($row['closing'] < 0 ? 'Se le debe' : 'Al día')),
+                ], $isTreasury ? $this->totalStyle : $this->dataStyle, true, $money);
+            }
+            $this->addRow($writer, []);
+
+            $this->addRow($writer, ['RESUMEN'], $this->categoryStyle, false);
+            $summary = [
+                'Tesorería al cierre:' => $totals['treasury_closing'],
+                'Por rendir (trabajadores):' => $totals['to_render'],
+                'Se les debe:' => $totals['owed'],
+                'Rendido en el mes:' => $totals['rendered'],
+            ];
+            foreach ($summary as $label => $amount) {
+                $this->addRow($writer, [$label, (float) $amount], $this->totalStyle, true, [1 => $this->moneyFormat]);
+            }
+
+            if ($closing) {
+                $this->addRow($writer, []);
+                $this->addRow($writer, ['ARQUEO DE TESORERÍA'], $this->categoryStyle, false);
+                if ($closing->treasury_counted !== null) {
+                    $difference = (float) $closing->treasury_counted - (float) $totals['treasury_closing'];
+                    $this->addRow($writer, ['Según sistema:', (float) $totals['treasury_closing']], null, true, [1 => $this->moneyFormat]);
+                    $this->addRow($writer, ['Contado:', (float) $closing->treasury_counted], null, true, [1 => $this->moneyFormat]);
+                    $this->addRow($writer, ['Diferencia:', $difference, abs($difference) < 1 ? 'Cuadra' : 'No cuadra'], $this->totalStyle, true, [1 => $this->moneyFormat]);
+                } else {
+                    $this->addRow($writer, ['No se registró arqueo.'], null, false);
+                }
+                if ($closing->notes) {
+                    $this->addRow($writer, ['Observaciones:', $closing->notes], null, false);
+                }
+            }
+        });
     }
 
     /**

@@ -11,9 +11,12 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="mb-3">
+            <div class="mb-3 d-flex justify-content-between">
                 <a href="{{ route('accounts.index') }}" class="btn btn-secondary btn-sm">
                     <i class="fas fa-arrow-left me-1"></i>Volver a Cuentas
+                </a>
+                <a href="{{ route('accounts.movements.export', $account) }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i>Exportar cartola a Excel
                 </a>
             </div>
 
