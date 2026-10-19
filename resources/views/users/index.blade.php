@@ -198,7 +198,7 @@
                     { data: 'actions', name: 'actions', orderable: false, searchable: false },
                 ],
                 order: [[1, 'asc']],
-                language: { url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json' }
+                language: { url: '{{ asset('vendor/datatables/i18n/es-ES.json') }}' }
             });
 
             // Reset form on modal close

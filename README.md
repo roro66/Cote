@@ -41,6 +41,8 @@ Control de caja chica: la empresa ingresa dinero a Tesorería, Tesorería lo ent
 | **Spatie**        | Permisos, activity log, medialibrary |
 | **Laravel Sail**  | Entorno Docker         |
 
+La app no usa CDNs ni servicios externos: Bootstrap, jQuery, DataTables, Font Awesome, toastr, Chart.js y la fuente Figtree se sirven desde el propio servidor, así que funciona en una red local sin internet. Las librerías de interfaz están en `public/vendor/`; para actualizarlas, edita las versiones en `scripts/vendor-assets.sh` y ejecútalo (verifica cada archivo con su hash SHA-384).
+
 ## Requisitos
 
 - PHP 8.2+

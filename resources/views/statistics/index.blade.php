@@ -156,7 +156,7 @@
     </div>
 
     @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha384-e6nUZLBkQ86NJ6TVVKAeSaK8jWa3NhkYWZFomE39AvDbQWeie9PlQqM3pmYW5d1g" crossorigin="anonymous"></script>
+        <script src="{{ asset('vendor/chartjs/chart.umd.min.js') }}"></script>
         <script>
             // Datos del servidor
             const monthLabels = @json($monthLabels);
