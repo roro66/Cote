@@ -6,8 +6,6 @@ use App\Support\XlsxColumnWidths;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use OpenSpout\Common\Entity\Row as SpoutRow;
 use OpenSpout\Common\Entity\Style\Style;
-use OpenSpout\Common\Entity\Style\Color;
-use OpenSpout\Common\Entity\Style\CellAlignment;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExcelExportService
@@ -33,33 +31,33 @@ class ExcelExportService
     {
         // Estilo para títulos principales
         $this->titleStyle = (new Style())
-            ->setFontBold()
-            ->setFontSize(16);
+            ->withFontBold(true)
+            ->withFontSize(16);
 
         // Estilo para encabezados de tabla
         $this->headerStyle = (new Style())
-            ->setFontBold()
-            ->setFontSize(11);
+            ->withFontBold(true)
+            ->withFontSize(11);
 
         // Estilo para categorías
         $this->categoryStyle = (new Style())
-            ->setFontBold()
-            ->setFontSize(13);
+            ->withFontBold(true)
+            ->withFontSize(13);
 
         // Estilo para datos
         // Con ajuste de texto para que los documentos (varias líneas) se vean uno bajo otro
         $this->dataStyle = (new Style())
-            ->setFontSize(10)
-            ->setShouldWrapText();
+            ->withFontSize(10)
+            ->withShouldWrapText(true);
 
         // Estilo para totales
         $this->totalStyle = (new Style())
-            ->setFontBold()
-            ->setFontSize(11);
+            ->withFontBold(true)
+            ->withFontSize(11);
 
         // Formatos por celda (se combinan con el estilo de la fila): números reales, sumables en Excel
-        $this->moneyFormat = (new Style())->setFormat('"$"#,##0;-"$"#,##0');
-        $this->dateTimeFormat = (new Style())->setFormat('dd/mm/yyyy hh:mm');
+        $this->moneyFormat = (new Style())->withFormat('"$"#,##0;-"$"#,##0');
+        $this->dateTimeFormat = (new Style())->withFormat('dd/mm/yyyy hh:mm');
     }
 
     /**
@@ -149,7 +147,23 @@ class ExcelExportService
             $this->widths->track($values, $style, $cellStyles);
         }
 
-        $writer->addRow(SpoutRow::fromValuesWithStyles($values, $style, $cellStyles));
+        if ($cellStyles === []) {
+            $writer->addRow($style === null
+                ? SpoutRow::fromValues($values)
+                : SpoutRow::fromValuesWithStyle($values, $style));
+
+            return;
+        }
+
+        $styles = [];
+        foreach (array_keys($values) as $index) {
+            $columnStyle = $cellStyles[$index] ?? $style;
+            if ($columnStyle !== null) {
+                $styles[$index] = $columnStyle;
+            }
+        }
+
+        $writer->addRow(SpoutRow::fromValuesWithStyles($values, $styles));
     }
 
     /**

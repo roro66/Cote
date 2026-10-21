@@ -24,14 +24,14 @@ final class XlsxColumnWidths
     {
         $scale = 1.0;
         if ($style !== null) {
-            $scale = max(1, $style->getFontSize()) / 11;
-            if ($style->isFontBold()) {
+            $scale = max(1, $style->fontSize) / 11;
+            if ($style->fontBold) {
                 $scale *= 1.1;
             }
         }
 
         foreach (array_values($values) as $i => $value) {
-            $format = ($cellStyles[$i] ?? null)?->getFormat() ?? $style?->getFormat();
+            $format = ($cellStyles[$i] ?? null)?->format ?? $style?->format;
             $length = self::displayLength($value, $format) * $scale;
             $column = $i + 1;
             if ($length > ($this->lengths[$column] ?? 0)) {
