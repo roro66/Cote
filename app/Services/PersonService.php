@@ -2,12 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\Account;
 use App\Models\Person;
 use App\Models\User;
 use App\Http\Resources\PersonResource;
 use App\Helpers\RutHelper;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PersonService
 {
@@ -71,11 +73,18 @@ class PersonService
             return [
                 'success' => false,
                 'message' => 'No se puede eliminar esta persona porque tiene ' .
-                    implode(', ', $dependencies) . ' asociados.'
+                    implode(' y ', $dependencies) . '.'
             ];
         }
 
-        $person->delete();
+        DB::transaction(function () use ($person) {
+            // La ficha muestra las cuentas bancarias personales. La cuenta interna
+            // vacía no aparece ahí y no conserva movimientos, así que se va con la persona.
+            $person->accounts()->get()->each(function (Account $account) {
+                $account->delete();
+            });
+            $person->delete();
+        });
 
         return [
             'success' => true,
@@ -90,12 +99,9 @@ class PersonService
     {
         $dependencies = [];
 
-        if ($person->accounts()->count() > 0) {
-            $dependencies[] = 'cuentas';
-        }
-
-        if ($person->ledTeams()->count() > 0) {
-            $dependencies[] = 'equipos como líder';
+        $busyAccount = $person->accounts->contains(fn (Account $account) => $this->accountKeepsHistory($account));
+        if ($busyAccount) {
+            $dependencies[] = 'una cuenta interna con saldo o movimientos';
         }
 
         if ($person->submittedExpenses()->count() > 0) {
@@ -113,6 +119,24 @@ class PersonService
         }
 
         return $dependencies;
+    }
+
+    /**
+     * La cuenta interna solo impide borrar a la persona si guarda saldo o historia.
+     */
+    private function accountKeepsHistory(Account $account): bool
+    {
+        if ($account->is_protected || $account->type === 'treasury') {
+            return true;
+        }
+
+        if (bccomp((string) $account->balance, '0', 2) !== 0) {
+            return true;
+        }
+
+        return $account->transactionsFrom()->exists()
+            || $account->transactionsTo()->exists()
+            || $account->expenses()->exists();
     }
 
     /**

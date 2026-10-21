@@ -580,7 +580,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
+                    layout: { topStart: ['buttons', 'pageLength'], topEnd: 'search', bottomStart: 'info', bottomEnd: 'paging' },
                     lengthMenu: [
                         [10, 25, 50, 100, -1],
                         [10, 25, 50, 100, "Todos"]
@@ -754,7 +754,7 @@
                                     title: 'Estado'
                                 }
                             ],
-                            dom: 'Brt',
+                            layout: { topStart: 'buttons', topEnd: null, bottomStart: null, bottomEnd: null },
                             buttons: [{
                                 extend: type,
                                 filename: 'personas_' + new Date().toISOString().split('T')[0],
@@ -947,7 +947,8 @@
 
             function deletePersonalAccount(id) {
                 const personId = window.currentPersonId;
-                if (!confirm('¿Eliminar esta cuenta personal?')) return;
+                coteConfirm('¿Eliminar esta cuenta personal?', { confirmText: 'Eliminar' }).then(function (ok) {
+                if (!ok) return;
                 fetch(`/people/${personId}/personal-accounts/${id}`, {
                     method: 'DELETE',
                     headers: {
@@ -967,10 +968,12 @@
                 .catch(err => {
                     toastr.error(err?.data?.message || 'Error al eliminar la cuenta');
                 });
+                });
             }
 
             function deletePerson(id) {
-                if (confirm('¿Está seguro de que desea eliminar esta persona?')) {
+                coteConfirm('¿Está seguro de que desea eliminar esta persona?', { confirmText: 'Eliminar' }).then(function (ok) {
+                    if (!ok) return;
                     $.ajax({
                         url: '/people/' + id,
                         method: 'DELETE',
@@ -994,7 +997,7 @@
                             }
                         }
                     });
-                }
+                });
             }
 
             // Función para enviar formulario de creación

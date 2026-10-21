@@ -121,13 +121,13 @@ class TransactionForm extends Component
             $to = $this->to_account_id ? Account::find($this->to_account_id) : null;
             $usesTreasury = ($from && $from->type === 'treasury') || ($to && $to->type === 'treasury');
             if ($usesTreasury && !$isBoss) {
-                session()->flash('error', 'Solo el administrador puede mover fondos desde o hacia Tesorería.');
+                $this->dispatch('cote-toast', type: 'error', message: 'Solo el administrador puede mover fondos desde o hacia Tesorería.');
                 return;
             }
 
             // Si intenta crear un ajuste y no tiene permisos
             if ($this->type === 'adjustment' && !$canAdjust) {
-                session()->flash('error', 'No tienes permisos para crear ajustes.');
+                $this->dispatch('cote-toast', type: 'error', message: 'No tienes permisos para crear ajustes.');
                 return;
             }
 
@@ -137,7 +137,7 @@ class TransactionForm extends Component
                     foreach ($violations as $field => $message) {
                         $this->addError($field, $message);
                     }
-                    session()->flash('error', reset($violations));
+                    $this->dispatch('cote-toast', type: 'error', message: reset($violations));
                     return;
                 }
             }
@@ -147,7 +147,7 @@ class TransactionForm extends Component
                 $transaction = Transaction::findOrFail($this->transactionId);
 
                 if ($transaction->status !== 'pending') {
-                    session()->flash('error', 'Solo se pueden editar transacciones pendientes.');
+                    $this->dispatch('cote-toast', type: 'error', message: 'Solo se pueden editar transacciones pendientes.');
                     return;
                 }
 
@@ -178,7 +178,7 @@ class TransactionForm extends Component
                     // Para credit: ingresa dinero al destino. Para debit: descuenta del origen.
                     if ($this->adjustment_direction === 'debit') {
                         if (!$transactionService->hasSufficientFunds($this->from_account_id, $this->amount)) {
-                            session()->flash('error', 'La cuenta seleccionada no tiene fondos suficientes.');
+                            $this->dispatch('cote-toast', type: 'error', message: 'La cuenta seleccionada no tiene fondos suficientes.');
                             return;
                         }
                     }
@@ -203,7 +203,7 @@ class TransactionForm extends Component
 
             return redirect()->route('transactions.index');
         } catch (\Exception $e) {
-            session()->flash('error', \App\Support\ErrorMessage::for($e, 'Error al procesar la transacción'));
+            $this->dispatch('cote-toast', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al procesar la transacción'));
         }
     }
 

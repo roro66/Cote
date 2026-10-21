@@ -82,12 +82,12 @@ class DashboardSummary extends Component
 
         try {
             $transactionService->approveTransaction(Transaction::findOrFail($transactionId), auth()->id());
-            session()->flash('message', 'Transacción aprobada correctamente.');
+            $this->dispatch('cote-toast', type: 'success', message: 'Transacción aprobada correctamente.');
         } catch (\DomainException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->dispatch('cote-toast', type: 'error', message: $e->getMessage());
         } catch (\Throwable $e) {
             report($e);
-            session()->flash('error', 'Error inesperado al aprobar la transacción.');
+            $this->dispatch('cote-toast', type: 'error', message: 'Error inesperado al aprobar la transacción.');
         }
 
         $this->loadSummaryData();
@@ -99,12 +99,12 @@ class DashboardSummary extends Component
 
         try {
             $transactionService->rejectTransaction(Transaction::findOrFail($transactionId), auth()->id(), 'Rechazada desde dashboard');
-            session()->flash('message', 'Transacción rechazada.');
+            $this->dispatch('cote-toast', type: 'success', message: 'Transacción rechazada.');
         } catch (\DomainException $e) {
-            session()->flash('error', $e->getMessage());
+            $this->dispatch('cote-toast', type: 'error', message: $e->getMessage());
         } catch (\Throwable $e) {
             report($e);
-            session()->flash('error', 'Error inesperado al rechazar la transacción.');
+            $this->dispatch('cote-toast', type: 'error', message: 'Error inesperado al rechazar la transacción.');
         }
 
         $this->loadSummaryData();

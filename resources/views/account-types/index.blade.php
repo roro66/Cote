@@ -98,7 +98,7 @@
                         "previous": "Anterior"
                     }
                 },
-                dom: '<"row mb-3"<"col-sm-4"B><"col-sm-4"f><"col-sm-4"l>>rtip',
+                layout: { topStart: 'buttons', topEnd: ['search', 'pageLength'], bottomStart: 'info', bottomEnd: 'paging' },
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
                 pageLength: 10
             });
@@ -154,7 +154,8 @@
         }
 
         function deleteAccountType(id, name) {
-            if (confirm('¿Estás seguro de que quieres eliminar el tipo de cuenta "' + name + '"?')) {
+            coteConfirm('¿Estás seguro de que quieres eliminar el tipo de cuenta "' + name + '"?', { confirmText: 'Eliminar' }).then(function (ok) {
+                if (!ok) return;
                 $.ajax({
                     url: "{{ route('account-types.index') }}/" + id,
                     type: 'DELETE',
@@ -173,7 +174,7 @@
                         }
                     }
                 });
-            }
+            });
         }
     </script>
     @endpush

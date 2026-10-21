@@ -248,7 +248,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
+                    layout: { topStart: ['buttons', 'pageLength'], topEnd: 'search', bottomStart: 'info', bottomEnd: 'paging' },
                     lengthMenu: [
                         [10, 25, 50, 100, -1],
                         [10, 25, 50, 100, "Todos"]
@@ -392,7 +392,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
+                    layout: { topStart: ['buttons', 'pageLength'], topEnd: 'search', bottomStart: 'info', bottomEnd: 'paging' },
                     lengthMenu: [
                         [10, 25, 50, 100, -1],
                         [10, 25, 50, 100, "Todos"]

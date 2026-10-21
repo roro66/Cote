@@ -22,14 +22,14 @@
                             @if($expense->status === 'submitted' && auth()->user()->hasAnyRole(['boss', 'treasurer']))
                                 <form action="{{ route('approvals.expenses.approve', $expense) }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-success" onclick="return confirm('¿Aprobar esta rendición?')">
+                                    <button type="submit" class="btn btn-success" data-cote-confirm="¿Aprobar esta rendición?" data-cote-confirm-text="Aprobar" data-cote-confirm-tone="ok">
                                         <i class="fas fa-check"></i> Aprobar
                                     </button>
                                 </form>
                                 <form action="{{ route('approvals.expenses.reject', $expense) }}" method="POST" class="d-inline">
                                     @csrf
                                     <input type="hidden" name="rejection_reason">
-                                    <button type="submit" class="btn btn-danger" onclick="const r = prompt('Motivo del rechazo:'); if (!r || !r.trim()) return false; this.form.rejection_reason.value = r.trim(); return true;">
+                                    <button type="button" class="btn btn-danger" onclick="cotePrompt('Motivo del rechazo').then((reason) => { if (!reason) return; this.form.rejection_reason.value = reason; this.form.requestSubmit(); })">
                                         <i class="fas fa-times"></i> Rechazar
                                     </button>
                                 </form>

@@ -34,7 +34,7 @@ Control de caja chica: la empresa ingresa dinero a Tesorería, Tesorería lo ent
 | Tecnología        | Uso                    |
 |-------------------|------------------------|
 | **Laravel 13**    | Backend, API, auth     |
-| **Livewire 3**    | Componentes reactivos  |
+| **Livewire 4**    | Componentes reactivos  |
 | **Laravel Breeze**| Login y sesión         |
 | **Bootstrap 5**   | UI y componentes       |
 | **DataTables**    | Tablas avanzadas      |
@@ -45,7 +45,7 @@ La app no usa CDNs ni servicios externos: Bootstrap, jQuery, DataTables, Font Aw
 
 ## Requisitos
 
-- PHP 8.3+
+- PHP 8.4+
 - Composer
 - Node.js y npm (para assets)
 - Base de datos: SQLite (desarrollo) o PostgreSQL (producción)

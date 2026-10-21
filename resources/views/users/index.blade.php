@@ -256,16 +256,16 @@
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
                     usersTable.ajax.reload(null, false);
-                    if (window.toastr) toastr.success(data.message); else alert(data.message);
+                    coteToast('success', data.message);
                 }
             }).catch(err => {
                 if (err.status === 422 && err.data && err.data.errors) {
                     showValidationErrors('createUserForm', err.data.errors);
-                    if (window.toastr) toastr.error('Corrija los errores del formulario');
+                    coteToast('error', 'Corrija los errores del formulario');
                 } else if (err.data && err.data.message) {
-                    if (window.toastr) toastr.error(err.data.message); else alert(err.data.message);
+                    coteToast('error', err.data.message);
                 } else {
-                    if (window.toastr) toastr.error('Error al crear usuario');
+                    coteToast('error', 'Error al crear usuario');
                 }
             });
         }
@@ -291,7 +291,7 @@
                     }
                     new bootstrap.Modal(document.getElementById('editUserModal')).show();
                 })
-                .catch(() => { if (window.toastr) toastr.error('No se pudo cargar el usuario'); });
+                .catch(() => coteToast('error', 'No se pudo cargar el usuario'));
         }
 
         function submitEditUser() {
@@ -325,23 +325,24 @@
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
                     usersTable.ajax.reload(null, false);
-                    if (window.toastr) toastr.success(data.message); else alert(data.message);
+                    coteToast('success', data.message);
                 }
             }).catch(err => {
                 if (err.status === 422 && err.data && err.data.errors) {
                     showValidationErrors('editUserForm', err.data.errors);
-                    if (window.toastr) toastr.error('Corrija los errores del formulario');
+                    coteToast('error', 'Corrija los errores del formulario');
                 } else if (err.data && err.data.message) {
-                    if (window.toastr) toastr.error(err.data.message); else alert(err.data.message);
+                    coteToast('error', err.data.message);
                 } else {
-                    if (window.toastr) toastr.error('Error al actualizar usuario');
+                    coteToast('error', 'Error al actualizar usuario');
                 }
             });
         }
 
         // Delete
         function deleteUser(id) {
-            if (!confirm('¿Eliminar este usuario?')) return;
+            coteConfirm('¿Eliminar este usuario?', { confirmText: 'Eliminar' }).then(function (ok) {
+            if (!ok) return;
             const fd = new FormData();
             fd.set('_method', 'DELETE');
             fd.set('_token', '{{ csrf_token() }}');
@@ -355,10 +356,11 @@
                 return data;
             }).then((data) => {
                 usersTable.ajax.reload(null, false);
-                if (window.toastr) toastr.success(data.message || 'Usuario eliminado');
+                coteToast('success', data.message || 'Usuario eliminado');
             }).catch(err => {
                 const msg = err?.data?.message || 'No se pudo eliminar el usuario';
-                if (window.toastr) toastr.error(msg); else alert(msg);
+                coteToast('error', msg);
+            });
             });
         }
         // Expose to global for DataTables actions

@@ -89,7 +89,7 @@
                     {data: 'action', name: 'action', orderable: false, searchable: false}
                 ],
                 language: window.COTE_DATATABLE_LANG || {},
-                dom: '<"row mb-3"<"col-sm-4"B><"col-sm-4"f><"col-sm-4"l>>rtip',
+                layout: { topStart: 'buttons', topEnd: ['search', 'pageLength'], bottomStart: 'info', bottomEnd: 'paging' },
                 lengthMenu: [[10,25,50,100,-1],[10,25,50,100,'Todos']],
                 pageLength: 10
             });
@@ -147,7 +147,8 @@
         }
 
         function deleteCategory(id, name) {
-            if (confirm('¿Estás seguro de que quieres eliminar la categoría "' + name + '"?')) {
+            coteConfirm('¿Estás seguro de que quieres eliminar la categoría "' + name + '"?', { confirmText: 'Eliminar' }).then(function (ok) {
+                if (!ok) return;
                 $.ajax({
                     url: "{{ route('expense-categories.index') }}/" + id,
                     type: 'DELETE',
@@ -164,7 +165,7 @@
                         }
                     }
                 });
-            }
+            });
         }
     </script>
     @endpush

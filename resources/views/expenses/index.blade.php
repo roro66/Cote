@@ -87,7 +87,7 @@
                     "previous": "Anterior"
                 }
             },
-            dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
+            layout: { topStart: ['buttons', 'pageLength'], topEnd: 'search', bottomStart: 'info', bottomEnd: 'paging' },
             lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Todos"]],
             pageLength: 25,
             buttons: [
@@ -167,11 +167,12 @@
 
     // Función para eliminar expense
     function deleteExpense(id) {
-        if (confirm('¿Está seguro de que desea eliminar esta rendición?')) {
+        coteConfirm('¿Está seguro de que desea eliminar esta rendición?', { confirmText: 'Eliminar' }).then(function (ok) {
+            if (!ok) return;
             const form = document.getElementById('deleteForm');
             form.action = '/expenses/' + id;
             form.submit();
-        }
+        });
     }
     </script>
     @endpush

@@ -106,7 +106,7 @@ class ExpenseDataTableController extends Controller
                     if ($row->status === 'submitted' && $user->hasAnyRole(['boss', 'treasurer'])) {
                         $actionBtn .= '<form action="' . route('approvals.expenses.approve', $row->id) . '" method="POST" style="display:inline;">
                             <input type="hidden" name="_token" value="' . csrf_token() . '">
-                            <button type="submit" class="btn btn-success btn-sm" title="Aprobar" aria-label="Aprobar" onclick="return confirm(\'¿Aprobar esta rendición?\')">
+                            <button type="submit" class="btn btn-success btn-sm" title="Aprobar" aria-label="Aprobar" data-cote-confirm="¿Aprobar esta rendición?" data-cote-confirm-text="Aprobar" data-cote-confirm-tone="ok">
                                 <i class="fas fa-check"></i>
                             </button>
                         </form>';

@@ -175,7 +175,7 @@
                             "previous": "Anterior"
                         }
                     },
-                    dom: '<"row"<"col-sm-12"<"d-flex justify-content-between align-items-center"<"dt-buttons"B><"dt-length"l>>>>frtip',
+                    layout: { topStart: ['buttons', 'pageLength'], topEnd: 'search', bottomStart: 'info', bottomEnd: 'paging' },
                     lengthMenu: [
                         [10, 25, 50, 100, -1],
                         [10, 25, 50, 100, "Todos"]
@@ -307,7 +307,8 @@
             });
 
             function deleteAccount(id) {
-                if (confirm('¿Está seguro de que desea eliminar esta cuenta?')) {
+                coteConfirm('¿Está seguro de que desea eliminar esta cuenta?', { confirmText: 'Eliminar' }).then(function (ok) {
+                    if (!ok) return;
                     $.ajax({
                         url: '/accounts/' + id,
                         method: 'DELETE',
@@ -330,7 +331,7 @@
                             toastr.error(message);
                         }
                     });
-                }
+                });
             }
 
             function clearForm() {

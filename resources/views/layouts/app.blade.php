@@ -22,8 +22,7 @@
         <!-- Font Awesome -->
         <link rel="stylesheet" href="{{ asset('vendor/fontawesome/css/all.min.css') }}">
         
-        <!-- Toastr CSS -->
-        <link rel="stylesheet" href="{{ asset('vendor/toastr/toastr.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/sweetalert2.min.css') }}">
         
 
         <!-- Scripts -->
@@ -70,11 +69,11 @@
         <!-- Bootstrap JS -->
         <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         
-        <!-- Toastr para notificaciones -->
-        <script src="{{ asset('vendor/toastr/toastr.min.js') }}"></script>
+        <script src="{{ asset('vendor/sweetalert2/sweetalert2.min.js') }}"></script>
+        @include('partials.notices')
         
         <!-- DataTables JS - versiones estables EN ORDEN CORRECTO -->
-        <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ asset('vendor/datatables/js/dataTables.min.js') }}"></script>
         <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap5.min.js') }}"></script>
         
         <!-- DataTables Buttons - DESPUÉS del core -->
@@ -94,33 +93,15 @@
         <!-- Responsive -->
         <script src="{{ asset('vendor/datatables/js/dataTables.responsive.min.js') }}"></script>
         <script src="{{ asset('vendor/datatables/js/responsive.bootstrap5.min.js') }}"></script>
-        
-        
-        {{-- Avisos de la sesión (éxito, error y resumen de validación), una sola vez por página --}}
-        @php
-            $flash = session('toastr');
-            $validationSummary = $errors->any()
-                ? ($errors->count() > 1 ? 'Revisa los campos marcados. ' . $errors->first() : $errors->first())
-                : null;
-        @endphp
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                if (!window.toastr) return;
-                @if (is_array($flash) && ! empty($flash['message']))
-                    (toastr[@json($flash['type'] ?? 'info')] || toastr.info)(@json($flash['message']));
-                @endif
-                @if (session('success'))
-                    toastr.success(@json(session('success')));
-                @endif
-                @if (session('error'))
-                    toastr.error(@json(session('error')));
-                @endif
-                @if ($validationSummary)
-                    toastr.error(@json($validationSummary));
-                @endif
-            });
+            if (window.DataTable) {
+                const labels = DataTable.defaults.language.lengthLabels || {};
+                labels['-1'] = 'Todos';
+                DataTable.defaults.language.lengthLabels = labels;
+            }
         </script>
-
+        
+        
         @stack('scripts')
         @livewireScripts
     </body>

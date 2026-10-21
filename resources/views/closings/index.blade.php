@@ -125,7 +125,8 @@
                         @role('boss')
                             @if ($history->first()?->is($closing))
                                 <form method="POST" action="{{ route('closings.destroy', $closing) }}" class="mt-3"
-                                      onsubmit="return confirm('¿Reabrir {{ $monthLabel }}? El resumen guardado se descartará.')">
+                                      data-cote-confirm="¿Reabrir {{ $monthLabel }}? El resumen guardado se descartará."
+                                      data-cote-confirm-text="Reabrir">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-lock-open me-1"></i>Reabrir mes</button>
@@ -143,7 +144,8 @@
                         @else
                             <p class="small text-muted">Cuenta el dinero que hay en Tesorería (caja y banco) y regístralo para comparar con el sistema. Al cerrar se guarda este resumen tal como está.</p>
                             <form method="POST" action="{{ route('closings.store') }}" class="row g-2"
-                                  onsubmit="return confirm('¿Cerrar {{ $monthLabel }}?')">
+                                  data-cote-confirm="¿Cerrar {{ $monthLabel }}?"
+                                  data-cote-confirm-text="Cerrar mes">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">
                                 <div class="col-md-4">

@@ -11,10 +11,6 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="h5 mb-3">Normalización de Transacciones Legacy</h3>
 
-                    @if (session('status'))
-                        <div class="alert alert-info">{{ session('status') }}</div>
-                    @endif
-
                     @if (session('output'))
                         <pre class="bg-dark text-light p-3 rounded" style="white-space: pre-wrap">{{ session('output') }}</pre>
                     @endif
@@ -26,7 +22,8 @@
                     </form>
 
                     <form method="POST" action="{{ route('admin.tools.normalize') }}" class="d-inline ms-2"
-                        onsubmit="return confirm('¿Aplicar normalización definitivamente?');">
+                        data-cote-confirm="¿Aplicar normalización definitivamente?"
+                        data-cote-confirm-text="Aplicar">
                         @csrf
                         <input type="hidden" name="dry_run" value="0">
                         <button type="submit" class="btn btn-primary">Aplicar</button>

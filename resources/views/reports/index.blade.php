@@ -240,15 +240,15 @@
                     displayReport(data.data, data.report_info);
                     closeMonthlyExpenseModal();
                 } else {
-                    alert('Error al generar el informe: ' + (data.message || 'Error desconocido'));
+                    coteToast('error', 'Error al generar el informe: ' + (data.message || 'Error desconocido'));
                 }
             })
-            .catch(() => alert('No se pudo contactar al servidor para generar el informe.'));
+            .catch(() => coteToast('error', 'No se pudo contactar al servidor para generar el informe.'));
         }
 
         function exportCurrentReport() {
             if (!currentReportParams) {
-                alert('No hay informe actual para exportar.');
+                coteToast('warning', 'No hay informe actual para exportar.');
                 return;
             }
 

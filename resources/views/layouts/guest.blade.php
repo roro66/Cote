@@ -9,7 +9,7 @@
 
         @include('partials.theme-init')
 
-        <!-- Scripts -->
+        <link rel="stylesheet" href="{{ asset('vendor/sweetalert2/sweetalert2.min.css') }}">
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
@@ -36,6 +36,8 @@
             </div>
         </div>
 
+        <script src="{{ asset('vendor/sweetalert2/sweetalert2.min.js') }}"></script>
+        @include('partials.notices')
         @include('partials.theme-toggle-script')
     </body>
 </html>
