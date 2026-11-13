@@ -30,17 +30,22 @@ class ReadOnlyDatabaseRole
         $role = $this->name();
         $quotedRole = $this->identifier($role);
 
+        // Un rol creado por otro administrador no se puede modificar con CREATEROLE (PostgreSQL 16+); los permisos de tabla siguen igual.
         if ($this->canManageRoles()) {
-            if (! DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$role])) {
-                DB::statement("CREATE ROLE {$quotedRole} NOLOGIN");
+            try {
+                if (! DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$role])) {
+                    DB::statement("CREATE ROLE {$quotedRole} NOLOGIN");
+                }
+                DB::statement("ALTER ROLE {$quotedRole} NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS");
+                $password = (string) config('database.connections.pgsql_ai.password');
+                if ($password !== '') {
+                    DB::statement("ALTER ROLE {$quotedRole} LOGIN PASSWORD ".DB::getPdo()->quote($password));
+                }
+                DB::statement("ALTER ROLE {$quotedRole} SET default_transaction_read_only = on");
+                DB::statement("ALTER ROLE {$quotedRole} SET statement_timeout = '15s'");
+            } catch (Throwable $e) {
+                Log::warning('Asistente IA: no se pudo ajustar el usuario de solo lectura', ['error' => $e->getMessage()]);
             }
-            DB::statement("ALTER ROLE {$quotedRole} NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS");
-            $password = (string) config('database.connections.pgsql_ai.password');
-            if ($password !== '') {
-                DB::statement("ALTER ROLE {$quotedRole} LOGIN PASSWORD ".DB::getPdo()->quote($password));
-            }
-            DB::statement("ALTER ROLE {$quotedRole} SET default_transaction_read_only = on");
-            DB::statement("ALTER ROLE {$quotedRole} SET statement_timeout = '15s'");
         }
 
         if (! DB::selectOne('SELECT 1 AS ok FROM pg_roles WHERE rolname = ?', [$role])) {
