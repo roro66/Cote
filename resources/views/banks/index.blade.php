@@ -59,6 +59,16 @@
                             <input type="text" class="form-control" id="name" name="name" required>
                             <div class="invalid-feedback"></div>
                         </div>
+
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Tipo *</label>
+                            <select class="form-select form-control" id="type" name="type" required>
+                                <option value="banco">Banco</option>
+                                <option value="cooperativa">Cooperativa</option>
+                                <option value="tarjeta_prepago">Tarjeta de prepago</option>
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -126,6 +136,7 @@
                 $('#bankId').val(data.id);
                 $('#code').val(data.code);
                 $('#name').val(data.name);
+                $('#type').val(data.type);
                 $('.form-control').removeClass('is-invalid');
                 $('#bankModal').modal('show');
             });

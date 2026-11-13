@@ -127,7 +127,7 @@
                     <form id="rejectForm">
                         <div class="mb-3">
                             <label for="rejectReason" class="form-label">Ingrese el motivo del rechazo:</label>
-                            <textarea class="form-control" id="rejectReason" name="reject_reason" rows="3" required
+                            <textarea class="form-control" id="rejectReason" name="rejection_reason" rows="3" required
                                 placeholder="Explique brevemente por qué se rechaza esta solicitud..."></textarea>
                         </div>
                         <input type="hidden" id="rejectItemId" name="item_id">
@@ -655,7 +655,7 @@
                             'X-CSRF-TOKEN': csrfToken
                         },
                         body: JSON.stringify({
-                            reject_reason: reason
+                            rejection_reason: reason
                         })
                     })
                     .then(response => response.json())

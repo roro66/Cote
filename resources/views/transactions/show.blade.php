@@ -67,14 +67,8 @@
                                 <div>
                                     <label class="text-sm font-medium text-gray-600">Tipo</label>
                                     <p class="text-gray-900">
-                                        @switch($transaction->type)
-                                            @case('transfer')
-                                                <i class="fas fa-exchange-alt text-blue-500"></i> Transferencia
-                                            @break
-
-                                            @default
-                                                {{ $transaction->type }}
-                                        @endswitch
+                                        <i class="fas {{ $transaction->type === 'deposit' ? 'fa-hand-holding-usd text-green-500' : 'fa-exchange-alt text-blue-500' }}"></i>
+                                        {{ $transaction->type_spanish }}
                                     </p>
                                 </div>
                                 <div>

@@ -37,12 +37,13 @@ class ReportService
 
         // Base query para expenses
         $expenseQuery = Expense::with(['submittedBy', 'account.person', 'items.categoryObj'])
+            ->where('is_enabled', true)
             ->whereBetween('expense_date', [$start, $end]);
 
-        // Filtrar por estado de aprobación
-        if ($approvalStatus === 'approved_only') {
-            $expenseQuery->where('status', 'approved');
-        }
+        // "Todas" son las aprobadas más las que esperan aprobación; las rechazadas no cuentan como gasto
+        $expenseQuery->whereIn('status', $approvalStatus === 'approved_only'
+            ? ['approved']
+            : ['submitted', 'reviewed', 'approved']);
 
         $expenses = $expenseQuery->get();
 
@@ -138,7 +139,7 @@ class ReportService
                     'submitter' => $expense->submittedBy ? ($expense->submittedBy->first_name . ' ' . $expense->submittedBy->last_name) : 'N/A',
                     'item_description' => $item->description,
                     'amount' => $this->formatChileanNumber($item->amount),
-                    'receipt_number' => $item->receipt_number,
+                    'receipt_number' => $item->document_number,
                     'expense_status' => $expense->status
                 ];
 

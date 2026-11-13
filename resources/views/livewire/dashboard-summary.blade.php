@@ -220,14 +220,7 @@
                                 @elseif($expense->status === 'approved') bg-green-100 text-green-800
                                 @elseif($expense->status === 'rejected') bg-red-100 text-red-800
                                 @endif">
-                                @switch($expense->status)
-                                    @case('draft') Borrador @break
-                                    @case('submitted') Enviada @break
-                                    @case('reviewed') En Revisión @break
-                                    @case('approved') Aprobada @break
-                                    @case('rejected') Rechazada @break
-                                    @default {{ ucfirst($expense->status) }}
-                                @endswitch
+                                {{ $expense->status_spanish }}
                             </span>
                         </div>
                     </div>

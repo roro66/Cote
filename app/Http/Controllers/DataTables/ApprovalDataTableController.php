@@ -119,7 +119,7 @@ class ApprovalDataTableController extends Controller
             ->addColumn('items_count', fn($row) => $row->items ? $row->items->count() : 0)
             ->addColumn('items_without_receipt', fn($row) => $row->items ? $row->items->where('without_receipt', true)->count() : 0)
             ->editColumn('total_amount', fn($row) => (float) $row->total_amount)
-            ->editColumn('status', fn($row) => $row->status)
+            ->editColumn('status', fn($row) => $row->status_spanish)
             ->addColumn('action', function ($row) {
                 return '<div class="btn-group" role="group">'
                     . '<button type="button" class="btn btn-info btn-sm" onclick="viewExpenseDetails(' . $row->id . ')" title="Ver Detalles">'

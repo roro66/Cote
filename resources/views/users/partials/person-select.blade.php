@@ -4,7 +4,7 @@
         <option value="">— Sin persona —</option>
         @foreach ($people as $person)
             <option value="{{ $person->id }}" @selected((string) ($selected ?? '') === (string) $person->id)>
-                {{ $person->full_name }}{{ $person->rut ? ' (' . $person->rut . ')' : '' }}
+                {{ $person->full_name }}{{ $person->rut ? ' (' . $person->rut . ')' : '' }}{{ $person->is_enabled ? '' : ' — inactiva' }}
             </option>
         @endforeach
     </select>

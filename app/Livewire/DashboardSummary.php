@@ -34,6 +34,7 @@ class DashboardSummary extends Component
 
         $this->recentExpenses = Expense::with(['account', 'submitter'])
             ->visibleTo($user)
+            ->where('is_enabled', true)
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
@@ -63,10 +64,11 @@ class DashboardSummary extends Component
             ->get();
 
         // Gastos
-        $this->pendingExpenses = Expense::whereIn('status', ['submitted', 'reviewed'])->count();
+        $pendingExpenses = Expense::whereIn('status', ['submitted', 'reviewed'])->where('is_enabled', true);
+        $this->pendingExpenses = (clone $pendingExpenses)->count();
 
         $this->pendingTransactionsAmount = (float) Transaction::where('status', 'pending')->sum('amount');
-        $this->pendingExpensesAmount = (float) Expense::whereIn('status', ['submitted', 'reviewed'])->sum('total_amount');
+        $this->pendingExpensesAmount = (float) $pendingExpenses->sum('total_amount');
         $this->toRender = (float) Account::where('type', 'person')->where('is_enabled', true)->where('balance', '>', 0)->sum('balance');
         $this->negativeAccounts = Account::with('person')
             ->where('is_enabled', true)

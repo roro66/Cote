@@ -31,7 +31,7 @@ class UpdateUserRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $roles = $this->input('roles', []);
+            $roles = (array) $this->input('roles', []);
             $userId = $this->route('user')->id;
             if (in_array('treasurer', $roles)) {
                 $other = User::role('treasurer')->where('id', '<>', $userId)->first();

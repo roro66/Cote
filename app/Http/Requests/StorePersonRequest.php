@@ -16,6 +16,14 @@ class StorePersonRequest extends FormRequest
         return auth()->check() && auth()->user()->is_enabled;
     }
 
+    /** El RUT se guarda limpio (sin puntos); se compara igual para detectar duplicados. */
+    protected function prepareForValidation(): void
+    {
+        if (is_string($this->input('rut'))) {
+            $this->merge(['rut' => \App\Helpers\RutHelper::clean(trim($this->input('rut')))]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

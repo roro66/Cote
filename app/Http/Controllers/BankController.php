@@ -17,9 +17,10 @@ class BankController extends Controller
         $request->validate([
             'code' => 'required|string|max:10|unique:banks',
             'name' => 'required|string|max:255|unique:banks',
+            'type' => 'required|in:banco,cooperativa,tarjeta_prepago',
         ]);
 
-        Bank::create($request->only(['code', 'name']));
+        Bank::create($request->only(['code', 'name', 'type']));
 
         return response()->json(['message' => 'Banco creado exitosamente']);
     }
@@ -34,9 +35,10 @@ class BankController extends Controller
         $request->validate([
             'code' => 'required|string|max:10|unique:banks,code,' . $bank->id,
             'name' => 'required|string|max:255|unique:banks,name,' . $bank->id,
+            'type' => 'required|in:banco,cooperativa,tarjeta_prepago',
         ]);
 
-        $bank->update($request->only(['code', 'name']));
+        $bank->update($request->only(['code', 'name', 'type']));
 
         return response()->json(['message' => 'Banco actualizado exitosamente']);
     }

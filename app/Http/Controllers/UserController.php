@@ -158,8 +158,11 @@ class UserController extends Controller
         ]);
     }
 
+    /** Personas activas, más las inactivas que ya tienen usuario: si faltaran, editar ese usuario borraría su vínculo. */
     private function people()
     {
-        return \App\Models\Person::where('is_enabled', true)->orderBy('first_name')->orderBy('last_name')->get();
+        return \App\Models\Person::where('is_enabled', true)
+            ->orWhereIn('id', User::whereNotNull('person_id')->select('person_id'))
+            ->orderBy('first_name')->orderBy('last_name')->get();
     }
 }

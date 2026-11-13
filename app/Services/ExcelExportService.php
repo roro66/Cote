@@ -374,7 +374,7 @@ class ExcelExportService
         $this->addRow($writer, ['ESTADÍSTICAS DE DOCUMENTOS'], $this->categoryStyle, false);
         $this->addRow($writer, ['Total de documentos adjuntos:', $documentCount], $this->totalStyle);
         $this->addRow($writer, ['Monto total con documentos:', '$' . $this->formatChileanNumber($totalWithDocs)], $this->totalStyle);
-        $this->addRow($writer, ['Porcentaje del total general:', round(($totalWithDocs / $data['total_amount']) * 100, 1) . '%'], $this->totalStyle);
+        $this->addRow($writer, ['Porcentaje del total general:', ($data['total_amount'] > 0 ? round(($totalWithDocs / $data['total_amount']) * 100, 1) : 0) . '%'], $this->totalStyle);
         
         // Estadísticas adicionales
         $itemsWithDocs = 0;
@@ -389,7 +389,7 @@ class ExcelExportService
         }
         
         $this->addRow($writer, ['Items con documentos:', $itemsWithDocs . ' de ' . $totalItems], $this->totalStyle);
-        $this->addRow($writer, ['Cobertura de documentos:', round(($itemsWithDocs / $totalItems) * 100, 1) . '%'], $this->totalStyle);
+        $this->addRow($writer, ['Cobertura de documentos:', ($totalItems > 0 ? round(($itemsWithDocs / $totalItems) * 100, 1) : 0) . '%'], $this->totalStyle);
     }
     /**
      * Stream an XLSX with headings and rows.
@@ -470,10 +470,10 @@ class ExcelExportService
                 $this->addRow($writer, ['DETALLE POR CATEGORÍA'], $this->categoryStyle, false);
                 $this->addRow($writer, []); // Línea vacía
 
-                foreach ($data['categories'] as $categoryName => $category) {
+                foreach ($data['categories'] as $category) {
                     // Título de categoría
                     $this->addRow($writer, [
-                        'CATEGORÍA: ' . $categoryName,
+                        'CATEGORÍA: ' . $category['category'],
                         '',
                         '',
                         '',

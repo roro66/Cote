@@ -96,6 +96,7 @@
                                         </div>
                                     @endforeach
                                 </div>
+                                <div class="invalid-feedback d-block roles-feedback"></div>
                             </div>
                         </div>
                     </form>
@@ -168,6 +169,7 @@
                                         </div>
                                     @endforeach
                                 </div>
+                                <div class="invalid-feedback d-block roles-feedback"></div>
                             </div>
                         </div>
                     </form>
@@ -221,6 +223,11 @@
         function showValidationErrors(formId, errors) {
             const form = document.getElementById(formId);
             Object.keys(errors).forEach(field => {
+                if (field === 'roles' || field.startsWith('roles.')) {
+                    const fb = form.querySelector('.roles-feedback');
+                    if (fb) fb.textContent = errors[field][0];
+                    return;
+                }
                 const inputs = form.querySelectorAll(`[name="${field}"]`);
                 if (inputs && inputs.length) {
                     inputs.forEach(input => {
@@ -308,6 +315,10 @@
             }
             // checkbox value handling
             fd.set('is_enabled', document.getElementById('edit_is_enabled').checked ? '1' : '0');
+            // Sin casillas marcadas el navegador no envía roles[]; vacío indica quitarlos todos
+            if (!fd.has('roles[]')) {
+                fd.set('roles', '');
+            }
 
             fetch(`/users/${id}`, {
                 method: 'POST',

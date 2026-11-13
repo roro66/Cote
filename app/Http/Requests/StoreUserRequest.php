@@ -29,7 +29,7 @@ class StoreUserRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            $roles = $this->input('roles', []);
+            $roles = (array) $this->input('roles', []);
             if (in_array('treasurer', $roles)) {
                 // if any user already has treasurer role, block
                 if (User::role('treasurer')->exists()) {

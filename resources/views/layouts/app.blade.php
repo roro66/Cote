@@ -94,10 +94,33 @@
         <script src="{{ asset('vendor/datatables/js/dataTables.responsive.min.js') }}"></script>
         <script src="{{ asset('vendor/datatables/js/responsive.bootstrap5.min.js') }}"></script>
         <script>
+            window.COTE_DATATABLE_LANG = {
+                decimal: '',
+                thousands: '.',
+                emptyTable: 'No hay datos disponibles en la tabla',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ entradas',
+                infoEmpty: 'Mostrando 0 a 0 de 0 entradas',
+                infoFiltered: '(filtrado de _MAX_ entradas totales)',
+                lengthMenu: 'Mostrar _MENU_ entradas',
+                lengthLabels: { '-1': 'Todos' },
+                loadingRecords: 'Cargando...',
+                processing: 'Procesando...',
+                search: 'Buscar:',
+                zeroRecords: 'No se encontraron registros coincidentes',
+                paginate: { first: 'Primero', last: 'Último', next: 'Siguiente', previous: 'Anterior' },
+                buttons: {
+                    copy: 'Copiar',
+                    csv: 'CSV',
+                    excel: 'Excel',
+                    pdf: 'PDF',
+                    print: 'Imprimir',
+                    colvis: 'Columnas',
+                    copyTitle: 'Copiado al portapapeles',
+                    copySuccess: { _: '%d filas copiadas', 1: '1 fila copiada' },
+                },
+            };
             if (window.DataTable) {
-                const labels = DataTable.defaults.language.lengthLabels || {};
-                labels['-1'] = 'Todos';
-                DataTable.defaults.language.lengthLabels = labels;
+                $.extend(true, DataTable.defaults.language, window.COTE_DATATABLE_LANG);
             }
         </script>
         
