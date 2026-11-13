@@ -125,7 +125,7 @@ class ExpenseService
         return Document::create([
             'name' => $original,
             'file_path' => $file->storeAs($dir, $candidate, Document::DISK),
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
             'file_size' => $file->getSize(),
             'document_type' => $item->document_type,
             'expense_item_id' => $item->id,

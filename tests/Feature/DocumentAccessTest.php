@@ -101,6 +101,47 @@ it('forbids unrelated users from downloading a receipt', function () {
         ->assertForbidden();
 });
 
+it('stores the receipt type detected from its content, not the one the browser declared', function () {
+    $person = Person::factory()->create();
+    $account = Account::factory()->create(['type' => 'person', 'person_id' => $person->id]);
+    $png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+    $path = tempnam(sys_get_temp_dir(), 'receipt');
+    file_put_contents($path, $png . '<script>alert(1)</script>');
+
+    $this->actingAs(User::factory()->create(['person_id' => $person->id]))->post(route('expenses.store'), [
+        'account_id' => $account->id,
+        'description' => 'Compra con boleta',
+        'items' => [[
+            'description' => 'Ítem',
+            'expense_date' => now()->toDateString(),
+            'amount' => 1000,
+            'document_type' => 'boleta',
+            'vendor_name' => 'Proveedor',
+            'receipt_number' => 'B-1',
+            'files' => [new \Illuminate\Http\UploadedFile($path, 'boleta.png', 'text/html', null, true)],
+        ]],
+    ])->assertSessionHasNoErrors();
+
+    $doc = Document::sole();
+    expect($doc->mime_type)->toBe('image/png');
+
+    $this->actingAs(create_treasurer_user())
+        ->get(route('documents.show', $doc))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'image/png');
+});
+
+it('downloads receipts whose content is not an image or pdf instead of opening them', function () {
+    $doc = document_for_person(Person::factory()->create(), User::factory()->create());
+    Storage::disk(Document::DISK)->put($doc->file_path, '<html><script>alert(1)</script></html>');
+    $doc->update(['mime_type' => 'text/html']);
+
+    $response = $this->actingAs(create_treasurer_user())->get(route('documents.show', $doc));
+
+    $response->assertOk()->assertHeader('Content-Type', 'application/octet-stream');
+    expect($response->headers->get('Content-Disposition'))->toStartWith('attachment');
+});
+
 it('lets the treasurer, the uploader and the submitter download a receipt', function () {
     $person = Person::factory()->create();
     $uploader = User::factory()->create();
