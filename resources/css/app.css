@@ -65,6 +65,7 @@ body { overflow-x: hidden; }
     margin-right: 0.5rem;
 }
 .sidebar-nav .nav-icon-panel { color: #7eb6ff; }
+.sidebar-nav .nav-icon-assistant { color: #a5b4fc; }
 .sidebar-nav .nav-icon-people { color: #5ddec8; }
 .sidebar-nav .nav-icon-accounts { color: #8ee0a8; }
 .sidebar-nav .nav-icon-transactions { color: #f0c36a; }

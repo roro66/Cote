@@ -22,5 +22,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Person::observe(PersonObserver::class);
+
+        // Permisos del usuario de solo lectura del asistente sobre las tablas nuevas
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Database\Events\MigrationsEnded::class,
+            fn () => app(\App\Services\Ai\ReadOnlyDatabaseRole::class)->sync()
+        );
     }
 }

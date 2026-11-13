@@ -18,6 +18,14 @@
                     <span class="nav-text">Panel</span>
                 </a>
             </li>
+            @if(config('ai.enabled'))
+            <li class="nav-item">
+                <a href="{{ route('assistant') }}" class="nav-link {{ request()->routeIs('assistant') ? 'active' : '' }}">
+                    <i class="fas fa-robot nav-icon nav-icon-assistant"></i>
+                    <span class="nav-text">Asistente</span>
+                </a>
+            </li>
+            @endif
             @hasanyrole('boss|treasurer')
             <li class="nav-item">
                 <a href="{{ route('people.index') }}" class="nav-link {{ request()->routeIs('people.*') ? 'active' : '' }}">

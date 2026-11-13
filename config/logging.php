@@ -58,6 +58,13 @@ return [
             'ignore_exceptions' => false,
         ],
 
+        'ai' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/asistente-ia.log'),
+            'level' => 'info',
+            'days' => 60,
+        ],
+
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),

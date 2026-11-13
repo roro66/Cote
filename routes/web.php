@@ -48,6 +48,13 @@ Route::middleware(['auth', 'verified', 'enabled'])->group(function () {
     Route::get('accounts/{account}', [AccountController::class, 'show'])->whereNumber('account')->name('accounts.show');
     Route::get('datatables/expense-categories', [ExpenseCategoryDataTableController::class, 'index'])->name('datatables.expense-categories');
 
+    // Asistente IA (manual y datos que cada usuario puede ver)
+    Route::get('/asistente', function () {
+        abort_unless(config('ai.enabled'), 404);
+
+        return view('assistant.index');
+    })->name('assistant');
+
     // Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
