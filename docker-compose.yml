@@ -22,34 +22,7 @@ services:
         networks:
             - sail
         depends_on:
-            - redis
-            - meilisearch
             - mailpit
-            - selenium
-
-    redis:
-        image: 'redis:alpine'
-        ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
-        volumes:
-            - 'sail-redis:/data'
-        networks:
-            - sail
-        healthcheck:
-            test: ["CMD", "redis-cli", "ping"]
-            retries: 3
-            timeout: 5s
-
-    meilisearch:
-        image: 'getmeili/meilisearch:latest'
-        ports:
-            - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
-        environment:
-            MEILI_NO_ANALYTICS: '${MEILISEARCH_NO_ANALYTICS:-false}'
-        volumes:
-            - 'sail-meilisearch:/meili_data'
-        networks:
-            - sail
 
     mailpit:
         image: 'axllent/mailpit:latest'
@@ -59,21 +32,6 @@ services:
         networks:
             - sail
 
-    selenium:
-        image: selenium/standalone-chromium
-        extra_hosts:
-            - 'host.docker.internal:host-gateway'
-        volumes:
-            - '/dev/shm:/dev/shm'
-        networks:
-            - sail
-
 networks:
     sail:
         driver: bridge
-
-volumes:
-    sail-redis:
-        driver: local
-    sail-meilisearch:
-        driver: local
