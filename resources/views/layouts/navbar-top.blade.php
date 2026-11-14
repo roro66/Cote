@@ -1,12 +1,12 @@
 {{-- Barra superior: toggle del sidebar (móvil) + título + tema + usuario --}}
 <header class="navbar-top bg-white border-bottom shadow-sm sticky-top navbar-theme-aware">
-    <div class="d-flex align-items-center justify-content-between w-100 px-3 py-2">
-        <div class="d-flex align-items-center">
+    <div class="navbar-top-inner d-flex align-items-center justify-content-between w-100 px-3 py-2">
+        <div class="navbar-top-start d-flex align-items-center">
             <button type="button" class="btn btn-link text-dark navbar-mobile-btn d-md-none me-2 p-0" id="sidebar-mobile-toggle" aria-label="Abrir menú">
                 <i class="fas fa-bars fa-lg"></i>
             </button>
             @isset($header)
-                <div class="navbar-page-title d-none d-xl-block">
+                <div class="navbar-page-title d-none d-xl-block" title="{{ trim(preg_replace('/\s+/', ' ', strip_tags($header))) }}">
                     {{ $header }}
                 </div>
             @else
@@ -18,27 +18,28 @@
             @php
                 $quick = auth()->user()->hasAnyRole(['boss', 'treasurer'])
                     ? [
-                        ['route' => route('cash.movement', 'entregar'), 'icon' => 'fa-hand-holding-usd', 'text' => 'Entregar dinero', 'color' => '#198754', 'active' => request()->is('caja/entregar')],
-                        ['route' => route('cash.movement', 'devolucion'), 'icon' => 'fa-undo-alt', 'text' => 'Me devolvieron', 'color' => '#0f766e', 'active' => request()->is('caja/devolucion')],
-                        ['route' => route('cash.movement', 'ingreso'), 'icon' => 'fa-piggy-bank', 'text' => 'Entró dinero', 'color' => '#0d6efd', 'active' => request()->is('caja/ingreso')],
-                        ['route' => route('approvals.review'), 'icon' => 'fa-clipboard-check', 'text' => 'Revisar rendiciones', 'color' => '#fd7e14', 'active' => request()->routeIs('approvals.review'),
+                        ['route' => route('cash.movement', 'entregar'), 'icon' => 'fa-hand-holding-usd', 'text' => 'Entregar dinero', 'short' => 'Entregar', 'color' => '#198754', 'active' => request()->is('caja/entregar')],
+                        ['route' => route('cash.movement', 'devolucion'), 'icon' => 'fa-undo-alt', 'text' => 'Me devolvieron', 'short' => 'Devolución', 'color' => '#0f766e', 'active' => request()->is('caja/devolucion')],
+                        ['route' => route('cash.movement', 'ingreso'), 'icon' => 'fa-piggy-bank', 'text' => 'Entró dinero', 'short' => 'Ingreso', 'color' => '#0d6efd', 'active' => request()->is('caja/ingreso')],
+                        ['route' => route('approvals.review'), 'icon' => 'fa-clipboard-check', 'text' => 'Revisar rendiciones', 'short' => 'Revisar', 'color' => '#fd7e14', 'active' => request()->routeIs('approvals.review'),
                             'badge' => \App\Models\Expense::where('status', 'submitted')->where('is_enabled', true)->count()],
-                        ['route' => route('cashbook.index'), 'icon' => 'fa-book', 'text' => 'Libro de caja', 'color' => '#6f42c1', 'active' => request()->routeIs('cashbook.*')],
-                        ['route' => route('closings.index'), 'icon' => 'fa-calendar-check', 'text' => 'Cerrar mes', 'color' => '#495057', 'active' => request()->routeIs('closings.*')],
+                        ['route' => route('cashbook.index'), 'icon' => 'fa-book', 'text' => 'Libro de caja', 'short' => 'Libro', 'color' => '#6f42c1', 'active' => request()->routeIs('cashbook.*')],
+                        ['route' => route('closings.index'), 'icon' => 'fa-calendar-check', 'text' => 'Cerrar mes', 'short' => 'Cierre', 'color' => '#495057', 'active' => request()->routeIs('closings.*')],
                     ]
                     : [
-                        ['route' => route('expenses.create'), 'icon' => 'fa-plus-circle', 'text' => 'Nueva rendición', 'color' => '#198754', 'active' => request()->routeIs('expenses.create')],
-                        ['route' => route('expenses.index'), 'icon' => 'fa-receipt', 'text' => 'Mis rendiciones', 'color' => '#0d6efd', 'active' => request()->routeIs('expenses.index')],
+                        ['route' => route('expenses.create'), 'icon' => 'fa-plus-circle', 'text' => 'Nueva rendición', 'short' => 'Nueva', 'color' => '#198754', 'active' => request()->routeIs('expenses.create')],
+                        ['route' => route('expenses.index'), 'icon' => 'fa-receipt', 'text' => 'Mis rendiciones', 'short' => 'Mis rendiciones', 'color' => '#0d6efd', 'active' => request()->routeIs('expenses.index')],
                     ];
                 if (config('ai.enabled')) {
-                    $quick[] = ['route' => route('assistant'), 'icon' => 'fa-robot', 'text' => 'Asistente', 'color' => '#5b4b8a', 'active' => request()->routeIs('assistant')];
+                    $quick[] = ['route' => route('assistant'), 'icon' => 'fa-robot', 'text' => 'Asistente', 'short' => 'Asistente', 'color' => '#5b4b8a', 'active' => request()->routeIs('assistant')];
                 }
             @endphp
-            <nav class="cote-quick-bar d-flex flex-wrap align-items-center gap-1 mx-2 me-auto" aria-label="Accesos rápidos">
+            <nav class="cote-quick-bar {{ count($quick) <= 3 ? 'cote-quick-bar--few' : '' }} d-flex flex-nowrap align-items-center gap-1 mx-2 me-auto" aria-label="Accesos rápidos">
                 @foreach ($quick as $item)
-                    <a href="{{ $item['route'] }}" class="cote-quick-btn {{ $item['active'] ? 'is-active' : '' }}" style="--quick-color: {{ $item['color'] }};" title="{{ $item['text'] }}">
+                    <a href="{{ $item['route'] }}" class="cote-quick-btn {{ $item['active'] ? 'is-active' : '' }}" style="--quick-color: {{ $item['color'] }};" title="{{ $item['text'] }}" aria-label="{{ $item['text'] }}">
                         <i class="fas {{ $item['icon'] }}" aria-hidden="true"></i>
-                        <span class="d-none d-lg-inline">{{ $item['text'] }}</span>
+                        <span class="cote-quick-label cote-quick-label--short" aria-hidden="true">{{ $item['short'] }}</span>
+                        <span class="cote-quick-label cote-quick-label--full" aria-hidden="true">{{ $item['text'] }}</span>
                         @if (! empty($item['badge']))
                             <span class="cote-quick-badge">{{ $item['badge'] }}</span>
                         @endif
@@ -47,7 +48,7 @@
             </nav>
         @endauth
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="navbar-top-end d-flex align-items-center gap-2">
             <button type="button" class="btn btn-link text-dark navbar-theme-btn hover-bg-light rounded p-2" id="theme-toggle" data-theme-toggle aria-label="Cambiar tema (claro/oscuro)" title="Cambiar tema">
                 <i class="fas fa-moon fa-lg theme-icon-light" aria-hidden="true"></i>
                 <i class="fas fa-sun fa-lg theme-icon-dark d-none" aria-hidden="true"></i>
