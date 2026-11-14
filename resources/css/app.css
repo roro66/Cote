@@ -339,7 +339,7 @@ html:not([data-bs-theme="dark"]) .guest-theme-toggle {
 }
 .guest-logo-svg {
     display: block;
-    width: min(280px, 72vw);
+    width: min(490px, 88vw); /* ~75% más grande que el mark base de 280px */
     height: auto;
 }
 [data-bs-theme="dark"] .guest-logo {
