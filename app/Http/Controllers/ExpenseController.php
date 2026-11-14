@@ -54,7 +54,7 @@ class ExpenseController extends Controller
     public function show(Expense $expense): View
     {
         $this->authorize('view', $expense);
-        $expense->load(['account.person', 'submittedBy', 'items.documents']);
+        $expense->load(['account.person', 'submittedBy', 'items.documents', 'items.categoryObj', 'photos', 'registeredBy']);
 
         return view('expenses.show', compact('expense'));
     }
@@ -86,9 +86,12 @@ class ExpenseController extends Controller
         }
     }
 
-    public function edit(Expense $expense): View
+    public function edit(Expense $expense): View|\Illuminate\Http\RedirectResponse
     {
         $this->authorize('update', $expense);
+        if ($expense->isReceived() && auth()->user()->hasAnyRole(['boss', 'treasurer'])) {
+            return redirect()->route('expenses.intake.edit', $expense);
+        }
         $expense->load('items.documents');
 
         return view('expenses.edit', ['expense' => $expense, 'accounts' => $this->accountsForForm()]);
@@ -236,65 +239,11 @@ class ExpenseController extends Controller
         return redirect()->back()->withErrors($errors)->withInput();
     }
 
-    /**
-     * Comprobantes repetidos por (tipo, proveedor, número), dentro de la rendición y contra
-     * rendiciones vigentes (se ignoran las rechazadas y eliminadas, que pueden rehacerse).
-     * Devuelve errores por campo (items.X.receipt_number).
-     */
+    /** @return array<string, list<string>> errores por campo (items.X.receipt_number) */
     private function validateDuplicateDocuments(array $items, ?int $excludeExpenseId = null): array
     {
-        $errors = [];
-        $seen = [];
-        $comboToIndices = [];
-        foreach ($items as $idx => $item) {
-            $number = trim((string) ($item['receipt_number'] ?? ''));
-            if ($number === '') {
-                continue;
-            }
-            $key = $this->docKey((string) $item['document_type'], (string) $item['vendor_name'], $number);
-            $comboToIndices[$key][] = $idx;
-            if (isset($seen[$key])) {
-                $errors["items.$idx.receipt_number"] = ['Documento duplicado dentro de la rendición (mismo tipo, proveedor y número).'];
-                $errors["items.{$seen[$key]}.receipt_number"] ??= ['Documento duplicado dentro de la rendición.'];
-            } else {
-                $seen[$key] = $idx;
-            }
-        }
-
-        if (empty($comboToIndices)) {
-            return $errors;
-        }
-
-        $existing = ExpenseItem::query()
-            ->select(['document_type', 'vendor_name', 'document_number', 'expense_id'])
-            ->whereNotNull('document_number')
-            ->whereHas('expense', fn ($q) => $q->where('is_enabled', true)->where('status', '!=', 'rejected'))
-            ->when($excludeExpenseId !== null, fn ($q) => $q->where('expense_id', '!=', $excludeExpenseId))
-            ->where(function ($q) use ($comboToIndices) {
-                foreach (array_keys($comboToIndices) as $key) {
-                    [$type, $vendorNorm, $numberNorm] = explode('|', $key);
-                    $q->orWhere(fn ($qq) => $qq->where('document_type', $type)
-                        ->whereRaw('LOWER(TRIM(vendor_name)) = ?', [$vendorNorm])
-                        ->whereRaw('LOWER(TRIM(document_number)) = ?', [$numberNorm]));
-                }
-            })
-            ->limit(50)
-            ->get();
-
-        foreach ($existing as $row) {
-            foreach ($comboToIndices[$this->docKey($row->document_type, $row->vendor_name, $row->document_number)] ?? [] as $idx) {
-                $errors["items.$idx.receipt_number"][] = 'Documento ya registrado en otra rendición (mismo tipo, proveedor y número).';
-            }
-        }
-
-        return $errors;
-    }
-
-    private function docKey(string $type, string $vendor, string $number): string
-    {
-        $normVendor = mb_strtolower(trim(preg_replace('/\s+/', ' ', $vendor)), 'UTF-8');
-        $normNumber = mb_strtolower(trim($number), 'UTF-8');
-
-        return $type . '|' . $normVendor . '|' . $normNumber;
+        return collect(\App\Support\DuplicateReceipts::find($items, $excludeExpenseId))
+            ->mapWithKeys(fn ($messages, $idx) => ["items.$idx.receipt_number" => $messages])
+            ->all();
     }
 }

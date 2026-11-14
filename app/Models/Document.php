@@ -21,8 +21,9 @@ class Document extends Model
         'file_size',
         'document_type',
         'expense_item_id',
+        'expense_id',
         'uploaded_by',
-        'is_enabled'
+        'is_enabled',
     ];
 
     protected $casts = [
@@ -42,6 +43,11 @@ class Document extends Model
     public function expenseItem(): BelongsTo
     {
         return $this->belongsTo(ExpenseItem::class);
+    }
+
+    public function expense(): BelongsTo
+    {
+        return $this->belongsTo(Expense::class);
     }
 
     public function uploadedBy(): BelongsTo
@@ -67,7 +73,7 @@ class Document extends Model
             return true;
         }
 
-        $submittedBy = $this->expenseItem?->expense?->submitted_by;
+        $submittedBy = ($this->expenseItem?->expense ?? $this->expense)?->submitted_by;
 
         return $submittedBy !== null && $user->person_id !== null && (int) $submittedBy === (int) $user->person_id;
     }

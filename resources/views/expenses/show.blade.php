@@ -46,7 +46,7 @@
                             @endif
 
                             @can('update', $expense)
-                                <a href="{{ route('expenses.edit', $expense) }}" class="btn btn-primary">
+                                <a href="{{ $expense->isReceived() && auth()->user()->hasAnyRole(['boss', 'treasurer']) ? route('expenses.intake.edit', $expense) : route('expenses.edit', $expense) }}" class="btn btn-primary">
                                     <i class="fas fa-edit"></i> {{ $expense->status === 'rejected' ? 'Corregir y reenviar' : 'Editar' }}
                                 </a>
                             @endcan
@@ -82,6 +82,18 @@
                                     <strong>Solicitante:</strong> {{ $expense->submittedBy->full_name ?? 'N/A' }}<br>
                                     <strong>Fecha de Envío:</strong> {{ $expense->submitted_at ? $expense->submitted_at->format('d/m/Y H:i') : 'Sin enviar' }}<br>
                                     <strong>Total:</strong> <span class="text-primary fw-bold">${{ number_format($expense->total_amount, 0, ',', '.') }} CLP</span><br>
+                                    @if ($expense->isReceived())
+                                        <strong>Origen:</strong> planilla en papel, registrada por {{ $expense->registeredBy?->name ?? '—' }}<br>
+                                        @if ($expense->declared_total !== null)
+                                            <strong>Total escrito en la planilla:</strong> ${{ number_format($expense->declared_total, 0, ',', '.') }}
+                                            @if ((int) $expense->declared_total === (int) $expense->total_amount)
+                                                <span class="badge bg-success">Cuadra</span>
+                                            @else
+                                                <span class="badge bg-danger">Diferencia de ${{ number_format(abs($expense->declared_total - $expense->total_amount), 0, ',', '.') }}</span>
+                                            @endif
+                                            <br>
+                                        @endif
+                                    @endif
                                     @if($expense->reviewed_by)
                                         <strong>Revisado por:</strong> {{ $expense->reviewedBy->name ?? 'N/A' }}<br>
                                         <strong>Fecha de Revisión:</strong> {{ $expense->reviewed_at ? $expense->reviewed_at->format('d/m/Y H:i') : '-' }}
@@ -111,6 +123,23 @@
                         </div>
                     </div>
 
+                    @if ($expense->photos->isNotEmpty())
+                        <div class="card mb-4">
+                            <div class="card-header"><h5 class="mb-0"><i class="fas fa-images me-1"></i> Fotos de la rendición ({{ $expense->photos->count() }})</h5></div>
+                            <div class="card-body d-flex flex-wrap gap-3">
+                                @foreach ($expense->photos as $photo)
+                                    <a href="{{ $photo->url }}" target="_blank" rel="noopener" class="text-center text-decoration-none" title="Ver {{ $photo->name }}">
+                                        @if (str_starts_with((string) $photo->mime_type, 'image/'))
+                                            <img src="{{ $photo->url }}" alt="{{ $photo->name }}" class="rounded border" style="height: 180px; width: auto; object-fit: cover;">
+                                        @else
+                                            <span class="btn btn-outline-primary"><i class="fas fa-file-pdf me-1"></i>{{ \Illuminate\Support\Str::limit($photo->name, 30) }}</span>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Items de Gasto -->
                     <div class="card">
                         <div class="card-header">
@@ -123,7 +152,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th>#</th>
-                                                <th>Descripción</th>
+                                                <th>Fecha</th>
+                                                <th>Concepto</th>
+                                                <th>Proyecto / Ciudad</th>
                                                 <th>Tipo Documento</th>
                                                 <th>Proveedor</th>
                                                 <th>N° Documento</th>
@@ -135,7 +166,14 @@
                                             @foreach($expense->items as $index => $item)
                                                 <tr>
                                                     <td>{{ $index + 1 }}</td>
-                                                    <td>{{ $item->description }}</td>
+                                                    <td class="text-nowrap">{{ $item->expense_date?->format('d/m/Y') }}</td>
+                                                    <td>
+                                                        {{ $item->categoryObj?->name ?? $item->description }}
+                                                        @if ($item->categoryObj && $item->description !== $item->categoryObj->name)
+                                                            <div class="small text-muted">{{ $item->description }}</div>
+                                                        @endif
+                                                    </td>
+                                                    <td>{{ $item->project ?: '—' }}@if ($item->city)<div class="small text-muted">{{ $item->city }}</div>@endif</td>
                                                     <td>
                                                         @php
                                                             $docType = match($item->document_type) {
@@ -172,6 +210,8 @@
                                                         @elseif($item->without_receipt)
                                                             <span class="badge bg-warning text-dark">Sin comprobante</span>
                                                             <div class="small text-muted">{{ $item->without_receipt_reason }}</div>
+                                                        @elseif($expense->photos->isNotEmpty())
+                                                            <span class="small text-muted">En las fotos de la rendición</span>
                                                         @else
                                                             <span class="text-danger small">Falta comprobante</span>
                                                         @endif
@@ -179,7 +219,7 @@
                                                 </tr>
                                             @endforeach
                                             <tr class="table-info">
-                                                <td colspan="5" class="text-end"><strong>Total:</strong></td>
+                                                <td colspan="8" class="text-end"><strong>Total:</strong></td>
                                                 <td class="text-end"><strong>${{ number_format($expense->total_amount, 0, ',', '.') }} CLP</strong></td>
                                             </tr>
                                         </tbody>

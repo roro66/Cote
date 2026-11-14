@@ -93,9 +93,9 @@ Si la contraseña actual está mal, bajo el campo aparece «La contraseña es in
 **Quién puede:** todos los usuarios
 
 - **Botones rápidos de colores** en la barra superior, para lo de todos los días:
-  - Jefe y Tesorero: **Entregar dinero**, **Me devolvieron**, **Entró dinero**, **Revisar rendiciones** (con cuántas hay por revisar), **Libro de caja**, **Cerrar mes** y **Asistente**.
+  - Jefe y Tesorero: **Entregar dinero**, **Me devolvieron**, **Entró dinero**, **Registrar rendición**, **Libro de caja**, **Cerrar mes** y **Asistente**. **Revisar rendiciones** aparece solo cuando algún trabajador envió una rendición desde la app, con cuántas hay.
   - Trabajador: **Nueva rendición**, **Mis rendiciones** y **Asistente**.
-  - En pantallas chicas se ven solo los íconos.
+  - Los botones siempre van en una sola fila: según el ancho de la pantalla muestran el nombre completo, uno corto o solo el ícono (al pasar el mouse se ve el nombre). Un título largo se corta con «…».
 - **Menú lateral** a la izquierda, con todas las pantallas. En el celular se abre con el botón ☰.
 - **Tema claro u oscuro:** botón con luna o sol, arriba a la derecha. La elección se recuerda en ese navegador.
 - **«¿Qué es esto?»:** el ícono ⓘ junto a algunas palabras explica qué significan. Haz clic en él.
@@ -225,11 +225,28 @@ Qué hace al importar:
 
 Las filas en rojo se pueden corregir en el Excel y volver a subir: los ya importados solo se actualizan.
 
+## Registrar una rendición recibida en papel
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Así llegan hoy las rendiciones: el trabajador manda fotos de la planilla «Rendición de Gastos» llenada a mano y de las hojas con las boletas pegadas. El tesorero las transcribe. Botón naranja **Registrar rendición** de la barra superior (o **Rendiciones** → **Registrar rendición recibida**).
+
+1. **¿De quién es?** Elige al trabajador (cada tarjeta dice cuánto tiene en su poder o cuánto le debemos).
+2. **Agregar fotos:** sube las fotos que mandó (JPG, PNG, WEBP o PDF, hasta 10 MB cada una). Quedan fijas arriba mientras escribes, con botones para pasar de foto, acercar, alejar, girar o quitar. **Ocultar** las esconde. Al menos una foto es obligatoria.
+3. **Fecha de rendición** (la de la planilla) y una **Observación** opcional.
+4. **Copia cada línea de la planilla:** Fecha, **Concepto** (la categoría: Peaje, Alimentación, Combustible…), **Proyecto**, **Ciudad**, **Documento** (Boleta o Factura), **Proveedor**, **N°** de la boleta o factura y **Monto**. Proveedor y N° están en cada comprobante y son obligatorios: así COTE avisa si una boleta ya se rindió antes. Proyecto, Ciudad y Proveedor sugieren lo ya escrito antes.
+   - **Enter** pasa al siguiente casillero. En el monto, **Enter** agrega otra línea con la misma fecha, proyecto, ciudad y documento (como las comillas «″» de la planilla).
+   - La ✕ quita una línea. Las líneas agregadas y no llenadas se ignoran.
+5. **Totales como en la planilla:** «Subtotal facturas», «Subtotal boletas y otros» y «Total». Escribe el **Total escrito en la planilla**: COTE dice «¡Cuadra con la planilla!» o cuánto falta o sobra, para revisar si se copió mal una línea. Abajo dice cómo quedará el trabajador.
+6. **Guardar y aprobar.** La rendición queda **Aprobado** y se descuenta de lo que el trabajador tiene en su poder. Aparece «¡Listo!» con **Registrar otra rendición**, **Ver la rendición** e **Imprimir para firmar**.
+
+Si se copió mal algo: en la ficha, **Anular aprobación** y luego **Corregir y reenviar**, que vuelve a abrir esta misma pantalla con las líneas y las fotos. Al guardar queda aprobada de nuevo.
+
 ## Revisar rendiciones de a una
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Botón naranja **Revisar rendiciones** de la barra superior (el número dice cuántas hay). Muestra la rendición más antigua y «Quedan N por revisar».
+Para las rendiciones que un trabajador envía él mismo desde la app (las recibidas en papel se registran ya aprobadas). El botón **Revisar rendiciones** aparece en la barra superior solo cuando hay alguna, con el número de cuántas. Muestra la rendición más antigua y «Quedan N por revisar».
 
 - A la izquierda, las **fotos de las boletas** en grande (haz clic para verlas completas; los PDF se abren aparte).
 - A la derecha, el trabajador, el total, cada gasto (con «Sin boleta: motivo» o «Falta la boleta» si corresponde) y cómo queda si la apruebas.
@@ -248,7 +265,12 @@ Cuando no quedan: «No hay rendiciones por revisar».
 
 **Quién puede:** todos los usuarios
 
-Una rendición agrupa uno o más gastos de una persona, cada uno con su comprobante (foto o PDF de la boleta, factura, etc.). Se numera `RND-AAAA-NNNNNN` (año y correlativo que parte de nuevo cada año).
+Una rendición agrupa uno o más gastos de una persona, con sus comprobantes (fotos o PDF de boletas, facturas, etc.). Se numera `RND-AAAA-NNNNNN` (año y correlativo que parte de nuevo cada año).
+
+Hay dos formas de ingresarla:
+
+- **Recibida en papel** (lo habitual hoy): el tesorero la transcribe con **Registrar rendición**, con las fotos de la planilla y de las boletas para toda la rendición. Queda aprobada al guardar.
+- **Desde la app:** el trabajador (o el tesorero a su nombre) usa **Nueva Rendición**, con un comprobante por gasto. Queda **Enviado** hasta que se aprueba.
 
 Estados que se ven en pantalla:
 
@@ -347,9 +369,9 @@ En la ficha, botón **PDF**. Se abre en otra pestaña el archivo `rendicion_RND-
 
 - Encabezado con el número y el estado.
 - Información general (solicitante con RUT, fechas, cuenta, revisor) y la descripción.
-- Tabla de ítems: fecha, descripción, categoría, documento, comprobante y monto, con el total.
-- Espacios de firma «Rendido por» y «Revisado por».
-- Cada foto de comprobante en una página aparte, con la rotación corregida. Los comprobantes en PDF no se incluyen: se listan en «Adjuntos que no se muestran en este PDF».
+- Detalle como la planilla en papel: fecha, concepto, proyecto, ciudad, documento (tipo, N° y proveedor) y el monto en la columna **Valor (Factura)** o **Valor (Boleta)**, con subtotales, total y, si se anotó, el total escrito en la planilla.
+- Espacios de firma «Trabajador» (nombre, RUT y firma) y «Revisor y autorización».
+- Cada foto de la rendición y cada comprobante en una página aparte, con la rotación corregida. Los archivos PDF no se incluyen: se listan en «Adjuntos que no se muestran en este PDF».
 
 ## Editar una rendición enviada
 
@@ -405,7 +427,7 @@ Si se aprobó una rendición por error:
 1. Abre la rendición (ficha).
 2. Pulsa **Anular aprobación**, escribe el motivo y confirma.
 
-El total vuelve a lo que el trabajador tiene en su poder y la rendición queda **Rechazado** con el motivo «Aprobación anulada: …», para que se corrija y se reenvíe.
+El total vuelve a lo que el trabajador tiene en su poder y la rendición queda **Rechazado** con el motivo «Aprobación anulada: …», para que se corrija y se reenvíe. En una rendición recibida en papel, **Corregir y reenviar** abre la pantalla **Registrar rendición** con lo ya escrito; al guardar queda aprobada otra vez.
 
 # Aprobaciones
 
@@ -413,7 +435,7 @@ El total vuelve a lo que el trabajador tiene en su poder y la rendición queda *
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-La forma más fácil es **Revisar rendiciones** (botón naranja de la barra superior), de a una. También se puede desde el menú **Aprobaciones** → pestaña **Rendiciones Pendientes**: columnas Fecha, Persona, Descripción, Monto Total, Items (con «N sin comprobante» si corresponde), Estado y Acciones.
+Aplica a las rendiciones enviadas desde la app (las recibidas en papel quedan aprobadas al registrarlas). La forma más fácil es **Revisar rendiciones** (barra superior, aparece cuando hay alguna), de a una. También se puede desde el menú **Aprobaciones** → pestaña **Rendiciones Pendientes**: columnas Fecha, Persona, Descripción, Monto Total, Items (con «N sin comprobante» si corresponde), Estado y Acciones.
 
 - 👁 **Ver Detalles** abre la rendición completa con sus comprobantes.
 - ✔ **Aprobar:** revisa el resumen y pulsa **Aprobar**. Aparece «Rendición aprobada correctamente.».
@@ -823,7 +845,7 @@ El Jefe debe revisar:
 2. **Usuarios** (solo el Jefe): crea el usuario de cada trabajador que rendirá y vincúlalo a su persona.
 3. **Entró dinero:** registra el dinero que tiene la caja.
 4. **Entregar dinero:** entrega a cada trabajador lo que corresponda.
-5. Los trabajadores rinden sus gastos; revisa con **Revisar rendiciones**.
+5. Cuando un trabajador manda su rendición (planilla y boletas), regístrala con **Registrar rendición**.
 6. Si un trabajador ya tenía dinero o deuda al partir y no venía en el Excel, el Jefe ajusta su saldo en Cuentas → Editar con motivo «Saldo inicial».
 7. Al terminar cada mes, **Cerrar mes** contando la caja.
 

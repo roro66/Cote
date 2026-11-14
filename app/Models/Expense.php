@@ -26,11 +26,18 @@ class Expense extends Model
         'submitted_at',
         'reviewed_at',
         'rejection_reason',
-        'is_enabled'
+        'is_enabled',
+        'source',
+        'declared_total',
+        'registered_by',
     ];
+
+    /** Planilla en papel recibida del trabajador y transcrita por el tesorero. */
+    public const SOURCE_RECEIVED = 'received';
 
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'declared_total' => 'decimal:2',
         'expense_date' => 'date',
         'submitted_at' => 'datetime',
         'reviewed_at' => 'datetime',
@@ -64,6 +71,22 @@ class Expense extends Model
     public function items(): HasMany
     {
         return $this->hasMany(ExpenseItem::class);
+    }
+
+    /** Fotos de la rendición completa (planilla y hojas con boletas), no de un gasto. */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(Document::class)->where('is_enabled', true)->orderBy('id');
+    }
+
+    public function registeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'registered_by');
+    }
+
+    public function isReceived(): bool
+    {
+        return $this->source === self::SOURCE_RECEIVED;
     }
 
     // Alias para compatibilidad

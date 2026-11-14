@@ -287,7 +287,11 @@ it('tells a worker what they hold', function () {
 
 it('shows quick buttons by profile in the top bar', function () {
     $this->actingAs(create_treasurer_user())->get(route('dashboard'))
-        ->assertSee('Entregar dinero')->assertSee('Libro de caja')->assertSee('Revisar rendiciones');
+        ->assertSee('Entregar dinero')->assertSee('Libro de caja')->assertSee('Registrar rendición')
+        ->assertDontSee('aria-label="Revisar rendiciones"', false);
+
+    easy_expense(easy_worker());
+    $this->get(route('dashboard'))->assertSee('aria-label="Revisar rendiciones"', false);
 
     $this->actingAs(User::factory()->create())->get(route('dashboard'))
         ->assertSee('Nueva rendición')->assertDontSee('Entregar dinero');

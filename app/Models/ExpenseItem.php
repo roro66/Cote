@@ -27,7 +27,9 @@ class ExpenseItem extends Model implements HasMedia
     'expense_date',
     'category',
     'expense_category_id',
-        'is_enabled'
+        'is_enabled',
+        'project',
+        'city',
     ];
 
     protected $casts = [

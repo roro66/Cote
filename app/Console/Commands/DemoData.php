@@ -34,9 +34,12 @@ class DemoData extends Command
 
     private const HOLIDAYS = ['01-01', '05-01', '05-21', '09-18', '09-19', '12-25'];
 
-    private const FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf';
+    private const FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf';
 
-    private const FONT_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf';
+    private const FONT_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
+
+    /** Letra que imita lo escrito a mano en la planilla. */
+    private const FONT_HAND = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Oblique.ttf';
 
     private const MALE = ['Juan', 'Pedro', 'Luis', 'Carlos', 'José', 'Francisco', 'Diego', 'Felipe', 'Cristián', 'Rodrigo', 'Matías', 'Sebastián', 'Jorge', 'Manuel', 'Víctor', 'Héctor', 'Patricio', 'Claudio', 'Mauricio', 'Gonzalo', 'Nicolás', 'Andrés', 'Marcelo', 'Raúl', 'Sergio', 'Hernán', 'Ignacio', 'Tomás', 'Benjamín', 'Alejandro'];
 
@@ -44,16 +47,19 @@ class DemoData extends Command
 
     private const SURNAMES = ['González', 'Muñoz', 'Rojas', 'Díaz', 'Pérez', 'Soto', 'Contreras', 'Silva', 'Martínez', 'Sepúlveda', 'Morales', 'Rodríguez', 'López', 'Fuentes', 'Hernández', 'Torres', 'Araya', 'Flores', 'Espinoza', 'Valenzuela', 'Castillo', 'Tapia', 'Reyes', 'Gutiérrez', 'Castro', 'Pizarro', 'Álvarez', 'Vásquez', 'Sánchez', 'Fernández', 'Ramírez', 'Carrasco', 'Gómez', 'Cortés', 'Herrera', 'Núñez', 'Jara', 'Vergara', 'Rivera', 'Figueroa', 'Riquelme', 'García', 'Miranda', 'Bravo', 'Vera', 'Molina', 'Vega', 'Campos', 'Sandoval', 'Orellana'];
 
-    private const STREETS = ['Av. Pajaritos', 'Los Aromos', 'Av. Vicuña Mackenna', 'Pasaje Las Lilas', 'Av. Independencia', 'Los Carrera', 'San Martín', 'Av. La Florida', 'Santa Rosa', 'Gran Avenida', 'Los Pinos', 'Av. Departamental', 'El Roble', 'Av. Recoleta', 'Las Acacias'];
+    private const STREETS = ['Av. Presidente Ibáñez', 'Los Aromos', 'Av. Angelmó', 'Pasaje Las Lilas', 'Av. Salvador Allende', 'Los Carrera', 'San Martín', 'Av. Diego Portales', 'Urmeneta', 'Av. Austral', 'Los Pinos', 'Av. Capitán Ávalos', 'El Roble', 'Av. Vicente Pérez Rosales', 'Las Acacias'];
 
-    private const COMUNAS = ['Maipú', 'Puente Alto', 'La Florida', 'San Bernardo', 'Quilicura', 'Pudahuel', 'Peñalolén', 'La Pintana', 'El Bosque', 'Recoleta', 'Conchalí', 'Renca', 'Lo Prado', 'Cerro Navia', 'Buin'];
+    private const COMUNAS = ['Puerto Montt', 'Puerto Varas', 'Llanquihue', 'Frutillar', 'Calbuco', 'Alerce', 'Osorno', 'Maullín', 'Los Muermos'];
 
-    private const PLACES = ['obra Maipú', 'faena Rancagua', 'mantención planta Quilicura', 'visita cliente Talca', 'obra Puente Alto', 'instalación San Bernardo', 'faena Los Andes', 'obra Melipilla', 'mantención bodega Pudahuel', 'instalación Colina', 'obra Buin', 'faena San Antonio'];
+    /** Proyectos u obras que se anotan en la columna «Proyecto» de la planilla. */
+    private const PROJECTS = ['Lago Chapo', 'Transición', 'Cuentas varias', 'Alerce Norte', 'Chamiza', 'Mantención Calbuco', 'Planta Llanquihue', 'Obra Frutillar', 'Costanera Puerto Varas', 'Correntoso'];
+
+    private const CITIES = ['Puerto Montt', 'Puerto Varas', 'Llanquihue', 'Frutillar', 'Calbuco', 'Alerce', 'Osorno', 'Maullín'];
 
     /** Por categoría: peso, comercios, glosas, rango de monto (pesos de 2021) y documentos posibles. */
     private const SPENDING = [
         'Combustible' => [22, ['Copec', 'Shell', 'Aramco', 'Petrobras'], ['Bencina 93 camioneta', 'Petróleo diésel camioneta', 'Bencina 95 vehículo', 'Petróleo para generador'], 12000, 60000, ['boleta', 'boleta', 'factura']],
-        'Peaje' => [10, ['Autopista Central', 'Ruta 68', 'Ruta del Maipo', 'Vespucio Norte', 'Costanera Norte', 'Autopista del Sol'], ['Peaje ida', 'Peaje ida y vuelta', 'Pase diario'], 1200, 7500, ['ticket', 'boleta']],
+        'Peaje' => [10, ['Ruta de los Lagos', 'Ruta 5 Sur', 'Autopista Los Lagos', 'Ruta 215 Osorno'], ['Peaje ida', 'Peaje ida y vuelta', 'Pase diario'], 1200, 7500, ['ticket', 'boleta']],
         'Alimentación' => [20, ['Restaurant El Rincón', 'Fuente de Soda La Esquina', 'Supermercado Líder', 'Unimarc', 'Santa Isabel', 'Panadería San Camilo', 'Picada Doña Rosa'], ['Almuerzo cuadrilla', 'Colación', 'Agua y bebidas para la cuadrilla', 'Almuerzo en terreno', 'Café y pan para la faena'], 3000, 38000, ['boleta']],
         'Insumos y Materiales' => [16, ['Sodimac', 'Easy', 'Construmart', 'Imperial', 'Ferretería El Clavo', 'Ferretería Don Lucho'], ['Tornillos y tarugos', 'Cable eléctrico 2,5 mm', 'Cinta aisladora y amarras', 'Pintura y rodillos', 'Silicona y sellante', 'Cañería PVC y fittings', 'Sacos de cemento'], 4000, 110000, ['boleta', 'factura', 'guia_despacho']],
         'Herramientas' => [6, ['Sodimac', 'Easy', 'Ferretería Industrial Santiago', 'Herramientas Chile'], ['Juego de brocas', 'Alicate universal', 'Huincha de medir', 'Disco de corte', 'Taladro percutor', 'Nivel de burbuja'], 6000, 140000, ['boleta', 'factura']],
@@ -63,14 +69,6 @@ class DemoData extends Command
         'Servicios' => [5, ['Estacionamientos Saba', 'Correos de Chile', 'Chilexpress', 'Copistería El Estudiante'], ['Estacionamiento', 'Envío de documentos', 'Fotocopias de planos', 'Encomienda de repuestos'], 1500, 25000, ['boleta', 'ticket']],
         'Mantenimiento' => [6, ['Lubricentro Rápido', 'Taller Mecánico Hermanos Soto', 'Mecánica Express', 'Frenos y Embragues Ltda.'], ['Cambio de aceite', 'Cambio de pastillas de freno', 'Revisión técnica', 'Cambio de batería'], 15000, 160000, ['boleta', 'factura']],
     ];
-
-    private const NO_RECEIPT = [
-        'Peaje' => 'Pórtico con TAG, sin comprobante',
-        'Alimentación' => 'Colación en local sin boleta',
-        'Viáticos' => 'Taxi sin boleta',
-    ];
-
-    private const REJECTIONS = ['Falta la boleta', 'La foto no se lee', 'El monto no coincide con la boleta', 'La fecha no corresponde', 'Falta explicar en qué se gastó'];
 
     private Carbon $now;
 
@@ -96,9 +94,6 @@ class DemoData extends Command
 
     /** @var list<array<string, mixed>> */
     private array $workers = [];
-
-    /** @var list<array{0: int, 1: int, 2: float}> momento, trabajador y cambio de saldo pendientes (rendiciones por aprobar) */
-    private array $effects = [];
 
     /** @var array<string, array<int, int>> */
     private array $sequences = [];
@@ -263,6 +258,7 @@ class DemoData extends Command
                 'account' => $accountId,
                 'name' => "$first $last",
                 'first' => $first,
+                'rut' => $rut,
                 'hire' => $hire,
                 'leave' => $leave,
                 'gone' => false,
@@ -271,7 +267,6 @@ class DemoData extends Command
                 'interval' => mt_rand(9, 18),
                 'next_expense' => $hire->copy()->addDays(mt_rand(5, 12)),
                 'last_delivery' => null,
-                'busy_until' => 0,
             ];
         }
     }
@@ -308,34 +303,29 @@ class DemoData extends Command
             usort($turns, fn ($a, $b) => $a[0] <=> $b[0]);
 
             foreach ($turns as [$at, $w]) {
-                $this->applyEffects($at);
                 $this->turn($w, $day, $at);
             }
         }
-        $this->applyEffects($this->now);
     }
 
     private function turn(int $w, Carbon $day, Carbon $at): void
     {
         $worker = &$this->workers[$w];
-        $pending = $this->pendingFor($w);
 
         if ($worker['leave'] && $day->gte($worker['leave'])) {
-            if ($pending == 0.0 && $worker['busy_until'] <= $at->timestamp) {
-                $this->settle($w, $at);
-            }
+            $this->settle($w, $at);
 
             return;
         }
 
-        if ($day->gte($worker['next_expense']) && $worker['busy_until'] <= $at->timestamp) {
+        if ($day->gte($worker['next_expense'])) {
             $this->submitExpense($w, $at);
             $worker['next_expense'] = $day->copy()->addDays($worker['interval'] + mt_rand(-3, 3));
 
             return;
         }
 
-        $available = $worker['balance'] + $pending;
+        $available = $worker['balance'];
         $recent = $worker['last_delivery'] && $worker['last_delivery']->diffInDays($day) < 4;
         if ($available < $this->money(40_000 * $worker['scale']) && ! $recent && mt_rand(1, 100) <= ($worker['balance'] < 0 ? 15 : 45)) {
             $base = $this->round($this->money($this->pick([80_000, 100_000, 120_000, 150_000, 200_000, 250_000, 300_000]) * $worker['scale']), 10_000);
@@ -343,13 +333,13 @@ class DemoData extends Command
                 $this->deliver($w, (int) -$worker['balance'], 'Pago de lo que se le debía por gastos rendidos', $at);
             } else {
                 $owed = $worker['balance'] < 0 ? (int) -$worker['balance'] : 0;
-                $this->deliver($w, $owed + $base, $owed ? 'Pago de lo adeudado y entrega para gastos' : $this->pick(['Entrega de dinero para gastos', 'Entrega para gastos de terreno', 'Fondo para ' . $this->pick(self::PLACES), 'Entrega para materiales y colaciones']), $at);
+                $this->deliver($w, $owed + $base, $owed ? 'Pago de lo adeudado y entrega para gastos' : $this->pick(['Entrega de dinero para gastos', 'Entrega para gastos de terreno', 'Fondo para ' . $this->pick(self::PROJECTS), 'Entrega para materiales y colaciones']), $at);
             }
 
             return;
         }
 
-        if ($pending == 0.0 && $worker['balance'] > $this->money(150_000 * $worker['scale']) && mt_rand(1, 100) <= 3) {
+        if ($worker['balance'] > $this->money(150_000 * $worker['scale']) && mt_rand(1, 100) <= 3) {
             $amount = $this->round($worker['balance'] * mt_rand(30, 70) / 100, 5_000);
             if ($amount > 0) {
                 $this->giveBack($w, $amount, 'Devolución de dinero sobrante', $at);
@@ -452,6 +442,10 @@ class DemoData extends Command
         ], $extra));
     }
 
+    /**
+     * El trabajador manda la planilla en papel y el tesorero la registra: queda aprobada en ese momento.
+     * Unas pocas tienen la aprobación anulada y esperan corrección.
+     */
     private function submitExpense(int $w, Carbon $at): void
     {
         $worker = &$this->workers[$w];
@@ -460,77 +454,80 @@ class DemoData extends Command
             ? $worker['balance'] * mt_rand(60, 135) / 100
             : mt_rand(15_000, 90_000) * $worker['scale'] * $inflation;
 
+        $project = $this->pick(self::PROJECTS);
+        $city = $this->pick(self::CITIES);
         $from = $at->copy()->subDays(12)->max($worker['hire'])->startOfDay();
         $items = [];
         $total = 0;
         do {
-            $items[] = $item = $this->makeItem($from, $at, $inflation);
+            $items[] = $item = $this->makeItem($from, $at, $inflation, $project, $city);
             $total += $item['amount'];
-        } while ($total < $target && count($items) < 6);
+        } while ($total < $target && count($items) < 7);
+        usort($items, fn ($a, $b) => $a['expense_date'] <=> $b['expense_date']);
 
-        $reviewAt = $this->reviewTime($at);
-        $status = $reviewAt->gt($this->now) ? 'submitted' : (mt_rand(1, 100) <= 4 ? 'rejected' : 'approved');
+        $annulled = mt_rand(1, 100) <= 2;
         $reviewer = mt_rand(1, 100) <= 85 ? $this->treasurerId : $this->bossId;
         $lastDate = max(array_column($items, 'expense_date'));
-        $firstDate = min(array_column($items, 'expense_date'));
 
         $expenseId = DB::table('expenses')->insertGetId([
             'expense_number' => $this->nextNumber('expenses', 'expense_number', 'RND', $at->year),
             'account_id' => $worker['account'],
             'submitted_by' => $worker['person'],
             'total_amount' => $total,
-            'description' => $this->expenseDescription(Carbon::parse($firstDate), Carbon::parse($lastDate)),
+            'description' => mt_rand(1, 100) <= 50 ? 'Rendición del ' . $at->format('d/m/Y') : "Gastos {$project}",
             'expense_date' => $lastDate,
-            'status' => $status,
-            'reviewed_by' => $status === 'submitted' ? null : $reviewer,
+            'status' => $annulled ? 'rejected' : 'approved',
+            'reviewed_by' => $reviewer,
             'submitted_at' => $at,
-            'reviewed_at' => $status === 'submitted' ? null : $reviewAt,
-            'rejection_reason' => $status === 'rejected' ? $this->pick(self::REJECTIONS) : null,
+            'reviewed_at' => $at,
+            'rejection_reason' => $annulled ? 'Aprobación anulada: ' . $this->pick(['Monto mal copiado de la planilla', 'Se registró a nombre de otro trabajador', 'Faltó una boleta en la foto']) : null,
             'is_enabled' => true,
+            'source' => 'received',
+            'declared_total' => $total,
+            'registered_by' => $reviewer,
             'created_at' => $at,
-            'updated_at' => $status === 'submitted' ? $at : $reviewAt,
+            'updated_at' => $at,
         ]);
         $this->created['expenses'][] = $expenseId;
 
         foreach ($items as $item) {
-            $itemId = DB::table('expense_items')->insertGetId([
+            DB::table('expense_items')->insert([
                 'expense_id' => $expenseId,
                 'document_type' => $item['document_type'],
                 'document_number' => $item['document_number'],
-                'without_receipt' => $item['without_receipt'],
-                'without_receipt_reason' => $item['without_receipt_reason'],
+                'without_receipt' => false,
                 'vendor_name' => $item['vendor_name'],
-                'description' => $item['description'],
+                'description' => $item['category'],
                 'amount' => $item['amount'],
                 'expense_date' => $item['expense_date'],
                 'expense_category_id' => $item['category_id'],
+                'project' => $item['project'],
+                'city' => $item['city'],
                 'is_enabled' => true,
                 'created_at' => $at,
                 'updated_at' => $at,
             ]);
-            if (! $item['without_receipt'] && $this->images) {
-                $this->storeReceipt($expenseId, $itemId, $item, $at);
-            }
+        }
+        if ($this->images) {
+            $this->storePlanilla($expenseId, $worker, $items, $total, $at, $reviewer);
         }
 
-        if ($status === 'approved') {
-            $this->effects[] = [$reviewAt->timestamp, $w, -(float) $total];
+        if (! $annulled) {
+            $worker['balance'] -= $total;
         }
-        $worker['busy_until'] = $status === 'submitted' ? PHP_INT_MAX : $reviewAt->timestamp;
     }
 
     /** @return array<string, mixed> */
-    private function makeItem(Carbon $from, Carbon $to, float $inflation): array
+    private function makeItem(Carbon $from, Carbon $to, float $inflation, string $project, string $city): array
     {
         $category = $this->weighted(array_map(fn ($c) => $c[0], self::SPENDING));
-        [, $vendors, $descriptions, $min, $max, $documents] = self::SPENDING[$category];
+        [, $vendors, , $min, $max, $documents] = self::SPENDING[$category];
 
         $amount = mt_rand($min, $max) * $inflation;
         $amount = mt_rand(1, 100) <= 60 ? max(990, floor($amount / 1000) * 1000 + 990) : max(500, round($amount, -1));
 
         $type = $this->pick($documents);
         $vendor = $this->pick($vendors);
-        $withoutReceipt = mt_rand(1, 100) <= ($category === 'Peaje' ? 25 : 3);
         do {
             $number = (string) mt_rand(100_000, 9_999_999);
         } while (isset($this->docKeys["$type|$vendor|$number"]));
@@ -539,91 +536,117 @@ class DemoData extends Command
         $date = Carbon::createFromTimestamp(mt_rand($from->timestamp, $to->copy()->startOfDay()->timestamp), $to->getTimezone());
 
         return [
+            'category' => $category,
             'category_id' => $this->categoryIds[$category] ?? null,
             'vendor_name' => $vendor,
-            'description' => $this->pick($descriptions),
             'amount' => (int) $amount,
             'document_type' => $type,
-            'document_number' => $withoutReceipt ? null : $number,
-            'without_receipt' => $withoutReceipt,
-            'without_receipt_reason' => $withoutReceipt ? (self::NO_RECEIPT[$category] ?? 'El comercio no entregó boleta') : null,
+            'document_number' => $number,
+            'project' => mt_rand(1, 100) <= 80 ? $project : $this->pick(self::PROJECTS),
+            'city' => mt_rand(1, 100) <= 80 ? $city : $this->pick(self::CITIES),
             'expense_date' => $date->toDateString(),
-            'time' => sprintf('%02d:%02d', mt_rand(8, 20), mt_rand(0, 59)),
         ];
     }
 
-    private function storeReceipt(int $expenseId, int $itemId, array $item, Carbon $at): void
+    private function storePlanilla(int $expenseId, array $worker, array $items, int $total, Carbon $at, int $userId): void
     {
-        $jpeg = $this->receiptImage($item);
-        $name = "{$item['document_type']}_{$item['document_number']}.jpg";
-        $path = "expenses/{$expenseId}/items/{$itemId}/{$name}";
+        $jpeg = $this->planillaImage($worker, $items, $total, $at);
+        $path = "expenses/{$expenseId}/rendicion/planilla.jpg";
         Storage::disk(Document::DISK)->put($path, $jpeg);
 
         DB::table('documents')->insert([
-            'name' => $name,
+            'name' => 'planilla.jpg',
             'file_path' => $path,
             'mime_type' => 'image/jpeg',
             'file_size' => strlen($jpeg),
-            'document_type' => $item['document_type'],
-            'expense_item_id' => $itemId,
-            'uploaded_by' => $this->treasurerId,
+            'document_type' => 'other',
+            'expense_id' => $expenseId,
+            'uploaded_by' => $userId,
             'is_enabled' => true,
             'created_at' => $at,
             'updated_at' => $at,
         ]);
     }
 
-    private function receiptImage(array $item): string
+    /** La planilla «Rendición de Gastos» llenada a mano, como la que mandan los trabajadores. */
+    private function planillaImage(array $worker, array $items, int $total, Carbon $at): string
     {
-        $title = [
-            'boleta' => 'BOLETA ELECTRÓNICA',
-            'factura' => 'FACTURA ELECTRÓNICA',
-            'ticket' => 'TICKET',
-            'vale' => 'VALE',
-            'guia_despacho' => 'GUÍA DE DESPACHO',
-        ][$item['document_type']];
-        $rutNumber = mt_rand(76_000_000, 77_999_999);
-        $total = '$ ' . number_format($item['amount'], 0, ',', '.');
-
-        $lines = [
-            ['b', Str::upper($item['vendor_name'])],
-            ['c', 'R.U.T.: ' . number_format($rutNumber, 0, '', '.') . '-' . $this->rutDv($rutNumber)],
-            ['c', ''],
-            ['b', $title],
-            ['c', 'N° ' . $item['document_number']],
-            ['c', ''],
-            ['l', 'Fecha: ' . Carbon::parse($item['expense_date'])->format('d-m-Y') . '   ' . $item['time']],
-            ['l', str_repeat('-', 30)],
-            ...array_map(fn ($l) => ['l', $l], explode("\n", wordwrap($item['description'], 30, "\n", true))),
-            ['l', '1 x ' . $total],
-            ['l', str_repeat('-', 30)],
-            ['b', 'TOTAL ' . $total],
-            ['c', ''],
-            ['c', 'Gracias por su preferencia'],
-        ];
-
-        $width = 360;
-        $height = 40 + count($lines) * 24;
-        $im = imagecreatetruecolor($width, $height);
-        imagefill($im, 0, 0, imagecolorallocate($im, 252, 251, 245));
-        $ink = imagecolorallocate($im, 35, 35, 40);
+        $im = imagecreatetruecolor(760, 980);
+        imagefill($im, 0, 0, imagecolorallocate($im, 251, 250, 246));
+        $line = imagecolorallocate($im, 150, 150, 155);
+        $print = imagecolorallocate($im, 40, 40, 45);
+        $ink = imagecolorallocate($im, 28, 52, 150);
         $ttf = function_exists('imagettftext') && is_file(self::FONT);
+        $hand = $ttf && is_file(self::FONT_HAND) ? self::FONT_HAND : self::FONT;
+        $text = function (string $value, int $x, int $y, int $size, $color, ?string $font = null, int $angle = 0) use ($im, $ttf) {
+            $ttf ? imagettftext($im, $size, $angle, $x, $y, $color, $font ?? self::FONT, $value) : imagestring($im, 3, $x, $y - 12, Str::ascii($value), $color);
+        };
+        $amount = fn (int $value) => number_format($value, 0, ',', '.');
 
-        $y = 34;
-        foreach ($lines as [$style, $text]) {
-            if ($ttf) {
-                $font = $style === 'b' && is_file(self::FONT_BOLD) ? self::FONT_BOLD : self::FONT;
-                $box = imagettfbbox(12, 0, $font, $text);
-                $x = $style === 'l' ? 22 : (int) (($width - ($box[2] - $box[0])) / 2);
-                imagettftext($im, 12, 0, $x, $y, $ink, $font, $text);
-            } else {
-                imagestring($im, 4, 22, $y - 14, Str::ascii($text), $ink);
+        $text('Rendición de Gastos', 285, 52, 16, $print, is_file(self::FONT_BOLD) ? self::FONT_BOLD : self::FONT);
+        $columns = [40 => 'Fecha', 110 => 'Concepto', 245 => 'Proyecto', 390 => 'Ciudad', 500 => 'Valor (Factura)', 610 => 'Valor (Boleta)', 720 => null];
+        imagerectangle($im, 40, 75, 720, 715, $line);
+        foreach (array_keys($columns) as $x) {
+            imageline($im, $x, 75, $x, 715, $line);
+        }
+        foreach ($columns as $x => $label) {
+            if ($label) {
+                $text($label, $x + 5, 95, 9, $print);
             }
-            $y += 24;
+        }
+        for ($y = 105; $y <= 715; $y += 30) {
+            imageline($im, 40, $y, 720, $y, $line);
         }
 
+        $previousDate = null;
+        foreach (array_slice($items, 0, 20) as $row => $item) {
+            $y = 128 + $row * 30;
+            $date = Carbon::parse($item['expense_date'])->format('d-m');
+            $text($date === $previousDate ? '  "' : $date, 46, $y, 11, $ink, $hand, mt_rand(-2, 2));
+            $previousDate = $date;
+            $concept = ['Insumos y Materiales' => 'Materiales', 'Mantenimiento' => 'Mantención', 'Vulcanización' => 'Vulcaniz.'][$item['category']] ?? $item['category'];
+            $text(Str::limit($concept, 14, ''), 116, $y, 11, $ink, $hand, mt_rand(-2, 2));
+            $text(Str::limit($item['project'], 15, ''), 251, $y, 10, $ink, $hand, mt_rand(-2, 2));
+            $text(Str::limit($item['city'], 13, ''), 395, $y, 9, $ink, $hand, mt_rand(-2, 2));
+            $column = $item['document_type'] === 'factura' ? 506 : 616;
+            $text($amount($item['amount']), $column, $y, 11, $ink, $hand, mt_rand(-2, 2));
+            imageline($im, $item['document_type'] === 'factura' ? 625 : 515, $y - 6, $item['document_type'] === 'factura' ? 700 : 590, $y - 6, $ink);
+        }
+        $lastY = 105 + min(count($items), 20) * 30;
+        if ($lastY < 715) {
+            imageline($im, 40, 715, 720, $lastY, $ink);
+        }
+
+        $facturas = array_sum(array_map(fn ($i) => $i['document_type'] === 'factura' ? $i['amount'] : 0, $items));
+        $text('Fecha Rendición', 120, 738, 8, $print);
+        imagerectangle($im, 60, 742, 300, 772, $line);
+        $text($at->format('d-m-y'), 130, 765, 13, $ink, $hand);
+        $text('Sub total', 420, 745, 9, $print);
+        imagerectangle($im, 500, 728, 720, 760, $line);
+        imageline($im, 610, 728, 610, 760, $line);
+        $text('$ ' . $amount($facturas), 506, 751, 12, $ink, $hand);
+        $text('$ ' . $amount($total - $facturas), 616, 751, 12, $ink, $hand);
+        $text('Total', 520, 790, 10, $print, is_file(self::FONT_BOLD) ? self::FONT_BOLD : self::FONT);
+        imagerectangle($im, 570, 770, 720, 802, $line);
+        $text('$ ' . $amount($total), 580, 794, 13, $ink, $hand);
+
+        [$rutNumber, $rutDv] = explode('-', $worker['rut'] . '-');
+        $text('RUT', 40, 850, 8, $print);
+        $text(number_format((int) $rutNumber, 0, '', '.') . '-' . $rutDv, 70, 846, 12, $ink, $hand);
+        imageline($im, 65, 852, 300, 852, $line);
+        $text('Nombre y Firma', 330, 850, 8, $print);
+        $text($worker['name'], 420, 846, 12, $ink, $hand);
+        imageline($im, 415, 852, 720, 852, $line);
+        for ($i = 0; $i < 3; $i++) {
+            imagearc($im, 640 + $i * 18, 840, 60, 28 + $i * 6, 180 + $i * 20, 40 + $i * 30, $ink);
+        }
+        $text('RUT', 40, 920, 8, $print);
+        imageline($im, 65, 922, 300, 922, $line);
+        $text('Revisor y autorización — Nombre y Firma', 330, 920, 8, $print);
+        imageline($im, 560, 922, 720, 922, $line);
+
         ob_start();
-        imagejpeg($im, null, 70);
+        imagejpeg($im, null, 68);
         imagedestroy($im);
 
         return (string) ob_get_clean();
@@ -760,52 +783,12 @@ class DemoData extends Command
         return self::SUCCESS;
     }
 
-    private function applyEffects(Carbon $until): void
-    {
-        foreach ($this->effects as $k => [$at, $w, $delta]) {
-            if ($at <= $until->timestamp) {
-                $this->workers[$w]['balance'] += $delta;
-                unset($this->effects[$k]);
-            }
-        }
-    }
-
-    private function pendingFor(int $w): float
-    {
-        $sum = 0.0;
-        foreach ($this->effects as [, $worker, $delta]) {
-            if ($worker === $w) {
-                $sum += $delta;
-            }
-        }
-
-        return $sum;
-    }
-
     private function nextNumber(string $table, string $column, string $prefix, int $year): string
     {
         $this->sequences[$prefix][$year] ??= (int) DB::table($table)->where($column, 'like', "{$prefix}-{$year}-%")
             ->pluck($column)->map(fn ($n) => (int) Str::afterLast($n, '-'))->max();
 
         return sprintf('%s-%d-%06d', $prefix, $year, ++$this->sequences[$prefix][$year]);
-    }
-
-    private function reviewTime(Carbon $submitted): Carbon
-    {
-        return $this->workday($submitted->copy()->addDays(mt_rand(1, 7)))->setTime(mt_rand(9, 18), mt_rand(0, 59), mt_rand(0, 59));
-    }
-
-    private function expenseDescription(Carbon $first, Carbon $last): string
-    {
-        $month = $last->locale('es')->translatedFormat('F');
-
-        return match (mt_rand(1, 3)) {
-            1 => $first->isSameMonth($last)
-                ? "Gastos del {$first->day} al {$last->day} de {$month}"
-                : "Gastos del {$first->day} de {$first->locale('es')->translatedFormat('F')} al {$last->day} de {$month}",
-            2 => 'Gastos ' . $this->pick(self::PLACES),
-            default => 'Rendición ' . ($last->day <= 15 ? 'primera' : 'segunda') . " quincena de {$month}",
-        };
     }
 
     private function workday(Carbon $day): Carbon

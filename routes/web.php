@@ -75,6 +75,8 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
     Route::post('/trabajadores/importar/revisar', [\App\Http\Controllers\WorkerImportController::class, 'preview'])->name('workers.import.preview');
     Route::post('/trabajadores/importar', [\App\Http\Controllers\WorkerImportController::class, 'store'])->name('workers.import.store');
     Route::get('/aprobaciones/revisar', fn () => view('approvals.review'))->name('approvals.review');
+    Route::get('/rendiciones/registrar', fn () => view('expenses.intake', ['expense' => null]))->name('expenses.intake');
+    Route::get('/rendiciones/{expense}/corregir', fn (\App\Models\Expense $expense) => view('expenses.intake', ['expense' => $expense]))->name('expenses.intake.edit');
 
     // Estadísticas
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');

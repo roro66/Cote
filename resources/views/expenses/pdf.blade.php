@@ -65,8 +65,13 @@
         <tr>
             <td class="label">Solicitante</td>
             <td>{{ $person?->full_name ?? 'N/A' }}@if ($person?->rut) · RUT {{ $person->rut }}@endif</td>
-            <td class="label">Fecha de envío</td>
-            <td>{{ $expense->submitted_at?->format('d/m/Y H:i') ?? 'Sin enviar' }}</td>
+            @if ($expense->isReceived())
+                <td class="label">Fecha de rendición</td>
+                <td>{{ $expense->submitted_at?->format('d/m/Y') ?? '—' }}</td>
+            @else
+                <td class="label">Fecha de envío</td>
+                <td>{{ $expense->submitted_at?->format('d/m/Y H:i') ?? 'Sin enviar' }}</td>
+            @endif
         </tr>
         <tr>
             <td class="label">Cuenta</td>
@@ -92,17 +97,22 @@
         <div class="box rejected">{{ $expense->rejection_reason }}</div>
     @endif
 
-    <h2>Ítems ({{ $expense->items->count() }})</h2>
+    @php
+        $facturas = $expense->items->where('document_type', 'factura');
+        $boletas = $expense->items->where('document_type', '!=', 'factura');
+    @endphp
+    <h2>Detalle de gastos ({{ $expense->items->count() }})</h2>
     <table class="items">
         <thead>
             <tr>
-                <th style="width: 4%;">#</th>
-                <th style="width: 10%;">Fecha</th>
-                <th>Descripción</th>
-                <th style="width: 15%;">Categoría</th>
-                <th style="width: 15%;">Documento</th>
-                <th style="width: 18%;">Comprobante</th>
-                <th style="width: 12%;" class="num">Monto</th>
+                <th style="width: 3%;">#</th>
+                <th style="width: 9%;">Fecha</th>
+                <th style="width: 14%;">Concepto</th>
+                <th style="width: 14%;">Proyecto</th>
+                <th style="width: 10%;">Ciudad</th>
+                <th>Documento</th>
+                <th style="width: 11%;" class="num">Valor (Factura)</th>
+                <th style="width: 11%;" class="num">Valor (Boleta)</th>
             </tr>
         </thead>
         <tbody>
@@ -111,35 +121,48 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $item->expense_date?->format('d/m/Y') ?? '—' }}</td>
-                    <td>{{ $item->description }}</td>
-                    <td>{{ $item->categoryObj?->name ?? '—' }}</td>
-                    <td>{{ $docTypes[$item->document_type] ?? 'Otro' }}@if ($item->document_number) N° {{ $item->document_number }}@endif</td>
+                    <td>{{ $item->categoryObj?->name ?? $item->description }}</td>
+                    <td>{{ $item->project ?: '—' }}</td>
+                    <td>{{ $item->city ?: '—' }}</td>
                     <td>
-                        @if ($attached)
-                            {{ $attached === 1 ? '1 adjunto' : $attached . ' adjuntos' }}
-                        @elseif ($item->without_receipt)
-                            Sin comprobante<br><span class="muted">{{ $item->without_receipt_reason }}</span>
-                        @else
-                            <span style="color: #dc3545;">Falta comprobante</span>
+                        {{ $docTypes[$item->document_type] ?? 'Otro' }}@if ($item->document_number) N° {{ $item->document_number }}@endif
+                        <br><span class="muted">{{ $item->vendor_name }}</span>
+                        @if (! $attached && $item->without_receipt)
+                            <br><span class="muted">Sin comprobante: {{ $item->without_receipt_reason }}</span>
                         @endif
                     </td>
-                    <td class="num">{{ $clp($item->amount) }}</td>
+                    <td class="num">{{ $item->document_type === 'factura' ? $clp($item->amount) : '' }}</td>
+                    <td class="num">{{ $item->document_type !== 'factura' ? $clp($item->amount) : '' }}</td>
                 </tr>
             @endforeach
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="6" style="text-align: right;">Total</td>
-                <td class="num">{{ $clp($expense->total_amount) }}</td>
+                <td colspan="6" style="text-align: right;">Subtotal</td>
+                <td class="num">{{ $clp($facturas->sum('amount')) }}</td>
+                <td class="num">{{ $clp($boletas->sum('amount')) }}</td>
             </tr>
+            <tr>
+                <td colspan="6" style="text-align: right;">Total</td>
+                <td colspan="2" class="num" style="font-size: 11px;">{{ $clp($expense->total_amount) }}</td>
+            </tr>
+            @if ($expense->declared_total !== null)
+                <tr>
+                    <td colspan="6" style="text-align: right; font-weight: normal;">Total escrito en la planilla</td>
+                    <td colspan="2" class="num" style="font-weight: normal;">
+                        {{ $clp($expense->declared_total) }}
+                        {{ (int) $expense->declared_total === (int) $expense->total_amount ? '(cuadra)' : '(diferencia ' . $clp(abs($expense->declared_total - $expense->total_amount)) . ')' }}
+                    </td>
+                </tr>
+            @endif
         </tfoot>
     </table>
 
     <table class="signatures">
         <tr>
-            <td>Rendido por<br><strong>{{ $person?->full_name ?? '' }}</strong></td>
+            <td>Trabajador<br><strong>{{ $person?->full_name ?? '' }}</strong>@if ($person?->rut)<br>RUT {{ \App\Helpers\RutHelper::format($person->rut) }}@endif<br><span class="muted">Nombre y firma</span></td>
             <td class="gap"></td>
-            <td>Revisado por<br><strong>{{ $expense->reviewedBy?->name ?? '' }}</strong></td>
+            <td>Revisor y autorización<br><strong>{{ $expense->reviewedBy?->name ?? '' }}</strong><br>RUT: ____________________<br><span class="muted">Nombre y firma</span></td>
         </tr>
     </table>
 
@@ -148,7 +171,7 @@
         <h2>Adjuntos que no se muestran en este PDF</h2>
         <p class="muted" style="margin: 0 0 4px;">Documentos PDF o archivos que no se pudieron leer; se ven desde la rendición en {{ config('app.name') }}.</p>
         @foreach ($withoutImage as $receipt)
-            <div>Ítem {{ $receipt['item'] }}: {{ $receipt['name'] }}</div>
+            <div>{{ $receipt['caption'] }}: {{ $receipt['name'] }}</div>
         @endforeach
     @endif
 
@@ -158,7 +181,7 @@
             $width = $ratio > $maxHeight / $maxWidth ? $maxHeight / $ratio : $maxWidth;
         @endphp
         <div class="receipt">
-            <div class="caption">Comprobante del ítem {{ $receipt['item'] }} · {{ $receipt['name'] }}</div>
+            <div class="caption">{{ $receipt['caption'] }} · {{ $receipt['name'] }}</div>
             <img src="{{ $receipt['image']['src'] }}" style="width: {{ round($width) }}pt; height: {{ round($width * $ratio) }}pt;" alt="">
         </div>
     @endforeach

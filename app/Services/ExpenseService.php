@@ -10,6 +10,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ExpenseService
 {
@@ -102,6 +103,109 @@ class ExpenseService
 
             return $expense->refresh();
         });
+    }
+
+    /**
+     * Rendición en papel que el tesorero transcribe: queda aprobada al guardar. Las fotos son de
+     * la rendición completa (planilla y hojas con boletas), no de cada gasto. Al corregir una ya
+     * existente (rechazada o con la aprobación anulada) los gastos se reemplazan.
+     *
+     * @param  array{date: string, description: ?string, declared_total: ?int}  $data
+     * @param  list<array{date: string, category_id: int, project: ?string, city: ?string, type: string, vendor: string, number: string, amount: int}>  $rows
+     * @param  list<UploadedFile>  $photos  fotos nuevas
+     * @param  list<int>  $removePhotoIds
+     */
+    public function registerReceived(?Expense $expense, Account $account, array $data, array $rows, array $photos, array $removePhotoIds, int $userId): Expense
+    {
+        $expense = DB::transaction(function () use ($expense, $account, $data, $rows, $photos, $removePhotoIds, $userId) {
+            if (! $account->person_id) {
+                throw new \DomainException('La cuenta seleccionada no tiene una persona asociada.');
+            }
+
+            $date = \Illuminate\Support\Carbon::parse($data['date']);
+            $categories = \App\Models\ExpenseCategory::whereIn('id', array_column($rows, 'category_id'))->pluck('name', 'id');
+            $fields = [
+                'account_id' => $account->id,
+                'submitted_by' => $account->person_id,
+                'description' => trim((string) ($data['description'] ?? '')) ?: 'Rendición del ' . $date->format('d/m/Y'),
+                'declared_total' => $data['declared_total'] ?? null,
+                'source' => Expense::SOURCE_RECEIVED,
+                'registered_by' => $userId,
+                'status' => 'submitted',
+                'submitted_at' => $date->copy()->setTimeFrom(now()),
+                'reviewed_by' => null,
+                'reviewed_at' => null,
+                'rejection_reason' => null,
+            ];
+
+            if ($expense) {
+                $expense = Expense::whereKey($expense->id)->lockForUpdate()->firstOrFail();
+                if (! $expense->isEditable()) {
+                    throw new \DomainException('Esta rendición ya fue aprobada y no se puede modificar.');
+                }
+                $expense->update($fields);
+                $expense->items()->each(function (ExpenseItem $item) {
+                    $item->documents()->get()->each(fn (Document $doc) => $this->deleteDocument($doc));
+                    $item->delete();
+                });
+                $expense->photos()->whereIn('id', $removePhotoIds)->get()->each(fn (Document $doc) => $this->deleteDocument($doc));
+            } else {
+                $expense = Expense::create($fields + ['total_amount' => 0, 'expense_date' => $date->toDateString(), 'is_enabled' => true]);
+            }
+
+            foreach ($rows as $row) {
+                $expense->items()->create([
+                    'description' => $categories[$row['category_id']] ?? 'Gasto',
+                    'amount' => $row['amount'],
+                    'document_type' => $row['type'],
+                    'vendor_name' => $row['vendor'],
+                    'document_number' => $row['number'],
+                    'expense_category_id' => $row['category_id'],
+                    'expense_date' => $row['date'],
+                    'project' => $row['project'] ?: null,
+                    'city' => $row['city'] ?: null,
+                    'without_receipt' => false,
+                ]);
+            }
+
+            foreach ($photos as $photo) {
+                $this->storePhoto($expense, $photo, $userId);
+            }
+
+            if (! $expense->photos()->exists()) {
+                throw new \DomainException('Adjunta al menos una foto de la rendición.');
+            }
+
+            $expense->update([
+                'total_amount' => $expense->items()->sum('amount'),
+                'expense_date' => $expense->items()->max('expense_date'),
+            ]);
+
+            $this->approveExpense($expense, $userId);
+
+            return $expense;
+        });
+
+        return $expense->refresh();
+    }
+
+    private function storePhoto(Expense $expense, UploadedFile $file, int $userId): Document
+    {
+        $disk = Storage::disk(Document::DISK);
+        $dir = "expenses/{$expense->id}/rendicion";
+        $extension = Str::lower($file->getClientOriginalExtension() ?: ($file->extension() ?? 'jpg'));
+        $name = 'rendicion_' . ($expense->photos()->count() + 1) . '_' . Str::random(6) . '.' . $extension;
+
+        return Document::create([
+            'name' => $file->getClientOriginalName() ?: $name,
+            'file_path' => $file->storeAs($dir, $name, Document::DISK),
+            'mime_type' => $file->getMimeType() ?? 'application/octet-stream',
+            'file_size' => $file->getSize(),
+            'document_type' => 'other',
+            'expense_id' => $expense->id,
+            'uploaded_by' => $userId,
+            'is_enabled' => true,
+        ]);
     }
 
     public static function isWithoutReceipt(array $item): bool

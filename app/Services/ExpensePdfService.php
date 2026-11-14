@@ -16,13 +16,22 @@ class ExpensePdfService
 
     public function download(Expense $expense): Response
     {
-        $expense->load(['account.person', 'submittedBy', 'reviewedBy', 'items.categoryObj', 'items.documents']);
+        $expense->load(['account.person', 'submittedBy', 'reviewedBy', 'items.categoryObj', 'items.documents', 'photos']);
 
         $receipts = [];
+        foreach ($expense->photos as $index => $photo) {
+            $receipts[] = [
+                'item' => null,
+                'caption' => 'Foto de la rendición ' . ($index + 1) . ' de ' . $expense->photos->count(),
+                'name' => $photo->name,
+                'image' => str_starts_with((string) $photo->mime_type, 'image/') ? $this->documentImage($photo) : null,
+            ];
+        }
         foreach ($expense->items as $index => $item) {
             foreach ($item->documents->where('is_enabled', true) as $document) {
                 $receipts[] = [
                     'item' => $index + 1,
+                    'caption' => 'Comprobante del ítem ' . ($index + 1),
                     'name' => $document->name,
                     'image' => str_starts_with((string) $document->mime_type, 'image/') ? $this->documentImage($document) : null,
                 ];

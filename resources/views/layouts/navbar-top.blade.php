@@ -21,7 +21,8 @@
                         ['route' => route('cash.movement', 'entregar'), 'icon' => 'fa-hand-holding-usd', 'text' => 'Entregar dinero', 'short' => 'Entregar', 'color' => '#198754', 'active' => request()->is('caja/entregar')],
                         ['route' => route('cash.movement', 'devolucion'), 'icon' => 'fa-undo-alt', 'text' => 'Me devolvieron', 'short' => 'Devolución', 'color' => '#0f766e', 'active' => request()->is('caja/devolucion')],
                         ['route' => route('cash.movement', 'ingreso'), 'icon' => 'fa-piggy-bank', 'text' => 'Entró dinero', 'short' => 'Ingreso', 'color' => '#0d6efd', 'active' => request()->is('caja/ingreso')],
-                        ['route' => route('approvals.review'), 'icon' => 'fa-clipboard-check', 'text' => 'Revisar rendiciones', 'short' => 'Revisar', 'color' => '#fd7e14', 'active' => request()->routeIs('approvals.review'),
+                        ['route' => route('expenses.intake'), 'icon' => 'fa-file-invoice-dollar', 'text' => 'Registrar rendición', 'short' => 'Rendición', 'color' => '#fd7e14', 'active' => request()->routeIs('expenses.intake*')],
+                        ['route' => route('approvals.review'), 'icon' => 'fa-clipboard-check', 'text' => 'Revisar rendiciones', 'short' => 'Revisar', 'color' => '#b45309', 'active' => request()->routeIs('approvals.review'),
                             'badge' => \App\Models\Expense::where('status', 'submitted')->where('is_enabled', true)->count()],
                         ['route' => route('cashbook.index'), 'icon' => 'fa-book', 'text' => 'Libro de caja', 'short' => 'Libro', 'color' => '#6f42c1', 'active' => request()->routeIs('cashbook.*')],
                         ['route' => route('closings.index'), 'icon' => 'fa-calendar-check', 'text' => 'Cerrar mes', 'short' => 'Cierre', 'color' => '#495057', 'active' => request()->routeIs('closings.*')],
@@ -30,11 +31,13 @@
                         ['route' => route('expenses.create'), 'icon' => 'fa-plus-circle', 'text' => 'Nueva rendición', 'short' => 'Nueva', 'color' => '#198754', 'active' => request()->routeIs('expenses.create')],
                         ['route' => route('expenses.index'), 'icon' => 'fa-receipt', 'text' => 'Mis rendiciones', 'short' => 'Mis rendiciones', 'color' => '#0d6efd', 'active' => request()->routeIs('expenses.index')],
                     ];
+                // Las rendiciones llegan en papel y se registran ya aprobadas: revisar solo aparece si alguien rindió desde la app
+                $quick = array_values(array_filter($quick, fn ($item) => ! array_key_exists('badge', $item) || $item['badge'] > 0 || $item['active']));
                 if (config('ai.enabled')) {
                     $quick[] = ['route' => route('assistant'), 'icon' => 'fa-robot', 'text' => 'Asistente', 'short' => 'Asistente', 'color' => '#5b4b8a', 'active' => request()->routeIs('assistant')];
                 }
             @endphp
-            <nav class="cote-quick-bar {{ count($quick) <= 3 ? 'cote-quick-bar--few' : '' }} d-flex flex-nowrap align-items-center gap-1 mx-2 me-auto" aria-label="Accesos rápidos">
+            <nav class="cote-quick-bar d-flex flex-nowrap align-items-center gap-1 mx-2 me-auto" data-labels="icons" aria-label="Accesos rápidos">
                 @foreach ($quick as $item)
                     <a href="{{ $item['route'] }}" class="cote-quick-btn {{ $item['active'] ? 'is-active' : '' }}" style="--quick-color: {{ $item['color'] }};" title="{{ $item['text'] }}" aria-label="{{ $item['text'] }}">
                         <i class="fas {{ $item['icon'] }}" aria-hidden="true"></i>
@@ -82,4 +85,27 @@
             </x-dropdown>
         </div>
     </div>
+    <script>
+        // Una sola fila: prueba nombre completo, corto o solo ícono, y oculta el título si no queda espacio digno
+        (function () {
+            const inner = document.currentScript.parentElement.querySelector('.navbar-top-inner');
+            const nav = inner && inner.querySelector('.cote-quick-bar');
+            if (!nav) return;
+            const title = inner.querySelector('.navbar-page-title');
+            const options = [['full', true], ['short', true], ['short', false], ['icons', true], ['icons', false]];
+            const fit = () => {
+                for (const [labels, withTitle] of options) {
+                    nav.dataset.labels = labels;
+                    inner.dataset.title = withTitle ? 'on' : 'off';
+                    const titleOk = !withTitle || !title || title.offsetParent === null
+                        || title.getBoundingClientRect().width >= Math.min(140, title.scrollWidth);
+                    if (titleOk && nav.scrollWidth <= nav.clientWidth + 1 && inner.scrollWidth <= inner.clientWidth + 1) return;
+                }
+            };
+            let frame = null;
+            new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(fit); }).observe(inner);
+            fit();
+            document.fonts && document.fonts.ready.then(fit);
+        })();
+    </script>
 </header>

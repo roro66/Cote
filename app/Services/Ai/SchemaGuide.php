@@ -17,14 +17,16 @@ accounts(id, name, type, person_id, balance numeric, notes, is_enabled bool, is_
 transactions(id, transaction_number, type, from_account_id, to_account_id, amount numeric, description, notes, created_by, approved_by, status, approved_at, is_enabled, created_at)
   type: 'transfer' (entrega Tesorería→persona o devolución persona→Tesorería), 'deposit' (ingreso a caja chica: from_account_id NULL, to_account_id = Tesorería), 'adjustment' (histórico).
   status: 'pending', 'approved', 'rejected'. Solo 'approved' movió saldos; su fecha es approved_at. created_by/approved_by → users.id.
-expenses(id, expense_number, account_id, submitted_by, total_amount numeric, description, expense_date date, status, reviewed_by, submitted_at, reviewed_at, rejection_reason, is_enabled bool, created_at)
+expenses(id, expense_number, account_id, submitted_by, total_amount numeric, description, expense_date date, status, reviewed_by, submitted_at, reviewed_at, rejection_reason, is_enabled bool, source, declared_total numeric, registered_by, created_at)
   Rendición de gastos. submitted_by → people.id (dueño). account_id → accounts.id. reviewed_by → users.id.
+  source: 'received' = planilla en papel que el tesorero transcribió (registered_by → users.id; declared_total = total escrito a mano); 'app' = rendida en la app.
   status: 'submitted' (enviada, pendiente), 'approved', 'rejected' ('draft' y 'reviewed' casi no se usan).
   is_enabled = false es una rendición eliminada: exclúyela siempre (is_enabled = true).
   Al aprobarse, total_amount se resta del saldo de la cuenta; la fecha en que movió el saldo es reviewed_at.
   expense_date es la fecha del comprobante más reciente de la rendición.
-expense_items(id, expense_id, document_type, document_number, vendor_name, description, amount numeric, expense_date date, expense_category_id, without_receipt bool, without_receipt_reason, is_enabled, created_at)
+expense_items(id, expense_id, document_type, document_number, vendor_name, description, amount numeric, expense_date date, expense_category_id, project, city, without_receipt bool, without_receipt_reason, is_enabled, created_at)
   Cada gasto de una rendición. document_type: boleta, factura, ticket, guia_despacho, vale. expense_date = fecha del comprobante.
+  project = proyecto u obra y city = ciudad, como los escribió el tesorero (texto libre: compara con ILIKE).
   expense_category_id → expense_categories.id (NULL = «Sin categoría»).
 expense_categories(id, code, name, description, is_enabled)
 people(id, first_name, last_name, role_type, is_enabled, bank_id, account_type_id, created_at)
@@ -35,8 +37,8 @@ banks(id, name, code, type, is_active)   type: banco, cooperativa, tarjeta_prepa
 account_types(id, name, description, is_active)
 period_closings(id, period date, closed_by, closed_at, treasury_counted numeric, notes, snapshot json)
   Cierre de mes: period es el día 1 del mes cerrado. treasury_counted = dinero contado en Tesorería. closed_by → users.id.
-documents(id, name, mime_type, file_size, document_type, expense_item_id, uploaded_by, is_enabled, created_at)
-  Comprobantes adjuntos a expense_items.
+documents(id, name, mime_type, file_size, document_type, expense_item_id, expense_id, uploaded_by, is_enabled, created_at)
+  Comprobantes adjuntos a expense_items, o fotos de la rendición completa (expense_id, en las recibidas en papel).
 
 Reglas para los SELECT:
 - Gasto rendido o «cuánto gastó»: suma expense_items.amount de rendiciones aprobadas (expenses.status = 'approved' AND expenses.is_enabled = true), por la fecha del comprobante (expense_items.expense_date), salvo que pidan otra fecha.

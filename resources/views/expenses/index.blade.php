@@ -12,9 +12,20 @@
                     
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="h4">Rendiciones de Gastos</h3>
-                        <a href="{{ route('expenses.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Nueva Rendición
-                        </a>
+                        @if (auth()->user()->hasAnyRole(['boss', 'treasurer']))
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="{{ route('expenses.create') }}" class="btn btn-outline-primary" title="Formulario con un comprobante por gasto, como lo llenaría el trabajador">
+                                    <i class="fas fa-plus"></i> Nueva Rendición
+                                </a>
+                                <a href="{{ route('expenses.intake') }}" class="btn btn-warning">
+                                    <i class="fas fa-file-invoice-dollar"></i> Registrar rendición recibida
+                                </a>
+                            </div>
+                        @else
+                            <a href="{{ route('expenses.create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Nueva Rendición
+                            </a>
+                        @endif
                     </div>
 
                     <div class="table-responsive">
