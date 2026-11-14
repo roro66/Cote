@@ -28,22 +28,24 @@ class TransactionController extends Controller
     public function store(StoreTransactionRequest $request)
     {
         try {
-            $transaction = $this->transactionService->createTransaction([
-                ...$request->validated(),
-                'created_by' => auth()->id(),
-                'status' => 'pending',
-            ]);
+            $transaction = $this->transactionService->createApproved($request->validated(), auth()->id());
 
             // Respuesta JSON para AJAX
             if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Transacción creada exitosamente',
+                    'message' => 'Movimiento registrado. Los saldos ya se actualizaron.',
                     'transaction' => $transaction->load(['fromAccount', 'toAccount'])
                 ]);
             }
 
-            return redirect()->route('transactions.index')->with('success', 'Transacción creada exitosamente');
+            return redirect()->route('transactions.index')->with('success', 'Movimiento registrado. Los saldos ya se actualizaron.');
+        } catch (\DomainException $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
+            }
+
+            return redirect()->back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([

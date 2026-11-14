@@ -51,6 +51,60 @@ class TransactionService
     }
     
     /**
+     * Crea el movimiento y lo aprueba en el mismo paso: lo que registran el Jefe o el Tesorero
+     * no necesita una segunda aprobación. Si la aprobación falla, no queda nada creado.
+     */
+    public function createApproved(array $data, int $userId): Transaction
+    {
+        return DB::transaction(function () use ($data, $userId) {
+            $transaction = $this->createTransaction([...$data, 'created_by' => $userId, 'status' => 'pending']);
+            $this->approveTransaction($transaction, $userId);
+
+            return $transaction->refresh();
+        });
+    }
+
+    /**
+     * Deshace un movimiento aprobado: devuelve los saldos y lo deja anulado con su motivo.
+     */
+    public function annulTransaction(Transaction $transaction, int $userId, string $reason): Transaction
+    {
+        DB::transaction(function () use ($transaction, $userId, $reason) {
+            $locked = Transaction::whereKey($transaction->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== 'approved') {
+                throw new \DomainException('Solo se pueden anular movimientos aprobados.');
+            }
+
+            $accounts = Account::whereIn('id', array_filter([$locked->from_account_id, $locked->to_account_id]))
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+            $from = $accounts->get($locked->from_account_id);
+            $to = $accounts->get($locked->to_account_id);
+
+            if ($to?->type === 'treasury' && (float) $to->balance < (float) $locked->amount) {
+                throw new \DomainException('La caja no tiene dinero suficiente para anular este movimiento. Primero registra el ingreso que corresponda.');
+            }
+
+            $from?->increment('balance', $locked->amount);
+            $to?->decrement('balance', $locked->amount);
+
+            $locked->update([
+                'status' => 'annulled',
+                'annulled_at' => now(),
+                'annulled_by' => $userId,
+                'annul_reason' => $reason,
+            ]);
+
+            Log::info('Transacción anulada', ['transaction_id' => $locked->id, 'annulled_by' => $userId]);
+        });
+
+        return $transaction->refresh();
+    }
+
+    /**
      * Aprobar una transacción y actualizar saldos
      */
     /**

@@ -8,6 +8,7 @@ use App\Services\Ai\Tools\BalancesTool;
 use App\Services\Ai\Tools\ExpenseReportsTool;
 use App\Services\Ai\Tools\ManualTool;
 use App\Services\Ai\Tools\PendingApprovalsTool;
+use App\Services\Ai\Tools\PrepareMovementTool;
 use App\Services\Ai\Tools\SpendingTool;
 use App\Services\Ai\Tools\SqlQueryTool;
 use App\Services\Ai\Tools\TreasurySummaryTool;
@@ -31,6 +32,7 @@ class DataAssistant
         ExpenseReportsTool::class,
         AccountMovementsTool::class,
         SqlQueryTool::class,
+        PrepareMovementTool::class,
         ManualTool::class,
     ];
 
@@ -234,8 +236,9 @@ Respondes en español de Chile, tuteando, en forma breve y clara. Usa listas cor
 
 Conceptos:
 - Tesorería es la caja chica. Cada trabajador tiene una cuenta interna con saldo.
-- Saldo positivo de un trabajador = «por rendir» (tiene dinero de la empresa). Saldo negativo = «se le debe» (gastó de su bolsillo).
-- Los saldos solo cambian al aprobar: entregas y devoluciones (transferencias), ingresos a caja chica y rendiciones.
+- Saldo positivo de un trabajador = «tiene en su poder» dinero de la empresa (debe rendirlo o devolverlo). Saldo negativo = «le debemos» (gastó de su bolsillo). Usa siempre esas palabras y nunca montos negativos.
+- Las entregas, devoluciones e ingresos que registran el Jefe o el Tesorero quedan aprobados al guardar. Las rendiciones de los trabajadores se aprueban aparte. Lo aprobado se puede anular.
+- Habla simple: el usuario no sabe de contabilidad. Evita palabras como «transacción», «saldo negativo» o «tesorería»; di «movimiento», «le debemos» y «la caja».
 
 Reglas:
 - Si preguntan cómo se usa la app, dónde está algo, qué botón usar, qué significa un mensaje o quién puede hacer algo, llama consultar_manual. No inventes menús ni pasos: usa el procedimiento que devuelva.
@@ -253,6 +256,7 @@ PROMPT;
 
         return $prompt.<<<PROMPT
 
+- Si el usuario pide hacer o registrar una entrega, una devolución o un ingreso de dinero, usa preparar_movimiento. Tú no guardas nada: di que quedó preparado y que lo revise y confirme con el botón «Revisar y confirmar». Nunca digas que quedó registrado.
 - Prefiere las consultas fijas: resumen_tesoreria, saldos_personas, pendientes_aprobacion, gasto_rendido, rendiciones, movimientos_cuenta. El nombre de la persona va tal como lo dijo el usuario.
 - Para otras preguntas sobre los datos usa consultar_sql con un SELECT de PostgreSQL. Los cálculos (SUM, COUNT) van en el SELECT. Alias de dinero con sufijo _clp. Si responde ok=false, corrige el SQL y reintenta una vez.
 

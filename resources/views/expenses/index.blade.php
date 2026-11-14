@@ -55,6 +55,7 @@
         let table = $('#expenses-table').DataTable({
             processing: true,
             serverSide: true,
+            search: { search: new URLSearchParams(window.location.search).get('buscar') || '' },
             ajax: "{{ route('datatables.expenses') }}",
             columns: [
                 {data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false},
@@ -92,56 +93,13 @@
             pageLength: 25,
             buttons: [
                 {
-                    extend: 'copy',
-                    text: '<i class="fas fa-copy"></i> Copiar',
-                    className: 'btn btn-secondary btn-sm',
-                    exportOptions: {
-                        columns: dtExportColumns
-                    }
-                },
-                {
-                    extend: 'csv',
-                    text: '<i class="fas fa-file-csv"></i> CSV',
-                    className: 'btn btn-secondary btn-sm',
-                    filename: 'gastos_' + new Date().toISOString().split('T')[0],
-                    exportOptions: {
-                        columns: dtExportColumns
-                    }
-                },
-                {
                     extend: 'excel',
-                    text: '<i class="fas fa-file-excel"></i> Excel',
-                    className: 'btn btn-secondary btn-sm',
+                    text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                    className: 'btn btn-success btn-sm',
                     filename: 'gastos_' + new Date().toISOString().split('T')[0],
                     exportOptions: {
                         columns: dtExportColumns
                     }
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf"></i> PDF',
-                    className: 'btn btn-secondary btn-sm',
-                    filename: 'gastos_' + new Date().toISOString().split('T')[0],
-                    title: 'Lista de Gastos - COTE',
-                    orientation: 'landscape',
-                    exportOptions: {
-                        columns: dtExportColumns
-                    }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print"></i> Imprimir',
-                    className: 'btn btn-secondary btn-sm',
-                    title: 'Lista de Gastos - COTE',
-                    exportOptions: {
-                        columns: dtExportColumns
-                    }
-                },
-                {
-                    extend: 'colvis',
-                    text: '<i class="fas fa-columns"></i> Columnas',
-                    className: 'btn btn-secondary btn-sm',
-                    columns: ':not(:last-child)' // No permitir ocultar columna de Acciones
                 }
             ],
             responsive: true,

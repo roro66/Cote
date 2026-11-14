@@ -121,7 +121,24 @@
             };
             if (window.DataTable) {
                 $.extend(true, DataTable.defaults.language, window.COTE_DATATABLE_LANG);
+                // Un solo botón para exportar en las tablas que no definen los suyos (sin la columna Acciones)
+                if (DataTable.Buttons) {
+                    DataTable.Buttons.defaults.buttons = [{
+                        extend: 'excel',
+                        text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                        className: 'btn btn-success btn-sm',
+                        exportOptions: { columns: ':visible:not(:last-child)' },
+                    }];
+                }
             }
+
+            // Ayudas «¿Qué es esto?»: también en lo que Livewire vuelve a dibujar
+            window.coteInitHelp = () => document.querySelectorAll('[data-bs-toggle="popover"]')
+                .forEach(el => bootstrap.Popover.getOrCreateInstance(el));
+            document.addEventListener('DOMContentLoaded', window.coteInitHelp);
+            document.addEventListener('livewire:init', () => {
+                Livewire.hook('commit', ({ succeed }) => succeed(() => queueMicrotask(window.coteInitHelp)));
+            });
         </script>
         
         

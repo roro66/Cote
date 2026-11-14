@@ -56,6 +56,13 @@
                             </button>
                         @else
                             <div class="cote-assistant-answer">{!! \Illuminate\Support\Str::markdown($turn['content'], ['html_input' => 'escape', 'allow_unsafe_links' => false]) !!}</div>
+                            @foreach(($turn['steps'] ?? []) as $step)
+                                @if(! empty($step['url']))
+                                    <a href="{{ $step['url'] }}" class="btn btn-success btn-lg mt-2">
+                                        <i class="fas fa-check-circle me-1"></i> Revisar y confirmar
+                                    </a>
+                                @endif
+                            @endforeach
                         @endif
 
                         @foreach(($turn['steps'] ?? []) as $s => $step)

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Gestión de Transacciones
+            Movimientos de dinero
         </h2>
     </x-slot>
 
@@ -11,10 +11,10 @@
                 <div class="p-6 text-gray-900">
 
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="h4">Transacciones</h3>
+                        <h3 class="h4">Movimientos</h3>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                             data-bs-target="#createTransactionModal">
-                            <i class="fas fa-plus"></i> Nueva Transacción
+                            <i class="fas fa-plus"></i> Nuevo movimiento
                         </button>
                     </div>
 
@@ -160,57 +160,15 @@
                         [10, 25, 50, 100, "Todos"]
                     ],
                     pageLength: 25,
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fas fa-copy"></i> Copiar',
-                            className: 'btn btn-secondary btn-sm',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i> CSV',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'transacciones_' + new Date().toISOString().split('T')[0],
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
+                    buttons: [
                         {
                             extend: 'excel',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-secondary btn-sm',
+                            text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                            className: 'btn btn-success btn-sm',
                             filename: 'transacciones_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
                                 columns: dtExportColumns
                             }
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'transacciones_' + new Date().toISOString().split('T')[0],
-                            title: 'Lista de Transacciones - COTE',
-                            orientation: 'landscape',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-secondary btn-sm',
-                            title: 'Lista de Transacciones - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fas fa-columns"></i> Columnas',
-                            className: 'btn btn-secondary btn-sm',
-                            columns: ':not(:last-child)' // No permitir ocultar columna de Acciones
                         }
                     ],
                     responsive: true,
@@ -341,6 +299,25 @@
                 });
             }
 
+            function annulTransaction(id) {
+                cotePrompt('¿Por qué anulas este movimiento? Los saldos vuelven a como estaban antes.').then(function (reason) {
+                    if (!reason) return;
+                    $.ajax({
+                        url: '/transactions/' + id + '/annul',
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json' },
+                        data: { _token: '{{ csrf_token() }}', reason: reason },
+                        success: function (response) {
+                            $('#transactions-table').DataTable().ajax.reload();
+                            toastr.success(response.message);
+                        },
+                        error: function (xhr) {
+                            toastr.error(xhr.responseJSON?.message || 'No se pudo anular el movimiento');
+                        }
+                    });
+                });
+            }
+
             function clearTransactionForm() {
                 $('#createTransactionForm')[0].reset();
                 $('.form-control, .form-select').removeClass('is-invalid');
@@ -438,7 +415,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="createTransactionModalLabel">Nueva Transacción</h5>
+                    <h5 class="modal-title" id="createTransactionModalLabel">Nuevo movimiento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

@@ -21,7 +21,21 @@ class PersonService
         // Handle is_enabled checkbox - convert 'on', '1', 'true' to true; anything else to false
         $data['is_enabled'] = $this->normalizeBoolean($data['is_enabled'] ?? false);
 
-        return Person::create($data);
+        return DB::transaction(function () use ($data) {
+            $person = Person::create($data);
+            $this->openAccount($person);
+
+            return $person;
+        });
+    }
+
+    /** Cuenta interna en $0 para entregarle dinero y que rinda sus gastos. */
+    public function openAccount(Person $person): Account
+    {
+        return Account::firstOrCreate(
+            ['type' => 'person', 'person_id' => $person->id],
+            ['name' => $person->full_name, 'balance' => 0, 'is_enabled' => true]
+        );
     }
 
     /**

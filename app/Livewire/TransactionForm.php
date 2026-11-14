@@ -133,11 +133,13 @@ class TransactionForm extends Component
                 $transaction->update($fields);
                 session()->flash('message', 'Transacción actualizada correctamente.');
             } else {
-                $service->createTransaction([...$fields, 'created_by' => auth()->id(), 'status' => 'pending']);
-                session()->flash('message', 'Transacción creada correctamente.');
+                $service->createApproved($fields, auth()->id());
+                session()->flash('message', 'Movimiento registrado. Los saldos ya se actualizaron.');
             }
 
             return redirect()->route('transactions.index');
+        } catch (\DomainException $e) {
+            $this->dispatch('cote-toast', type: 'error', message: $e->getMessage());
         } catch (\Exception $e) {
             $this->dispatch('cote-toast', type: 'error', message: \App\Support\ErrorMessage::for($e, 'Error al procesar la transacción'));
         }

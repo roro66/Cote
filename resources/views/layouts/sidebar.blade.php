@@ -28,6 +28,18 @@
             @endif
             @hasanyrole('boss|treasurer')
             <li class="nav-item">
+                <a href="{{ route('workers.index') }}" class="nav-link {{ request()->routeIs('workers.*') ? 'active' : '' }}">
+                    <i class="fas fa-hand-holding-usd nav-icon nav-icon-workers"></i>
+                    <span class="nav-text">Trabajadores</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ route('cashbook.index') }}" class="nav-link {{ request()->routeIs('cashbook.*') ? 'active' : '' }}">
+                    <i class="fas fa-book nav-icon nav-icon-cashbook"></i>
+                    <span class="nav-text">Libro de caja</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('people.index') }}" class="nav-link {{ request()->routeIs('people.*') ? 'active' : '' }}">
                     <i class="fas fa-users nav-icon nav-icon-people"></i>
                     <span class="nav-text">Personas</span>
@@ -42,7 +54,7 @@
             <li class="nav-item">
                 <a href="{{ route('transactions.index') }}" class="nav-link {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
                     <i class="fas fa-exchange-alt nav-icon nav-icon-transactions"></i>
-                    <span class="nav-text">Transacciones</span>
+                    <span class="nav-text">Movimientos</span>
                 </a>
             </li>
             @endhasanyrole

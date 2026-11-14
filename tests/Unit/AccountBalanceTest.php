@@ -22,10 +22,10 @@ it('describes a worker balance in petty cash terms', function () {
     $account = new \App\Models\Account(['type' => 'person']);
 
     $account->balance = 5000;
-    expect($account->balance_status['label'])->toBe('Por rendir');
+    expect($account->balance_status['label'])->toBe('En su poder');
 
     $account->balance = -2500;
-    expect($account->balance_status['label'])->toBe('Se le debe');
+    expect($account->balance_status['label'])->toBe('Le debemos');
     expect($account->balance_abs_formatted)->toBe('$2.500');
 
     $account->balance = 0;

@@ -586,45 +586,13 @@
                         [10, 25, 50, 100, "Todos"]
                     ],
                     pageLength: 10,
-                    buttons: [{
-                            text: '<i class="fas fa-copy"></i> Copiar',
-                            className: 'btn btn-sm btn-secondary',
-                            action: function() {
-                                exportAllData('copy');
-                            }
-                        },
+                    buttons: [
                         {
-                            text: '<i class="fas fa-file-csv"></i> CSV',
-                            className: 'btn btn-sm btn-secondary',
-                            action: function() {
-                                exportAllData('csv');
-                            }
-                        },
-                        {
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-sm btn-secondary',
+                            text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                            className: 'btn btn-success btn-sm',
                             action: function() {
                                 exportAllData('excel');
                             }
-                        },
-                        {
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-sm btn-secondary',
-                            action: function() {
-                                exportAllData('pdf');
-                            }
-                        },
-                        {
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-sm btn-secondary',
-                            action: function() {
-                                exportAllData('print');
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fas fa-columns"></i> Columnas',
-                            className: 'btn btn-sm btn-secondary'
                         }
                     ],
                     responsive: true,
@@ -1216,9 +1184,12 @@
                     document.getElementById('createPersonForm').reset();
                     clearValidationErrors('createPersonForm');
                 });
-            });
 
-            // Mostrar mensajes de sesión como tostadas
+                // Desde «Agregar trabajador» se llega con ?nuevo=1: abrir el formulario directo
+                if (new URLSearchParams(window.location.search).get('nuevo') === '1') {
+                    new bootstrap.Modal(document.getElementById('createPersonModal')).show();
+                }
+            });
         </script>
     @endpush
 </x-app-layout>

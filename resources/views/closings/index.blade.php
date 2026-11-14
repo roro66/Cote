@@ -39,11 +39,11 @@
                     <div class="fs-4 fw-semibold">{{ $clp($totals['treasury_closing']) }}</div>
                 </div></div></div>
                 <div class="col-md-3"><div class="card h-100"><div class="card-body">
-                    <div class="text-muted small">Por rendir (trabajadores)</div>
+                    <div class="text-muted small">En poder de trabajadores</div>
                     <div class="fs-4 fw-semibold">{{ $clp($totals['to_render']) }}</div>
                 </div></div></div>
                 <div class="col-md-3"><div class="card h-100"><div class="card-body">
-                    <div class="text-muted small">Se les debe</div>
+                    <div class="text-muted small">Les debemos</div>
                     <div class="fs-4 fw-semibold">{{ $clp($totals['owed']) }}</div>
                 </div></div></div>
                 <div class="col-md-3"><div class="card h-100"><div class="card-body">
@@ -90,9 +90,9 @@
                                         <td class="text-end">
                                             {{ $clp($row['closing']) }}
                                             @if ($row['type'] === 'person' && $row['closing'] > 0)
-                                                <span class="badge bg-warning text-dark">Por rendir</span>
+                                                <span class="badge bg-warning text-dark">En su poder</span>
                                             @elseif ($row['type'] === 'person' && $row['closing'] < 0)
-                                                <span class="badge bg-danger">Se le debe</span>
+                                                <span class="badge bg-danger">Le debemos</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -113,8 +113,18 @@
                             @php $difference = (float) $closing->treasury_counted - (float) $totals['treasury_closing']; @endphp
                             <p class="mb-1">Según sistema: <strong>{{ $clp($totals['treasury_closing']) }}</strong> · Contado: <strong>{{ $clp($closing->treasury_counted) }}</strong></p>
                             <p @class(['mb-1', 'text-success' => abs($difference) < 1, 'text-danger' => abs($difference) >= 1])>
-                                {{ abs($difference) < 1 ? 'Cuadra.' : 'Diferencia: ' . $clp($difference) }}
+                                {{ abs($difference) < 1 ? 'Cuadra.' : ($difference < 0 ? 'Faltaron ' : 'Sobraron ') . $clp(abs($difference)) . '.' }}
                             </p>
+                            @if ($closing->count_detail)
+                                <p class="small text-muted mb-1">
+                                    @foreach ($closing->count_detail['billetes_y_monedas'] ?? [] as $value => $qty)
+                                        {{ $qty }} × ${{ number_format((int) $value, 0, ',', '.') }}{{ $loop->last ? '' : ' · ' }}
+                                    @endforeach
+                                    @if (($closing->count_detail['banco'] ?? 0) > 0)
+                                        · Banco {{ $clp($closing->count_detail['banco']) }}
+                                    @endif
+                                </p>
+                            @endif
                         @else
                             <p class="text-muted mb-1">No se registró arqueo.</p>
                         @endif
@@ -142,28 +152,68 @@
                         @if ($closeBlocker)
                             <p class="text-muted mb-0">{{ $closeBlocker }}</p>
                         @else
-                            <p class="small text-muted">Cuenta el dinero que hay en Tesorería (caja y banco) y regístralo para comparar con el sistema. Al cerrar se guarda este resumen tal como está.</p>
-                            <form method="POST" action="{{ route('closings.store') }}" class="row g-2"
+                            <p class="text-muted">Cuenta el dinero que hay en la caja y en el banco. La app suma y te dice si cuadra con el sistema. Al cerrar se guarda este resumen tal como está.</p>
+                            <form method="POST" action="{{ route('closings.store') }}" class="cote-easy"
                                   data-cote-confirm="¿Cerrar {{ $monthLabel }}?"
-                                  data-cote-confirm-text="Cerrar mes">
+                                  data-cote-confirm-text="Cerrar mes"
+                                  x-data="{
+                                      qty: {{ json_encode(array_fill_keys(\App\Models\PeriodClosing::DENOMINATIONS, '')) }},
+                                      bank: '',
+                                      direct: '',
+                                      system: {{ (float) $totals['treasury_closing'] }},
+                                      get counted() { return Object.entries(this.qty).reduce((s, [v, q]) => s + Number(v) * Number(q || 0), 0) + Number(this.bank || 0) },
+                                      get usingCount() { return Object.values(this.qty).some(q => Number(q) > 0) || this.bank !== '' },
+                                      get total() { return this.usingCount ? this.counted : (this.direct === '' ? null : Number(this.direct)) },
+                                      get diff() { return this.total === null ? null : this.total - this.system },
+                                      clp(v) { return (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('es-CL') },
+                                  }">
                                 @csrf
                                 <input type="hidden" name="month" value="{{ $month->format('Y-m') }}">
-                                <div class="col-md-4">
-                                    <label for="treasury_counted" class="form-label">Dinero contado en Tesorería</label>
-                                    <div class="input-group">
+
+                                <h6 class="fw-bold mt-2">Paso 1: cuenta los billetes y monedas de la caja</h6>
+                                <div class="row g-2 cote-cash-count mb-3">
+                                    @foreach (\App\Models\PeriodClosing::DENOMINATIONS as $value)
+                                        <div class="col-6 col-md-4 col-xl-3">
+                                            <div class="input-group">
+                                                <span class="input-group-text" style="min-width: 6.5rem;">{{ $value >= 1000 ? 'Billete' : 'Moneda' }} ${{ number_format($value, 0, ',', '.') }}</span>
+                                                <input type="number" min="0" step="1" class="form-control" name="count[{{ $value }}]" x-model="qty[{{ $value }}]" placeholder="0" aria-label="Cantidad de {{ $value >= 1000 ? 'billetes' : 'monedas' }} de ${{ number_format($value, 0, ',', '.') }}">
+                                            </div>
+                                            <div class="small text-muted ms-1" x-show="Number(qty[{{ $value }}]) > 0" x-text="'= ' + clp({{ $value }} * Number(qty[{{ $value }}] || 0))"></div>
+                                        </div>
+                                    @endforeach
+                                </div>
+
+                                <h6 class="fw-bold">Paso 2: ¿cuánto hay en el banco? (si la caja tiene cuenta)</h6>
+                                <div class="input-group mb-3" style="max-width: 18rem;">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" min="0" step="1" class="form-control" name="bank" x-model="bank" placeholder="0" aria-label="Dinero en el banco">
+                                </div>
+
+                                <details class="mb-3">
+                                    <summary class="text-muted">Prefiero escribir el total contado de una vez</summary>
+                                    <div class="input-group mt-2" style="max-width: 18rem;">
                                         <span class="input-group-text">$</span>
-                                        <input type="number" step="1" class="form-control" id="treasury_counted" name="treasury_counted"
-                                               placeholder="{{ number_format($totals['treasury_closing'], 0, '', '') }}">
+                                        <input type="number" step="1" class="form-control" name="treasury_counted" x-model="direct" :disabled="usingCount" placeholder="Total contado">
                                     </div>
-                                    <div class="form-text">Según sistema: {{ $clp($totals['treasury_closing']) }}</div>
+                                </details>
+
+                                <h6 class="fw-bold">Paso 3: revisa y cierra</h6>
+                                <div class="cote-confirm-box mb-3">
+                                    <p class="fs-5 mb-1">Según el sistema hay <strong>{{ $clp($totals['treasury_closing']) }}</strong>.</p>
+                                    <template x-if="total !== null">
+                                        <div>
+                                            <p class="fs-5 mb-1">Contaste <strong x-text="clp(total)"></strong>.</p>
+                                            <p class="fs-5 mb-0 fw-bold" :class="Math.abs(diff) < 1 ? 'text-success' : 'text-danger'"
+                                               x-text="Math.abs(diff) < 1 ? '¡Cuadra!' : (diff < 0 ? 'Faltan ' + clp(-diff) : 'Sobran ' + clp(diff))"></p>
+                                        </div>
+                                    </template>
+                                    <p class="text-muted mb-0" x-show="total === null">Si no cuentas el dinero, el mes se cierra sin arqueo.</p>
                                 </div>
-                                <div class="col-md-8">
-                                    <label for="notes" class="form-label">Observaciones</label>
-                                    <textarea id="notes" name="notes" class="form-control" rows="2" maxlength="2000"></textarea>
-                                </div>
-                                <div class="col-12">
-                                    <button type="submit" class="btn btn-primary"><i class="fas fa-lock me-1"></i>Cerrar mes</button>
-                                </div>
+
+                                <label for="notes" class="form-label">Observaciones (por ejemplo, por qué no cuadra)</label>
+                                <textarea id="notes" name="notes" class="form-control mb-3" rows="2" maxlength="2000"></textarea>
+
+                                <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-lock me-1"></i>Cerrar mes</button>
                             </form>
                         @endif
                     </div>

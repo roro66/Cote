@@ -34,7 +34,17 @@
                                     </button>
                                 </form>
                             @endif
-                            
+
+                            @if($expense->status === 'approved' && $expense->is_enabled && auth()->user()->hasAnyRole(['boss', 'treasurer']))
+                                <form action="{{ route('expenses.annul', $expense) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="reason">
+                                    <button type="button" class="btn btn-outline-danger" onclick="cotePrompt('¿Por qué anulas la aprobación? El monto vuelve al saldo de la persona y la rendición queda para corregir.').then((reason) => { if (!reason) return; this.form.reason.value = reason; this.form.requestSubmit(); })">
+                                        <i class="fas fa-undo"></i> Anular aprobación
+                                    </button>
+                                </form>
+                            @endif
+
                             @can('update', $expense)
                                 <a href="{{ route('expenses.edit', $expense) }}" class="btn btn-primary">
                                     <i class="fas fa-edit"></i> {{ $expense->status === 'rejected' ? 'Corregir y reenviar' : 'Editar' }}

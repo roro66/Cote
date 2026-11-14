@@ -66,6 +66,8 @@ body { overflow-x: hidden; }
 }
 .sidebar-nav .nav-icon-panel { color: #7eb6ff; }
 .sidebar-nav .nav-icon-assistant { color: #a5b4fc; }
+.sidebar-nav .nav-icon-workers { color: #86efac; }
+.sidebar-nav .nav-icon-cashbook { color: #d8b4fe; }
 .sidebar-nav .nav-icon-people { color: #5ddec8; }
 .sidebar-nav .nav-icon-accounts { color: #8ee0a8; }
 .sidebar-nav .nav-icon-transactions { color: #f0c36a; }
@@ -372,3 +374,64 @@ html:not([data-bs-theme="dark"]) .guest-theme-toggle {
 [data-bs-theme="dark"] .cote-confirm .swal2-textarea {
     background: #212529; color: #f8f9fa; border-color: #495057;
 }
+
+/* Uso sencillo: letra algo más grande y accesos rápidos en la barra superior */
+[x-cloak] { display: none !important; }
+.main-content { font-size: 1.0625rem; }
+.main-content .table { font-size: 1rem; }
+
+.cote-quick-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 0.8rem; border-radius: 8px;
+    background: var(--quick-color); color: #fff !important;
+    font-weight: 600; font-size: 0.92rem; text-decoration: none; position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); transition: transform 0.1s, filter 0.15s;
+}
+.cote-quick-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.cote-quick-btn.is-active { outline: 3px solid rgba(255, 255, 255, 0.85); outline-offset: -3px; }
+.cote-quick-badge {
+    background: #fff; color: #9a3412; border-radius: 999px; font-size: 0.75rem;
+    padding: 0.05rem 0.45rem; font-weight: 700;
+}
+
+.cote-easy .card-header, .cote-easy .card-footer { padding: 0.9rem 1.1rem; }
+.cote-easy-card { border-radius: 14px; }
+.cote-easy .form-control-lg, .cote-easy .btn-lg { font-size: 1.15rem; }
+.cote-amount .form-control { font-size: 1.8rem; font-weight: 700; max-width: 18rem; }
+.cote-amount .input-group-text { font-size: 1.6rem; }
+
+.cote-steps { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; counter-reset: step; }
+.cote-steps li {
+    counter-increment: step; padding: 0.3rem 0.8rem; border-radius: 999px;
+    background: #e9ecef; color: #6c757d; font-weight: 600;
+}
+.cote-steps li::before { content: counter(step) ". "; }
+.cote-steps li.is-done { background: #d1e7dd; color: #0f5132; }
+.cote-steps li.is-current { background: #0d6efd; color: #fff; }
+
+.cote-person-card {
+    border: 2px solid #dee2e6; border-radius: 12px; padding: 0.9rem 1rem; background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.cote-person-card:hover, .cote-person-card:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.2); }
+.cote-confirm-box { background: #f1f8f4; border: 2px solid #badbcc; border-radius: 12px; padding: 1.2rem 1.4rem; }
+.cote-receipt { max-height: 70vh; width: auto; }
+
+.cote-stat { background: #fff; border-radius: 12px; padding: 0.8rem 1rem; border-left: 6px solid #6c757d; box-shadow: 0 2px 8px rgba(36, 48, 68, 0.08); }
+.cote-stat span { display: block; color: #6c757d; font-size: 0.95rem; }
+.cote-stat strong { display: block; font-size: 1.5rem; }
+.cote-stat--in { border-left-color: #198754; }
+.cote-stat--out { border-left-color: #fd7e14; }
+.cote-stat--owed { border-left-color: #dc3545; }
+.cote-stat--total { border-left-color: #0d6efd; }
+.cote-help { color: #6c757d; font-size: 0.95em; text-decoration: none; }
+.cote-cash-count input { max-width: 7rem; }
+
+[data-bs-theme="dark"] .cote-person-card,
+[data-bs-theme="dark"] .cote-stat { background: #2b3035; border-color: #495057; color: #e9ecef; }
+[data-bs-theme="dark"] .cote-stat span,
+[data-bs-theme="dark"] .cote-help { color: #adb5bd; }
+[data-bs-theme="dark"] .cote-confirm-box { background: #1e3329; border-color: #2f5d47; }
+[data-bs-theme="dark"] .cote-steps li { background: #343a40; color: #adb5bd; }
+[data-bs-theme="dark"] .cote-steps li.is-done { background: #1e3a2c; color: #a3cfbb; }
+[data-bs-theme="dark"] .cote-steps li.is-current { background: #0d6efd; color: #fff; }

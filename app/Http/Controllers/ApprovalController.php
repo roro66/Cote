@@ -122,6 +122,44 @@ class ApprovalController extends Controller
         }
     }
 
+    /**
+     * Anular un movimiento aprobado (devuelve los saldos)
+     */
+    public function annulTransaction(Request $request, Transaction $transaction)
+    {
+        $data = $request->validate(['reason' => 'required|string|max:500'], [], ['reason' => 'motivo']);
+
+        try {
+            $this->transactionService->annulTransaction($transaction, Auth::id(), $data['reason']);
+            $result = [true, 'Movimiento anulado. Los saldos volvieron a como estaban.', 200];
+        } catch (\DomainException $e) {
+            $result = [false, $e->getMessage(), 422];
+        }
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => $result[0], 'message' => $result[1]], $result[2]);
+        }
+
+        return redirect()->route('transactions.show', $transaction)
+            ->with('toastr', ['type' => $result[0] ? 'success' : 'error', 'message' => $result[1]]);
+    }
+
+    /**
+     * Anular la aprobación de una rendición (vuelve a quedar para corregir)
+     */
+    public function annulExpense(Request $request, Expense $expense)
+    {
+        $data = $request->validate(['reason' => 'required|string|max:500'], [], ['reason' => 'motivo']);
+
+        try {
+            $this->expenseService->annulExpense($expense, Auth::id(), $data['reason']);
+
+            return $this->expenseResponse($request, $expense, true, 'Aprobación anulada. El monto volvió al saldo y la rendición quedó para corregir.');
+        } catch (\DomainException $e) {
+            return $this->expenseResponse($request, $expense, false, $e->getMessage(), 422);
+        }
+    }
+
     private function expenseResponse(Request $request, Expense $expense, bool $success, string $message, int $status = 200)
     {
         if ($request->wantsJson() || $request->expectsJson() || $request->ajax()) {

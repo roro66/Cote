@@ -62,7 +62,7 @@ class PersonController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Persona creada exitosamente',
+                    'message' => 'Persona creada. Ya tiene su cuenta para recibir dinero.',
                     'data' => new PersonResource($person)
                 ]);
             }

@@ -1,6 +1,6 @@
 # Manual de uso de COTE
 
-COTE (Control de Tesorería) registra el dinero de la caja chica de la empresa: lo que entra a Tesorería, lo que se entrega a cada trabajador, lo que cada trabajador gasta y rinde con sus comprobantes, y el cierre de cada mes.
+COTE (Control de Tesorería) registra el dinero de la caja chica de la empresa: lo que entra a la caja, lo que se entrega a cada trabajador, lo que cada trabajador gasta y rinde con sus boletas, y el cierre de cada mes.
 
 Este manual describe cada pantalla tal como funciona hoy. Cada sección indica **Quién puede** usarla: el asistente de COTE solo explica a cada usuario las pantallas que puede abrir.
 
@@ -12,34 +12,34 @@ COTE tiene tres perfiles:
 
 | Perfil | Rol en el sistema | Qué hace |
 |---|---|---|
-| Jefe | `boss` | Todo: personas, cuentas, transacciones, aprobaciones, estadísticas, informes, cierres, usuarios y ajustes manuales de saldo. Es el único que puede reabrir un mes cerrado y administrar usuarios. |
+| Jefe | `boss` | Todo: entregas, devoluciones, ingresos, rendiciones, trabajadores, cuentas, estadísticas, informes, cierres, usuarios y ajustes manuales de saldo. Es el único que puede reabrir un mes cerrado y administrar usuarios. |
 | Tesorero | `treasurer` | Lo mismo que el Jefe, salvo Usuarios, ajustes manuales de saldo y reabrir meses. Solo puede haber un Tesorero. |
-| Trabajador | sin rol | Rinde sus propios gastos. Solo ve el Panel, sus Rendiciones y su Perfil. |
+| Trabajador | sin rol | Rinde sus propios gastos. Solo ve el Panel, sus Rendiciones, el Asistente y su Perfil. |
 
-El trabajador debe tener su usuario vinculado a su ficha de Persona y esa persona debe tener una cuenta interna. Sin eso no puede crear rendiciones. Lo configura el Jefe en Usuarios y en Cuentas.
+El trabajador debe tener su usuario vinculado a su ficha de Persona. Lo configura el Jefe en Usuarios.
 
 Los menús muestran solo lo que cada perfil puede abrir. Si alguien entra por enlace a una pantalla que no le corresponde, ve un error 403 (acceso denegado).
 
-## Conceptos básicos: cuentas, saldos y flujo del dinero
+## Conceptos básicos: la caja, los trabajadores y el dinero
 
 **Quién puede:** todos los usuarios
 
-- **Tesorería:** la cuenta de la caja chica de la empresa. Hay una sola. Su saldo es el dinero disponible para entregar.
-- **Cuenta interna de una persona:** el saldo de cada trabajador dentro de COTE. Se crea en Cuentas y nace en $0.
-- **Saldo positivo de un trabajador («Por rendir»):** tiene dinero de la empresa. Debe rendirlo con comprobantes o devolverlo.
-- **Saldo negativo de un trabajador («Se le debe»):** gastó de su bolsillo más de lo que recibió. La empresa le debe esa diferencia.
-- **Saldo cero («Al día»):** no debe ni se le debe nada.
+- **La caja (Tesorería):** el dinero de la caja chica de la empresa. Es lo disponible para entregar.
+- **Cuenta de un trabajador:** cuánto dinero de la empresa tiene cada trabajador. Se crea sola al agregar a la persona y nace en $0.
+- **«Tiene en su poder»:** el trabajador tiene dinero de la empresa. Debe rendirlo con boletas o devolverlo.
+- **«Le debemos»:** el trabajador gastó de su bolsillo más de lo que recibió. La empresa le debe esa diferencia.
+- **«Está al día»:** no tiene dinero de la empresa ni se le debe nada.
 
 Flujo típico:
 
-1. **Ingreso a caja chica:** entra dinero a Tesorería (cheque, transferencia bancaria, etc.).
-2. **Entrega:** transferencia de Tesorería a un trabajador. Su saldo sube.
-3. **Rendición:** el trabajador registra lo que gastó, con fotos o PDF de las boletas. Al aprobarse, su saldo baja por el total rendido.
-4. **Devolución:** si le sobró dinero, transferencia del trabajador a Tesorería.
-5. **Pago de lo adeudado:** si quedó en negativo, se le hace una entrega desde Tesorería para dejarlo al día.
-6. **Cierre de mes:** al terminar el mes se cuenta el dinero de Tesorería y se guarda un resumen.
+1. **Entró dinero a la caja:** cheque, transferencia o efectivo de la empresa.
+2. **Entrega:** sale dinero de la caja hacia un trabajador.
+3. **Rendición:** el trabajador registra lo que gastó, con fotos o PDF de las boletas. Al aprobarse, baja lo que tiene en su poder.
+4. **Devolución:** si le sobró dinero, lo devuelve a la caja.
+5. **Pagarle lo que le debemos:** si gastó de su bolsillo, se le hace una entrega por ese monto.
+6. **Cierre de mes:** al terminar el mes se cuenta el dinero de la caja y se guarda un resumen.
 
-Los saldos **solo cambian al aprobar**. Una transferencia o una rendición pendiente, rechazada o eliminada no mueve ningún saldo.
+Las entregas, devoluciones e ingresos que registran el Jefe o el Tesorero **quedan listos al guardar**: los saldos cambian de inmediato. Las rendiciones de los trabajadores cambian los saldos recién cuando el Jefe o el Tesorero las aprueban. Lo que ya está hecho se puede **anular**.
 
 # Acceso al sistema
 
@@ -64,7 +64,7 @@ Mensajes posibles:
 
 **Quién puede:** todos los usuarios
 
-COTE no tiene recuperación de contraseña por correo. Si olvidaste tu contraseña, pídele al Jefe que te asigne una nueva desde **Usuarios** (ver «Cambiar la contraseña de otro usuario»). Después cámbiala tú mismo en tu Perfil.
+COTE no tiene recuperación de contraseña por correo. Si olvidaste tu contraseña, pídele al Jefe que te asigne una nueva desde **Usuarios** (ver «Editar un usuario y cambiar su contraseña»). Después cámbiala tú mismo en tu Perfil.
 
 ## Cerrar sesión
 
@@ -88,35 +88,138 @@ Menú con tu nombre (arriba a la derecha) → **Perfil**.
 
 Si la contraseña actual está mal, bajo el campo aparece «La contraseña es incorrecta.».
 
-## Pantalla, menú, tema claro u oscuro y avisos
+## Pantalla, botones rápidos, menú, tema y avisos
 
 **Quién puede:** todos los usuarios
 
-- **Menú lateral** a la izquierda. En el celular se abre con el botón ☰ de la barra superior.
-- **Tema claro u oscuro:** botón con luna o sol, arriba a la derecha (también en la pantalla de inicio de sesión). La elección se recuerda en ese navegador; la primera vez sigue la configuración del equipo.
-- **Avisos:** los mensajes de éxito o error aparecen arriba a la derecha y se cierran solos en unos segundos.
+- **Botones rápidos de colores** en la barra superior, para lo de todos los días:
+  - Jefe y Tesorero: **Entregar dinero**, **Me devolvieron**, **Entró dinero**, **Revisar rendiciones** (con cuántas hay por revisar), **Libro de caja**, **Cerrar mes** y **Asistente**.
+  - Trabajador: **Nueva rendición**, **Mis rendiciones** y **Asistente**.
+  - En pantallas chicas se ven solo los íconos.
+- **Menú lateral** a la izquierda, con todas las pantallas. En el celular se abre con el botón ☰.
+- **Tema claro u oscuro:** botón con luna o sol, arriba a la derecha. La elección se recuerda en ese navegador.
+- **«¿Qué es esto?»:** el ícono ⓘ junto a algunas palabras explica qué significan. Haz clic en él.
+- **Avisos:** los mensajes de éxito o error aparecen arriba a la derecha y se cierran solos.
 - **Confirmaciones:** antes de eliminar, aprobar o cerrar algo aparece un cuadro «Confirmar» con el botón de la acción y **Cancelar**.
-- **Tablas:** casi todos los listados tienen **Buscar:**, el selector **Mostrar _ entradas** (10, 25, 50, 100 o Todos) y botones **Copiar**, **CSV**, **Excel**, **PDF**, **Imprimir** y **Columnas** (oculta columnas). Las exportaciones toman lo que está cargado en la tabla: para exportar todo, elige antes **Mostrar Todos**.
+- **Tablas:** tienen **Buscar:**, el selector **Mostrar _ entradas** (10, 25, 50, 100 o Todos) y el botón **Descargar Excel**. El Excel trae lo que está cargado en la tabla: para bajar todo, elige antes **Mostrar Todos**.
 
 # Panel
 
-## Panel de inicio
+## Panel de inicio y lo que tienes que hacer hoy
 
 **Quién puede:** todos los usuarios
 
 Menú **Panel**. Es la pantalla que aparece al entrar. Los datos se calculan al abrirla: para verlos actualizados, recarga la página.
 
-**Todos ven «Rendiciones Recientes»:** las últimas 5 rendiciones, con número, descripción, fecha, monto y estado. El trabajador ve solo las suyas.
+**Lo que tienes que hacer hoy:** arriba de todo, una lista con un botón en cada cosa.
 
-**Jefe y Tesorero ven además:**
+- Jefe y Tesorero: rendiciones por revisar (**Revisar**), movimientos antiguos esperando aprobación, el mes que falta cerrar (**Cerrar mes**) y los trabajadores que llevan más de 30 días con dinero sin rendir (**Ver cartola**).
+- Trabajador: cuánto dinero de la empresa tiene (**Nueva rendición**), si le debemos dinero y las rendiciones que le devolvieron para corregir (**Ver y corregir**).
+- Si no hay nada: «Todo al día. No hay nada pendiente.».
 
-- **Tarjetas:** «Total Cuentas» (cuentas activas), «Saldo Total» (suma de todas las cuentas activas), «Transacciones Pendientes» y «Rendiciones Pendientes».
-- **Requiere atención:**
-  - «Por rendir»: dinero de la empresa en manos de trabajadores (suma de saldos positivos). Lleva a Cuentas.
-  - «Transferencias por aprobar» y «Rendiciones por aprobar»: monto y cantidad pendientes. Llevan a Aprobaciones.
-  - «Se les debe (gastaron de su bolsillo)»: las 5 cuentas más negativas. Cada nombre abre sus movimientos.
-- **Cuentas por Tipo:** cantidad y saldo de Tesorería y de las cuentas personales.
-- **Transacciones Recientes:** las últimas 5. Las pendientes tienen botones **Aprobar** y **Rechazar** que actúan de inmediato, sin pedir confirmación. El rechazo desde aquí no pide motivo: queda registrado como «Rechazada desde dashboard».
+**Pregúntale al asistente:** accesos con preguntas frecuentes que abren el Asistente.
+
+**Jefe y Tesorero ven además:** tarjetas con el total de cuentas, el saldo total, los movimientos pendientes y las rendiciones pendientes; «Requiere atención» con lo que está **En poder de trabajadores**, lo que hay por aprobar y a quiénes **Les debemos**; las cuentas por tipo y los **Últimos movimientos**.
+
+**Todos ven «Rendiciones Recientes»:** las últimas 5. El trabajador ve solo las suyas.
+
+# Tareas de todos los días
+
+## Entregar dinero a un trabajador
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Botón verde **Entregar dinero** de la barra superior (o **Entregar** en la tarjeta del trabajador, en Trabajadores).
+
+1. **Quién:** haz clic en la tarjeta del trabajador. Cada tarjeta dice si «tiene $X en su poder», si «le debemos $X» o si «está al día». Puedes escribir su nombre para buscarlo.
+2. **Cuánto:** escribe el monto. Los puntos de miles se ponen solos (escribe 50000 y aparece 50.000). Si la caja no alcanza, aparece de inmediato «La caja solo tiene $X». Si le debemos dinero, el botón **Pagarle lo que le debemos** escribe ese monto.
+3. **Detalle:** un texto corto para acordarte después (viene escrito «Entrega de dinero para gastos»; puedes cambiarlo).
+4. **Confirmar:** COTE te muestra en palabras qué va a pasar, por ejemplo «Vas a entregar **$50.000** a **Juan Pérez**. La caja queda con $120.000. Juan queda: tiene $80.000 en su poder.». Si está bien, pulsa **Sí, confirmo**. Si no, **Atrás**.
+
+Al confirmar aparece «¡Listo!» y los saldos ya cambiaron. Desde ahí puedes **Registrar otro**, **Volver al inicio** o **Me equivoqué, anular**.
+
+Esta misma entrega sirve para **pagarle a un trabajador al que le debemos**: el botón de su tarjeta dice **Pagarle**.
+
+## Me devolvieron dinero
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Cuando un trabajador devuelve dinero que le sobró: botón **Me devolvieron** de la barra superior (o **Devolvió** en su tarjeta, en Trabajadores).
+
+1. **Quién:** elige al trabajador.
+2. **Cuánto:** escribe el monto. No puede ser más de lo que tiene en su poder: «Juan solo tiene $X en su poder.». El botón **Devolvió todo** escribe el total.
+3. **Detalle** y **Confirmar** con **Sí, confirmo**.
+
+La caja sube y baja lo que el trabajador tiene en su poder.
+
+## Entró dinero a la caja
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Cuando entra dinero nuevo a la caja chica: botón azul **Entró dinero** de la barra superior.
+
+1. **Cuánto:** escribe el monto.
+2. **De dónde:** elige «Cheque de la empresa», «Transferencia bancaria de la empresa» o «Efectivo entregado por el jefe», o escribe con tus palabras (por ejemplo «Cheque N° 1234»). Es obligatorio.
+3. **Confirmar:** «Entran $X a la caja. La caja queda con $Y.» → **Sí, confirmo**.
+
+## Me equivoqué: anular un movimiento
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Una entrega, devolución o ingreso ya hecho se puede **anular**: los saldos vuelven a como estaban y el movimiento queda marcado «Anulada», con quién, cuándo y por qué.
+
+- **Recién hecho:** en la pantalla «¡Listo!», botón **Me equivoqué, anular** y escribe qué estuvo mal.
+- **Después:** en **Movimientos**, botón ↶ **Anular** de la fila; o en el detalle del movimiento, botón **Anular**. Escribe el motivo y confirma.
+
+No se puede anular si la caja ya no tiene ese dinero (por ejemplo, un ingreso que ya se entregó): «La caja no tiene dinero suficiente para anular este movimiento.». En ese caso, registra primero el ingreso que corresponda.
+
+Después de anular, si hacía falta, registra el movimiento correcto.
+
+## Libro de caja
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Botón morado **Libro de caja** de la barra superior (o menú **Libro de caja**). Es el cuaderno de la caja: todo el dinero que entró y salió en el mes, en orden de fecha.
+
+- Arriba: **Al empezar el mes**, **Entró**, **Salió** y **Hay ahora en la caja** (o **Quedó al terminar el mes**, en meses pasados).
+- Tabla: **Fecha**, **Qué pasó** (Entrega, Devolución o Ingreso a caja chica), **Detalle**, **Entrada**, **Salida** y **Saldo** después de cada movimiento. Al final, los totales del mes.
+- Las flechas ‹ › cambian de mes.
+- **Descargar Excel** baja el mismo libro del mes.
+
+Lo que cada trabajador gastó no está aquí: está en sus rendiciones.
+
+## Trabajadores y su dinero
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Menú **Trabajadores**. Una tarjeta por trabajador activo, con su situación en palabras: «Tiene $X en su poder», «Le debemos $X» o «Está al día».
+
+Botones de cada tarjeta:
+
+- **Entregar** (o **Pagarle**, si le debemos): abre la entrega con el trabajador ya elegido.
+- **Devolvió:** abre la devolución (solo si tiene dinero en su poder).
+- **Rendiciones:** sus rendiciones.
+- **Cartola:** todos sus movimientos.
+- **Crear su cuenta:** aparece solo si todavía no tiene cuenta para recibir dinero.
+
+Arriba: **En poder de trabajadores** y **Les debemos** en total, la búsqueda por nombre y **Agregar trabajador** (abre el formulario de nueva persona).
+
+## Revisar rendiciones de a una
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Botón naranja **Revisar rendiciones** de la barra superior (el número dice cuántas hay). Muestra la rendición más antigua y «Quedan N por revisar».
+
+- A la izquierda, las **fotos de las boletas** en grande (haz clic para verlas completas; los PDF se abren aparte).
+- A la derecha, el trabajador, el total, cada gasto (con «Sin boleta: motivo» o «Falta la boleta» si corresponde) y cómo queda si la apruebas.
+
+Botones:
+
+- **Está bien, aprobar:** se aprueba y aparece la siguiente.
+- **Devolver para corregir:** elige uno o más motivos listos («Falta la boleta», «La foto no se lee», «El monto no coincide con la boleta», «La fecha no corresponde», «Falta explicar en qué se gastó») o escribe con tus palabras, y pulsa **Devolver**. El trabajador verá el motivo.
+- **Ver la siguiente:** deja esta para después.
+
+Cuando no quedan: «No hay rendiciones por revisar».
 
 # Rendiciones
 
@@ -129,18 +232,18 @@ Una rendición agrupa uno o más gastos de una persona, cada uno con su comproba
 Estados que se ven en pantalla:
 
 - **Enviado:** recién creada o corregida. Espera aprobación. Se puede editar o eliminar.
-- **Aprobado:** el Jefe o el Tesorero la aprobó y el total se descontó del saldo de la cuenta. Ya no se puede editar ni eliminar.
+- **Aprobado:** el Jefe o el Tesorero la aprobó y el total se descontó de lo que el trabajador tiene en su poder. Ya no se puede editar ni eliminar (el Jefe o el Tesorero pueden anular la aprobación).
 - **Rechazado:** se devolvió con un motivo. Se puede corregir y reenviar, o eliminar.
 
 Al crear una rendición queda directamente **Enviado**: no hay borradores ni un paso aparte para enviarla.
 
-Quién ve qué: el Jefe y el Tesorero ven todas las rendiciones. El trabajador ve solo las de su propia persona.
+Quién ve qué: el Jefe y el Tesorero ven todas las rendiciones. El trabajador ve solo las suyas.
 
 ## Lista de rendiciones
 
 **Quién puede:** todos los usuarios
 
-Menú **Rendiciones**. Columnas: #, Número, Título (la descripción general), Solicitante, Cuenta, Total, Estado, Fecha Envío y Acciones. Primero aparecen las enviadas más recientemente.
+Menú **Rendiciones** (el trabajador también tiene el botón **Mis rendiciones**). Columnas: #, Número, Título (la descripción general), Solicitante, Cuenta, Total, Estado, Fecha Envío y Acciones. Primero aparecen las enviadas más recientemente.
 
 **Buscar:** encuentra por descripción, número RND, nombre del solicitante o nombre de la cuenta.
 
@@ -151,16 +254,16 @@ Botones de la columna Acciones (cada uno aparece solo si corresponde):
 - ✔ **Aprobar:** solo Jefe o Tesorero, y solo si está Enviado.
 - 🗑 **Eliminar:** solo si está Enviado o Rechazado.
 
-Para crear una nueva, pulsa **Nueva Rendición**.
+Para crear una nueva, pulsa **Nueva Rendición** (o el botón verde **Nueva rendición** de la barra superior).
 
 ## Crear una rendición
 
 **Quién puede:** todos los usuarios
 
-1. Menú **Rendiciones** → **Nueva Rendición**.
+1. Botón **Nueva rendición** (barra superior) o menú **Rendiciones** → **Nueva Rendición**.
 2. En **Cuenta**, elige la cuenta a la que se carga el gasto.
    - El trabajador solo ve su propia cuenta; si tiene una sola, ya viene elegida.
-   - El Jefe y el Tesorero ven todas las cuentas personales y pueden rendir a nombre de otra persona. El solicitante será el dueño de la cuenta.
+   - El Jefe y el Tesorero ven todas las cuentas de trabajadores y pueden rendir a nombre de otra persona. El solicitante será el dueño de la cuenta.
    - Al elegir la cuenta aparecen «Saldo actual» y «Saldo si se aprueba esta rendición». Si queda negativo se avisa: «Quedará en negativo: la empresa le deberá esa diferencia.».
 3. Escribe la **Descripción general** (hasta 500 caracteres). Ejemplo: «Gastos semana del 14 al 18 de octubre».
 4. Completa el primer **Gasto** (ver «Datos de cada gasto»). Para más gastos, pulsa **Agregar gasto**. Para quitar uno, el ícono de papelera **Quitar gasto** (debe quedar al menos uno).
@@ -211,7 +314,7 @@ Desde la lista, botón 👁 **Ver**. La ficha muestra:
 - **Información General:** número, estado, cuenta, solicitante, fecha de envío, total y descripción. Si fue revisada, «Revisado por» y «Fecha de Revisión». Si fue rechazada, el **Motivo de Rechazo** en rojo.
 - **Items de Gasto:** cada gasto con su tipo de documento, proveedor, número, monto y comprobantes. Las miniaturas abren el archivo. Un gasto sin archivos muestra «Sin comprobante» (con el motivo) o «Falta comprobante».
 
-Botones: **Volver al Listado**, **PDF**, **Editar** o **Corregir y reenviar** (si se puede editar) y, para Jefe y Tesorero cuando está Enviado, **Aprobar** y **Rechazar**.
+Botones: **Volver al Listado**, **PDF**, **Editar** o **Corregir y reenviar** (si se puede editar); para Jefe y Tesorero, **Aprobar** y **Rechazar** cuando está Enviado, y **Anular aprobación** cuando está Aprobado.
 
 Los comprobantes son privados: solo los ven el Jefe, el Tesorero, quien los subió y el dueño de la rendición.
 
@@ -244,7 +347,7 @@ Al guardar se borran definitivamente los gastos que quitaste y los comprobantes 
 
 **Quién puede:** todos los usuarios
 
-1. Abre la rendición rechazada. Arriba se ve el motivo del rechazo.
+1. Abre la rendición rechazada (el Panel avisa «Te devolvieron N rendiciones para corregir»). Arriba se ve el motivo.
 2. Pulsa **Corregir y reenviar**.
 3. El formulario muestra el aviso «Rendición rechazada: {motivo}. Al guardar los cambios se enviará nuevamente para aprobación.».
 4. Corrige lo que se pidió y pulsa **Guardar y reenviar**.
@@ -266,12 +369,22 @@ Aparece «Rendición eliminada correctamente.». La rendición desaparece de los
 
 **Quién puede:** todos los usuarios
 
-- Al **aprobarse**, el total se **resta** del saldo de la cuenta elegida. La cuenta Tesorería no cambia.
-- El saldo puede quedar **negativo**: significa que el trabajador gastó de su bolsillo y la empresa le debe esa diferencia.
-- Ejemplo: un trabajador con $50.000 rinde $80.000. Al aprobarse queda en −$30.000 («Se le debe $30.000»). Para dejarlo al día, Tesorería le hace una entrega de $30.000.
+- Al **aprobarse**, el total se **resta** de lo que el trabajador tiene en su poder. La caja no cambia.
+- Si rindió más de lo que tenía, queda **«le debemos»**: gastó de su bolsillo y la empresa le debe esa diferencia.
+- Ejemplo: un trabajador con $50.000 en su poder rinde $80.000. Al aprobarse, le debemos $30.000. Para dejarlo al día, se le hace una entrega de $30.000 (botón **Pagarle** en Trabajadores).
 - Enviar, editar, rechazar o eliminar una rendición no mueve saldos.
-- Una rendición aprobada no se puede deshacer desde COTE.
-- La **fecha de la rendición** es la del comprobante más reciente; se recalcula al guardar. Es la fecha que se ve en Aprobaciones y en el Panel.
+- La **fecha de la rendición** es la del comprobante más reciente; se recalcula al guardar.
+
+## Anular la aprobación de una rendición
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Si se aprobó una rendición por error:
+
+1. Abre la rendición (ficha).
+2. Pulsa **Anular aprobación**, escribe el motivo y confirma.
+
+El total vuelve a lo que el trabajador tiene en su poder y la rendición queda **Rechazado** con el motivo «Aprobación anulada: …», para que se corrija y se reenvíe.
 
 # Aprobaciones
 
@@ -279,137 +392,61 @@ Aparece «Rendición eliminada correctamente.». La rendición desaparece de los
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Menú **Aprobaciones** → pestaña **Rendiciones Pendientes** (el contador indica cuántas hay). Columnas: Fecha, Persona, Descripción, Monto Total, Items (con «N sin comprobante» si corresponde), Estado y Acciones.
+La forma más fácil es **Revisar rendiciones** (botón naranja de la barra superior), de a una. También se puede desde el menú **Aprobaciones** → pestaña **Rendiciones Pendientes**: columnas Fecha, Persona, Descripción, Monto Total, Items (con «N sin comprobante» si corresponde), Estado y Acciones.
 
-**Revisar:** 👁 **Ver Detalles** abre la rendición completa con sus comprobantes. Revisa sobre todo los gastos marcados «sin comprobante».
+- 👁 **Ver Detalles** abre la rendición completa con sus comprobantes.
+- ✔ **Aprobar:** revisa el resumen y pulsa **Aprobar**. Aparece «Rendición aprobada correctamente.».
+- ✖ **Rechazar:** escribe el **Motivo del rechazo** (obligatorio, hasta 500 caracteres) y pulsa **Rechazar**. Aparece «Rendición rechazada correctamente.».
 
-**Aprobar:**
+También se aprueba o rechaza desde la ficha de la rendición. El trabajador ve el motivo y puede corregirla y reenviarla.
 
-1. Pulsa ✔ **Aprobar**.
-2. Revisa el resumen (persona, fecha, ítems, gastos sin comprobante, monto). «Al aprobar se actualizan los saldos.»
-3. Pulsa **Aprobar**. Aparece «Rendición aprobada correctamente.» y sale de la lista.
-
-También se aprueba desde la ficha de la rendición (botón **Aprobar**) o desde la lista de Rendiciones (✔).
-
-**Rechazar:**
-
-1. Pulsa ✖ **Rechazar** en la fila (o **Rechazar** en la ficha de la rendición).
-2. Escribe el **Motivo del rechazo** (obligatorio, hasta 500 caracteres): di qué debe corregir.
-3. Pulsa **Rechazar**. Aparece «Rendición rechazada correctamente.».
-
-El trabajador ve el motivo en su rendición y puede corregirla y reenviarla.
-
-## Aprobar y rechazar transferencias
+## Movimientos pendientes de aprobar
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Una transferencia o un ingreso a caja chica se crea **Pendiente** y no mueve saldos hasta que se aprueba.
+Las entregas, devoluciones e ingresos nuevos quedan listos al guardar, así que normalmente no hay nada aquí. Solo quedan pendientes los movimientos antiguos, creados antes de este cambio. El Panel avisa si hay alguno.
 
-**Aprobar** (cualquiera de estos caminos):
+- **Aprobar:** **Aprobaciones** → pestaña **Transferencias Pendientes** → ✔ **Aprobar**; o en **Movimientos**, ✔ en la fila. Se revisa que la cuenta de origen tenga fondos.
+- **Rechazar:** ✗ **Rechazar** en la fila y escribe el motivo. Queda en las **Notas** como «Motivo de rechazo: …».
 
-- **Aprobaciones** → pestaña **Transferencias Pendientes** → ✔ **Aprobar** → revisa N°, Desde, Hacia, Monto y Descripción → **Aprobar**. Aparece «Transacción aprobada correctamente.».
-- **Transacciones** → ✔ en la fila → confirma «¿Está seguro de aprobar esta transacción?» con **Aprobar**.
-- **Panel** → «Transacciones Recientes» → **Aprobar** (sin confirmación).
+# Movimientos
 
-Al aprobar se vuelve a revisar que la cuenta de origen tenga fondos. Si no alcanza: «La cuenta origen no tiene fondos suficientes para esta transacción.». Las transferencias pendientes no reservan saldo: si hay dos entregas pendientes, la segunda puede fallar al aprobarse.
-
-**Rechazar:**
-
-1. En **Aprobaciones** → **Transferencias Pendientes**, o en **Transacciones**, pulsa ✗ **Rechazar** en la fila.
-2. Escribe el motivo (obligatorio, hasta 500 caracteres) y pulsa **Rechazar**.
-
-El motivo queda en las **Notas** de la transacción como «Motivo de rechazo: …». Desde el Panel también se puede rechazar, pero sin motivo.
-
-# Transacciones
-
-## Tipos de transacción y reglas
+## Tipos de movimiento y reglas
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-- **Transferencia:** mueve dinero entre Tesorería y la cuenta de un trabajador, en cualquiera de los dos sentidos.
-  - **Entrega:** de Tesorería a un trabajador.
-  - **Devolución:** de un trabajador a Tesorería.
-- **Ingreso a caja chica:** dinero que entra desde afuera a Tesorería (cheque, transferencia bancaria, etc.). No tiene cuenta de origen.
+- **Entrega:** sale dinero de la caja hacia un trabajador.
+- **Devolución:** un trabajador devuelve dinero a la caja.
+- **Ingreso a caja chica:** dinero nuevo que entra a la caja (cheque, transferencia bancaria, efectivo).
 
 Reglas:
 
-- No se puede transferir de un trabajador a otro: siempre interviene Tesorería.
-- Al crear una transferencia, la cuenta de origen debe tener saldo suficiente. Un trabajador con saldo 0 o negativo no puede hacer una devolución.
-- Toda transacción nace **Pendiente** y mueve los saldos **solo al aprobarse**.
-- Estados: **Pendiente**, **Aprobada** y **Rechazada**.
-- Numeración: `TXN-AAAA-NNN` (año y correlativo que parte de nuevo cada año).
-- Las transacciones no se pueden eliminar. Una equivocada se **rechaza**.
+- No se puede pasar dinero de un trabajador a otro: siempre interviene la caja.
+- Una entrega no puede ser mayor a lo que tiene la caja. Una devolución no puede ser mayor a lo que el trabajador tiene en su poder.
+- Lo que registran el Jefe o el Tesorero queda **Aprobada** al guardar y mueve los saldos de inmediato.
+- Estados: **Aprobada**, **Anulada** (se deshizo), y en movimientos antiguos **Pendiente** o **Rechazada**.
+- Numeración: `TXN-AAAA-NNN`.
+- Los movimientos no se eliminan: uno equivocado se **anula**.
 
-## Lista de transacciones
-
-**Quién puede:** rol `boss` o rol `treasurer`
-
-Menú **Transacciones**. Columnas: #, Número, Tipo, Cuenta Origen, Cuenta Destino, Monto, Saldo (vacía en esta vista), Estado, Creado por, Fecha y Acciones. Primero aparecen las más recientes.
-
-- En un ingreso a caja chica, la Cuenta Origen dice «Ingreso externo».
-- **Buscar:** encuentra por número, nombre de la cuenta de origen o destino y nombre de quien la creó.
-- **Acciones:** 👁 **Ver**; y si está pendiente, ✔ **Aprobar** y ✗ **Rechazar**.
-
-## Entregar dinero a un trabajador
+## Lista de movimientos
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-1. Menú **Transacciones** → **Nueva Transacción**.
-2. **Tipo de Transacción:** «Transferencia (entrega o devolución)».
-3. **Monto:** el monto a entregar.
-4. **Cuenta Origen:** Tesorería (viene elegida).
-5. **Cuenta Destino:** la cuenta del trabajador. Cada cuenta muestra su saldo actual.
-6. **Descripción** (obligatoria, hasta 500 caracteres) y, si quieres, **Notas** (hasta 1000).
-7. Pulsa **Crear Transacción**. Aparece «Transacción creada exitosamente».
-8. Apruébala (ver «Aprobar y rechazar transferencias»). Recién ahí baja Tesorería y sube el saldo del trabajador.
+Menú **Movimientos**. Columnas: #, Número, Tipo (Entrega, Devolución o Ingreso a caja chica), Cuenta Origen, Cuenta Destino, Monto, Saldo, Estado, Creado por, Fecha y Acciones. Primero los más recientes.
 
-Si Tesorería no tiene saldo suficiente: «La cuenta origen no tiene fondos suficientes para esta transacción.». Primero registra un ingreso a caja chica.
+- **Buscar:** por número, nombre de la cuenta de origen o destino y nombre de quien lo creó.
+- **Acciones:** 👁 **Ver**; ↶ **Anular** si está aprobado; ✔ **Aprobar** y ✗ **Rechazar** si es un pendiente antiguo.
+- **Nuevo movimiento:** formulario completo, para quien prefiere elegir tipo, cuentas y monto en una sola ventana. Queda aprobado al guardar, igual que con los botones de la barra superior.
 
-Esta misma entrega sirve para **pagarle a un trabajador que quedó en negativo** (gastó de su bolsillo): entrégale el monto que se le debe y su saldo vuelve a $0.
-
-## Registrar una devolución de un trabajador
+## Ver el detalle de un movimiento
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Cuando un trabajador devuelve dinero que le sobró:
+En Movimientos, 👁 **Ver**. Muestra número, tipo, monto, fecha, cuentas de origen y destino (con su persona), descripción, notas, quién lo creó y quién lo aprobó.
 
-1. **Transacciones** → **Nueva Transacción** → Tipo «Transferencia (entrega o devolución)».
-2. **Cuenta Origen:** la cuenta del trabajador. **Cuenta Destino:** Tesorería.
-3. Monto y Descripción → **Crear Transacción**.
-4. Apruébala. El saldo del trabajador baja y Tesorería sube.
-
-El trabajador debe tener saldo positivo igual o mayor al monto devuelto.
-
-## Registrar un ingreso a caja chica
-
-**Quién puede:** rol `boss` o rol `treasurer`
-
-Cuando entra dinero a la caja chica desde fuera de COTE:
-
-1. **Transacciones** → **Nueva Transacción**.
-2. **Tipo de Transacción:** «Ingreso a caja chica (entra dinero a Tesorería)». La cuenta de destino queda fija en Tesorería y la de origen desaparece.
-3. **Monto** y **Descripción**: indica de dónde viene el dinero (por ejemplo «Cheque N° 1234 de gerencia»).
-4. **Crear Transacción** y luego apruébala. Al aprobarse, sube el saldo de Tesorería.
-
-## Ver el detalle de una transacción
-
-**Quién puede:** rol `boss` o rol `treasurer`
-
-En Transacciones, 👁 **Ver**. Muestra número, tipo, monto, fecha de creación, cuentas de origen y destino (con su persona), descripción, notas, quién la creó y quién la aprobó o rechazó, con fecha.
-
-Si está pendiente aparece el aviso «Esta transacción requiere aprobación para que se actualicen los saldos de las cuentas.». El motivo de un rechazo se ve en **Notas**.
-
-## Editar una transacción pendiente
-
-**Quién puede:** rol `boss` o rol `treasurer`
-
-Solo transacciones **pendientes** (transferencias o ingresos a caja chica):
-
-1. En Transacciones, 👁 **Ver** → **Editar**.
-2. Cambia el tipo, las cuentas, el monto, la descripción o las notas. En un ingreso a caja chica el destino es siempre Tesorería.
-3. Pulsa **Actualizar Transacción**: «Transacción actualizada correctamente.». En una transferencia se vuelven a revisar los fondos y el sentido.
-
-Una transacción aprobada o rechazada ya no se edita: «Solo se pueden editar transacciones pendientes.».
+- Si está aprobado, el botón **Anular** lo deshace (pide el motivo).
+- Si está anulado, aparece «Anulada por X el …» con el motivo.
+- Si es un pendiente antiguo, el botón **Editar** permite cambiarlo antes de aprobar.
 
 # Cuentas
 
@@ -420,29 +457,23 @@ Una transacción aprobada o rechazada ya no se edita: «Solo se pueden editar tr
 Menú **Cuentas**. Arriba, cuatro tarjetas:
 
 - **Saldo Tesorería:** «Disponible para entregar».
-- **Por rendir:** dinero en manos de trabajadores (saldos positivos).
-- **Se les debe:** lo que la empresa debe a trabajadores que gastaron de su bolsillo (saldos negativos).
+- **En poder de trabajadores:** dinero de la empresa que tienen los trabajadores.
+- **Les debemos:** lo que los trabajadores gastaron de su bolsillo.
 - **Cuentas:** cuántas están activas del total.
 
-Columnas: #, Nombre, Tipo (Tesorería o Personal), Propietario (nombre y RUT), Saldo, Estado (Activa o Inactiva) y Acciones. El **Saldo** se muestra sin signo y con una etiqueta: «Disponible» (Tesorería), «Por rendir» (positivo), «Se le debe» (negativo) o «Al día» (cero).
+Columnas: #, Nombre, Tipo (Tesorería o Personal), Propietario (nombre y RUT), Saldo, Estado (Activa o Inactiva) y Acciones. El **Saldo** se muestra sin signo y con una etiqueta: «Disponible» (la caja), «En su poder», «Le debemos» o «Al día».
 
-**Buscar:** encuentra por nombre de la cuenta.
+Acciones: 👁 **Ver**, ✏ **Editar**, **Movimientos** (cartola) y 🗑 **Eliminar**.
 
-Acciones: 👁 **Ver** (detalle con el saldo con signo), ✏ **Editar**, **Movimientos** (cartola) y 🗑 **Eliminar**.
+La pantalla **Trabajadores** muestra lo mismo de forma más simple.
 
 ## Crear una cuenta
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Cada trabajador necesita una cuenta personal para recibir entregas y rendir gastos. Crear la persona no crea la cuenta.
+Normalmente no hace falta: la cuenta del trabajador **se crea sola al agregar a la persona**. Si una persona antigua no tiene cuenta, en **Trabajadores** su tarjeta muestra **Crear su cuenta**.
 
-1. Menú **Cuentas** → **Nueva Cuenta**.
-2. **Nombre de la Cuenta** (por ejemplo el nombre del trabajador).
-3. **Tipo de Cuenta:** «Personal». Aparece **Persona Propietaria**: elige a la persona (solo personas activas).
-4. **Notas** opcionales. **Cuenta habilitada** viene marcada.
-5. Pulsa **Crear Cuenta**. Aparece «Cuenta creada exitosamente».
-
-Toda cuenta nace con saldo **$0**: el dinero entra con una entrega desde Tesorería. Solo puede existir una cuenta Tesorería.
+También se puede crear a mano: menú **Cuentas** → **Nueva Cuenta** → nombre, tipo «Personal» y **Persona Propietaria** → **Crear Cuenta**. Toda cuenta nace en **$0**. Solo existe una cuenta Tesorería.
 
 ## Editar una cuenta y ajustar el saldo
 
@@ -450,7 +481,7 @@ Toda cuenta nace con saldo **$0**: el dinero entra con una entrega desde Tesorer
 
 En Cuentas, ✏ **Editar**. Se pueden cambiar el nombre, el tipo, la persona propietaria, las notas y si está habilitada. Pulsa **Actualizar Cuenta**: «Cuenta actualizada exitosamente».
 
-El **Saldo** cambia solo con transacciones y rendiciones aprobadas. Para el Tesorero el campo es de solo lectura.
+El **Saldo** cambia solo con movimientos y rendiciones aprobadas. Para el Tesorero el campo es de solo lectura.
 
 **Ajuste manual de saldo (solo el Jefe):**
 
@@ -458,7 +489,7 @@ El **Saldo** cambia solo con transacciones y rendiciones aprobadas. Para el Teso
 2. En **Motivo del ajuste de saldo**, explica por qué (obligatorio, hasta 255 caracteres). Ejemplo: «Saldo inicial».
 3. Pulsa **Actualizar Cuenta**.
 
-El ajuste queda registrado con el motivo y el nombre de quien lo hizo, y aparece en la cartola como «Ajuste manual». El campo no permite escribir saldos negativos. Si un trabajador parte con deuda o con dinero, conviene registrarlo con una entrega o un ajuste con motivo «Saldo inicial».
+El ajuste queda registrado con el motivo y el nombre de quien lo hizo, y aparece en la cartola como «Ajuste manual». El campo no permite escribir saldos negativos.
 
 Mensajes: «Solo el jefe puede ajustar saldos manualmente.», «Indica el motivo del ajuste de saldo.».
 
@@ -466,13 +497,13 @@ Mensajes: «Solo el jefe puede ajustar saldos manualmente.», «Indica el motivo
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-En Cuentas, botón **Movimientos** (también desde los nombres en «Se les debe» del Panel y desde Cierre de mes).
+En Cuentas, botón **Movimientos**; o **Cartola** en la tarjeta del trabajador (Trabajadores).
 
-- **Tarjetas:** «Saldo actual», «Ingresos registrados», «Egresos registrados» y «Saldo inicial sin movimiento que lo respalde». Esta última muestra saldo que no viene de ningún movimiento registrado (saldos antiguos); lo normal es que sea $0.
-- **Tabla:** Fecha, Tipo (Transferencia, Ingreso a caja chica, Rendición o Ajuste manual), Referencia (enlace a la transacción o rendición), Detalle, Ingreso, Egreso y Saldo después del movimiento. Primero los más recientes.
-- Solo aparecen movimientos **aprobados**, con su fecha de aprobación. Sin movimientos: «Esta cuenta no tiene movimientos aprobados.».
+- **Tarjetas:** «Saldo actual», «Ingresos registrados», «Egresos registrados» y «Saldo inicial sin movimiento que lo respalde» (lo normal es $0).
+- **Tabla:** Fecha, Tipo (Entrega, Devolución, Ingreso a caja chica, Rendición o Ajuste manual), Referencia, Detalle, Ingreso, Egreso y Saldo después del movimiento. Primero los más recientes.
+- Solo aparecen movimientos **aprobados**. Los anulados no aparecen.
 
-**Exportar cartola a Excel:** descarga `cartola_{nombre}_{fecha}.xlsx` con encabezado (cuenta, RUT, saldo actual, fecha), una fila de saldo inicial, los movimientos del más antiguo al más reciente y una fila de TOTALES.
+**Exportar cartola a Excel:** descarga `cartola_{nombre}_{fecha}.xlsx`.
 
 ## Eliminar o desactivar una cuenta
 
@@ -482,10 +513,10 @@ En Cuentas, 🗑 **Eliminar** y confirma. Solo se puede eliminar una cuenta sin 
 
 - «Esta cuenta está protegida y no se puede eliminar.»
 - «La cuenta de tesorería no se puede eliminar.»
-- «No se puede eliminar la cuenta porque tiene transacciones asociadas» (de cualquier estado).
+- «No se puede eliminar la cuenta porque tiene transacciones asociadas»
 - «No se puede eliminar la cuenta porque tiene gastos asociados»
 
-Si no se puede eliminar, **desactívala**: Editar → desmarca **Cuenta habilitada** → Actualizar Cuenta. Una cuenta inactiva ya no aparece para nuevas transacciones ni rendiciones, pero conserva su historia.
+Si no se puede eliminar, **desactívala**: Editar → desmarca **Cuenta habilitada** → Actualizar Cuenta.
 
 # Personas
 
@@ -493,18 +524,18 @@ Si no se puede eliminar, **desactívala**: Editar → desmarca **Cuenta habilita
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Menú **Personas**. Una persona es la ficha de cada trabajador (o del tesorero): nombre, RUT, contacto y datos bancarios.
+Menú **Personas**. Una persona es la ficha de cada trabajador (o del tesorero): nombre, RUT, contacto y datos bancarios. Para ver el dinero de cada uno, usa **Trabajadores**.
 
 - **Tarjetas:** «Total Personas», «Activas» (con porcentaje) y «Trabajadores».
 - **Columnas:** #, Nombre Completo, RUT, Email, Teléfono, Banco, Tipo Cuenta, Estado y Acciones (👁 Ver, ✏ Editar, 🗑 Eliminar).
 - **Buscar:** por nombre, apellido, RUT, email, teléfono, banco o tipo de cuenta. El RUT se busca **sin puntos** (por ejemplo `12345678`).
-- **Exportar:** Copiar, CSV, Excel, PDF e Imprimir exportan todas las personas que coinciden con la búsqueda (no solo la página visible): nombre, RUT, email, teléfono, banco, tipo y número de cuenta, y estado.
+- **Descargar Excel:** todas las personas que coinciden con la búsqueda, no solo la página visible.
 
 ## Crear una persona
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-1. Menú **Personas** → **Nueva Persona**.
+1. Menú **Trabajadores** → **Agregar trabajador** (o **Personas** → **Nueva Persona**).
 2. Completa:
    - **Nombres** y **Apellidos** (obligatorios).
    - **RUT** (obligatorio, chileno válido, único). Se puede escribir con o sin puntos; se formatea solo. Si el dígito verificador no corresponde: «RUT inválido: el dígito verificador no corresponde.».
@@ -513,36 +544,33 @@ Menú **Personas**. Una persona es la ficha de cada trabajador (o del tesorero):
    - **Tipo de Rol:** Trabajador o Tesorero. Es solo informativo; los permisos se dan en Usuarios.
    - **Banco**, **Tipo de Cuenta**, **Número de Cuenta** y **Dirección** (opcionales).
    - **Usuario Activo:** viene marcado; indica que la persona está activa.
-3. Pulsa **Crear Persona**. Aparece «Persona creada exitosamente».
+3. Pulsa **Crear Persona**. Aparece «Persona creada. Ya tiene su cuenta para recibir dinero.».
 
-Después:
+La cuenta para entregarle dinero se crea sola. Si va a entrar a COTE para rendir, el Jefe **crea su usuario** en Usuarios y lo vincula a esta persona.
 
-- Para que pueda recibir dinero y rendir, **crea su cuenta** en Cuentas.
-- Si va a entrar a COTE, **crea su usuario** en Usuarios y vincúlalo a esta persona.
-
-Si el RUT ya pertenece a otra persona: «Este RUT ya está registrado.». Si ya existe un usuario con rol Tesorero, no se puede crear otra persona con Tipo de Rol Tesorero: «Ya existe un tesorero asignado. Quita ese rol antes de asignarlo a otra persona.».
+Si el RUT ya pertenece a otra persona: «Este RUT ya está registrado.». Si ya existe un usuario con rol Tesorero, no se puede crear otra persona con Tipo de Rol Tesorero.
 
 ## Editar o ver una persona
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-- **Ver:** 👁 abre el «Detalle de Persona», con todos sus datos y sus cuentas personales para transferencias.
+- **Ver:** 👁 abre el «Detalle de Persona», con todos sus datos y sus cuentas bancarias personales.
 - **Editar:** ✏ abre el mismo formulario de creación. Cambia lo necesario y pulsa **Actualizar Persona**: «Persona actualizada exitosamente».
 
-Para desactivar a una persona, desmarca **Usuario Activo**. Una persona inactiva deja de aparecer al crear cuentas, al vincular usuarios y en Estadísticas. No bloquea el acceso de su usuario: para eso, desactiva el usuario en Usuarios.
+Para desactivar a una persona, desmarca **Usuario Activo**. Una persona inactiva deja de aparecer en Trabajadores, al vincular usuarios y en Estadísticas. No bloquea el acceso de su usuario: para eso, desactiva el usuario en Usuarios.
 
 ## Cuentas bancarias personales para transferencias
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Son los datos bancarios reales de la persona, para saber dónde depositarle. No reemplazan su cuenta interna de COTE y no mueven saldos.
+Son los datos bancarios reales de la persona, para saber dónde depositarle. No mueven saldos en COTE.
 
-Están dentro de **Editar** persona (para una persona nueva, primero créala y después edítala), en la sección «Cuentas personales para transferencias».
+Están dentro de **Editar** persona, en la sección «Cuentas personales para transferencias».
 
 - **Agregar cuenta:** completa **Alias** (opcional), **Banco**, **Tipo de Cuenta** y **Número de Cuenta** (obligatorios), y las casillas **Predeterminada** y **Activa**. Pulsa **Guardar**: «Cuenta guardada».
 - Se guarda al instante, sin necesidad de pulsar «Actualizar Persona».
 - Al marcar una como **Predeterminada**, las demás de esa persona dejan de serlo.
-- **Editar** o **Eliminar** con los íconos de la fila. Eliminar pide confirmar «¿Eliminar esta cuenta personal?».
+- **Editar** o **Eliminar** con los íconos de la fila.
 - No se puede repetir el mismo banco, tipo y número para una persona.
 
 ## Eliminar una persona
@@ -551,7 +579,7 @@ Están dentro de **Editar** persona (para una persona nueva, primero créala y d
 
 En Personas, 🗑 **Eliminar** y confirma. Aparece «Persona eliminada exitosamente».
 
-Se eliminan también sus cuentas bancarias personales y su cuenta interna, si está vacía y sin movimientos.
+Se eliminan también sus cuentas bancarias personales y su cuenta en COTE, si está en $0 y sin movimientos.
 
 No se puede eliminar si tiene historia. El mensaje dice qué la bloquea, por ejemplo: «No se puede eliminar esta persona porque tiene gastos y usuario del sistema.». Los motivos posibles son:
 
@@ -585,8 +613,6 @@ Menú **Configuración → Bancos**. Lista de bancos, cooperativas y tarjetas de
 - **Editar:** botón de editar de la fila; cambia código, nombre o tipo y pulsa **Guardar**.
 - **Eliminar:** no se puede si alguna persona lo usa en su ficha: «No se puede eliminar el banco porque tiene personas asociadas».
 
-En las personas, los bancos de tipo Cooperativa o Tarjeta de prepago aparecen con esa aclaración entre paréntesis.
-
 ## Tipos de cuenta bancaria
 
 **Quién puede:** rol `boss` o rol `treasurer`
@@ -604,7 +630,7 @@ Menú **Configuración → Tipos de Cuenta**. Son los tipos que se eligen en los
 
 Menú **Estadísticas**. Todos los gráficos cuentan solo rendiciones **aprobadas** y ubican cada gasto por la **fecha de su comprobante**. Los montos están en pesos chilenos.
 
-- **Gasto mensual por persona (últimos 12 meses):** elige la **Persona**; el gráfico muestra el total mensual, incluido el mes en curso. Botones **Exportar Excel** (archivo con Mes y Total de esa persona) y **Descargar PNG** (imagen del gráfico).
+- **Gasto mensual por persona (últimos 12 meses):** elige la **Persona**; el gráfico muestra el total mensual, incluido el mes en curso. Botones **Exportar Excel** y **Descargar PNG** (imagen del gráfico).
 - **Gasto por categoría (últimos N días):** escribe los **Días** (entre 7 y 3650; por defecto 90) y pulsa **Aplicar**. **Mostrar todas** incluye también las categorías sin gasto.
 - **Gasto por categoría - últimos N meses:** elige **Meses** (1 a 60) y **Persona** (o Todas). Muestra las 8 categorías con más gasto.
 - **Gastos por categoría de una persona:** elige la **Persona**. Muestra sus 12 categorías principales de los últimos 6 meses.
@@ -623,17 +649,17 @@ Menú **Informes**. Se abre directamente la ventana **Gastos Mensuales** (si la 
 1. **Fecha Inicial** y **Fecha Final:** por defecto, el mes anterior completo.
 2. **Tipo de Informe:**
    - «Resumido»: totales por categoría.
-   - «Detallado»: cada gasto, agrupado por categoría. Permite marcar **Incluir información de documentos adjuntos** (enlaces a los comprobantes).
+   - «Detallado»: cada gasto, agrupado por categoría. Permite marcar **Incluir información de documentos adjuntos**.
 3. **Estado de Aprobación:**
    - «Solo rendiciones aprobadas» (por defecto).
    - «Todas las rendiciones»: las aprobadas más las que esperan aprobación, que aparecen como «Pendiente». Las rechazadas y las eliminadas no se incluyen.
 4. Pulsa **Generar Informe**.
 
-El resultado muestra el período, el **Total General**, la cantidad de rendiciones e ítems, y la tabla por categoría. Los gastos sin categoría van en «Sin categoría». Una rendición entra en el informe según la **fecha de la rendición** (la de su comprobante más reciente).
+El resultado muestra el período, el **Total General**, la cantidad de rendiciones e ítems, y la tabla por categoría. Los gastos sin categoría van en «Sin categoría».
 
-**Exportar a Excel:** descarga `gastos_mensuales_{inicio}_a_{fin}.xlsx` con lo mismo que se ve en pantalla. El detallado agrega el N° de recibo de cada gasto y, si se incluyeron documentos, un resumen de los archivos adjuntos.
+**Exportar a Excel:** descarga `gastos_mensuales_{inicio}_a_{fin}.xlsx` con lo mismo que se ve en pantalla.
 
-Si la fecha final es anterior a la inicial: «La fecha final debe ser igual o posterior a la fecha inicial.».
+Para ver el dinero que entró y salió de la caja, usa el **Libro de caja**.
 
 # Cierre de mes
 
@@ -641,41 +667,39 @@ Si la fecha final es anterior a la inicial: «La fecha final debe ser igual o po
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-El cierre de mes guarda una foto fija del resumen de todas las cuentas al terminar un mes, junto con el dinero contado en Tesorería (arqueo) y observaciones.
+El cierre de mes guarda una foto fija del resumen de todas las cuentas al terminar un mes, junto con el dinero contado en la caja (arqueo) y observaciones.
 
-- Cada movimiento cuenta en el mes en que **se aprobó**, no en la fecha del comprobante.
+- Cada movimiento cuenta en el mes en que **se aprobó**, no en la fecha de la boleta.
 - Una vez cerrado, la pantalla y el Excel de ese mes muestran lo guardado y ya no cambian.
-- **Cerrar un mes no bloquea nada:** se pueden seguir creando y aprobando transacciones y rendiciones. Lo que se apruebe después cuenta en el mes en curso.
+- **Cerrar un mes no bloquea nada:** se puede seguir registrando y aprobando. Lo nuevo cuenta en el mes en curso.
+- El Panel avisa «Falta cerrar {mes}» cuando corresponde.
 
 ## Ver el resumen de un mes
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Menú **Cierre de mes**. Por defecto muestra el **mes anterior**. Para otro mes, elígelo en **Mes** y pulsa **Ver**.
+Botón **Cerrar mes** de la barra superior (o menú **Cierre de mes**). Por defecto muestra el **mes anterior**. Para otro mes, elígelo en **Mes** y pulsa **Ver**.
 
 - **Estado:** «Abierto» o «Cerrado» (con quién y cuándo).
-- **Tarjetas:** «Tesorería al cierre», «Por rendir (trabajadores)», «Se les debe» y «Rendido en el mes».
-- **Tabla por cuenta:** Cuenta, Saldo inicial, Entradas (ingresos, entregas y devoluciones recibidas), Salidas (entregas y devoluciones hechas), Rendido (rendiciones aprobadas), Ajustes (manuales) y Saldo final. Tesorería va primero. En un mes abierto, cada cuenta enlaza a sus movimientos.
-- **Exportar a Excel:** `cierre_AAAA-MM.xlsx` si está cerrado, o `cierre_AAAA-MM_provisorio.xlsx` si todavía está abierto (puede cambiar).
+- **Tarjetas:** «Tesorería al cierre», «En poder de trabajadores», «Les debemos» y «Rendido en el mes».
+- **Tabla por cuenta:** Cuenta, Saldo inicial, Entradas, Salidas, Rendido, Ajustes y Saldo final. La caja va primero.
+- **Exportar a Excel:** `cierre_AAAA-MM.xlsx` si está cerrado, o `cierre_AAAA-MM_provisorio.xlsx` si todavía está abierto.
 
-## Cerrar un mes
+## Cerrar un mes contando la caja
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-1. Abre **Cierre de mes** (viene el mes anterior) y revisa la tabla.
-2. Cuenta el dinero real de Tesorería (caja y banco) y escríbelo en **Dinero contado en Tesorería**. El campo muestra como referencia «Según sistema: $X». Si lo dejas vacío, no se registra arqueo.
-3. Escribe **Observaciones** si hace falta (hasta 2000 caracteres).
-4. Pulsa **Cerrar mes** y confirma «¿Cerrar {mes}?» con **Cerrar mes**. Aparece «Mes {mes} cerrado.».
+1. Abre el mes (viene el mes anterior) y revisa la tabla.
+2. **Paso 1:** cuenta los billetes y monedas de la caja y escribe **cuántos hay de cada uno** ($20.000, $10.000, $5.000, $2.000, $1.000, $500, $100, $50 y $10). COTE multiplica y suma solo.
+3. **Paso 2:** si la caja tiene cuenta en el banco, escribe cuánto hay.
+4. **Paso 3:** COTE compara con el sistema y dice **«¡Cuadra!»**, **«Faltan $X»** o **«Sobran $X»**. Si no cuadra, escribe en **Observaciones** por qué.
+5. Pulsa **Cerrar mes** y confirma. Aparece «Mes {mes} cerrado.».
 
-Después, en «Arqueo de Tesorería» se ve «Según sistema» y «Contado», con «Cuadra.» o «Diferencia: $Z» (negativa si falta dinero, positiva si sobra).
+Quien prefiera puede abrir «Prefiero escribir el total contado de una vez» y escribir solo el total. Si no cuentas nada, el mes se cierra sin arqueo.
 
-Reglas:
+Un mes cerrado muestra «Según sistema», «Contado», «Cuadra.», «Faltaron $X.» o «Sobraron $X.», y el detalle de billetes contados.
 
-- Solo meses ya terminados: «Solo se pueden cerrar meses ya terminados.»
-- En orden, sin saltarse meses: «Primero cierra {mes}.»
-- No se puede cerrar un mes anterior al último cerrado ni volver a cerrar uno cerrado.
-
-La lista **Meses cerrados** muestra cada cierre con quién y cuándo, y enlaza a su resumen.
+Reglas: solo meses ya terminados, en orden, sin saltarse meses («Primero cierra {mes}.»).
 
 ## Reabrir un mes cerrado
 
@@ -683,10 +707,10 @@ La lista **Meses cerrados** muestra cada cierre con quién y cuándo, y enlaza a
 
 Solo el **último** mes cerrado:
 
-1. Abre ese mes en **Cierre de mes** (desde «Meses cerrados» o con el selector).
+1. Abre ese mes en **Cierre de mes**.
 2. Pulsa **Reabrir mes** y confirma «¿Reabrir {mes}? El resumen guardado se descartará.» con **Reabrir**.
 
-Aparece «Cierre reabierto.». Se pierden el resumen guardado, el arqueo y las observaciones; el mes vuelve a calcularse en vivo y se puede cerrar de nuevo. Para otro mes: «Solo se puede reabrir el último mes cerrado.».
+Aparece «Cierre reabierto.». Se pierden el resumen guardado, el conteo y las observaciones; el mes se puede cerrar de nuevo.
 
 # Usuarios
 
@@ -694,7 +718,7 @@ Aparece «Cierre reabierto.». Se pierden el resumen guardado, el arqueo y las o
 
 **Quién puede:** rol `boss`
 
-Menú **Usuarios** (o menú con tu nombre → **Administrar usuarios**). Columnas: #, Nombre, Email, Roles y Acciones (Editar, Eliminar). Para ver si un usuario está activo, ábrelo con Editar.
+Menú **Usuarios** (o menú con tu nombre → **Administrar usuarios**). Columnas: #, Nombre, Email, Roles y Acciones (Editar, Eliminar).
 
 Roles disponibles:
 
@@ -709,12 +733,12 @@ Roles disponibles:
 1. **Usuarios** → **Nuevo Usuario**.
 2. **Nombre** y **Email** (único entre usuarios).
 3. **Contraseña** y **Confirmar contraseña** (mínimo 8 caracteres). Entrégasela a la persona y pídele que la cambie en su Perfil.
-4. **Persona vinculada:** elige su ficha de persona. Un trabajador sin persona vinculada no ve ninguna rendición ni puede crear rendiciones.
+4. **Persona vinculada:** elige su ficha de persona. Un trabajador sin persona vinculada no puede crear rendiciones.
 5. **Usuario Activo:** marcado.
 6. **Roles:** para un trabajador no marques ninguno; para el Tesorero, `treasurer`; para el Jefe, `boss`.
 7. Pulsa **Grabar**: «Usuario creado correctamente».
 
-Si eliges `treasurer` y ya existe otro Tesorero, no se guarda y bajo los roles aparece «Ya existe un tesorero asignado. Quita ese rol antes de asignarlo a otro usuario.». Primero quítale el rol al Tesorero actual.
+Si eliges `treasurer` y ya existe otro Tesorero, no se guarda y bajo los roles aparece «Ya existe un tesorero asignado. Quita ese rol antes de asignarlo a otro usuario.».
 
 ## Editar un usuario y cambiar su contraseña
 
@@ -725,19 +749,36 @@ Si eliges `treasurer` y ya existe otro Tesorero, no se guarda y bajo los roles a
 3. Para darle una contraseña nueva (por ejemplo, si la olvidó), escríbela en **Nueva contraseña (opcional)** y en **Confirmar contraseña**. Si las dejas vacías, la contraseña no cambia.
 4. Pulsa **Actualizar**: «Usuario actualizado correctamente».
 
-Para dejar a alguien como trabajador, desmarca todos sus roles. Para traspasar el rol de Tesorero, quítaselo primero al Tesorero actual y después márcalo en el nuevo.
-
-La lista «Persona vinculada» muestra las personas activas y, marcadas «— inactiva», las inactivas que ya tienen un usuario.
+Para dejar a alguien como trabajador, desmarca todos sus roles. Para traspasar el rol de Tesorero, quítaselo primero al actual y después márcalo en el nuevo. La lista «Persona vinculada» muestra las personas activas y, marcadas «— inactiva», las inactivas que ya tienen un usuario.
 
 ## Desactivar o eliminar un usuario
 
 **Quién puede:** rol `boss`
 
 - **Desactivar:** Editar → desmarca **Usuario Activo** → Actualizar. La persona queda fuera en su siguiente acción («Tu cuenta está desactivada.») y conserva toda su historia. Es lo recomendado cuando alguien deja la empresa.
-- **Eliminar:** botón **Eliminar** y confirma «¿Eliminar este usuario?». No se puede eliminar:
-  - al usuario administrador `admin@cote.com`;
-  - a ti mismo;
-  - a un usuario con historia: «No se puede eliminar el usuario porque tiene registros históricos (transacciones, aprobaciones, gastos o documentos). Desactiva el usuario en su lugar.»
+- **Eliminar:** botón **Eliminar** y confirma «¿Eliminar este usuario?». No se puede eliminar al usuario `admin@cote.com`, a ti mismo, ni a un usuario con historia: «No se puede eliminar el usuario porque tiene registros históricos (transacciones, aprobaciones, gastos o documentos). Desactiva el usuario en su lugar.»
+
+# El asistente
+
+## Cómo usar el asistente
+
+**Quién puede:** todos los usuarios
+
+Botón **Asistente** de la barra superior o del menú. Escribe tu pregunta como se la harías a una persona y pulsa **Preguntar**.
+
+- Puede explicar **cómo se hace algo** en COTE (por ejemplo «¿cómo rindo un gasto sin boleta?»).
+- Puede responder **cifras**: cuánto hay en la caja, quién tiene dinero en su poder, a quién le debemos, qué hay por revisar, cuánto se gastó por categoría. El trabajador solo puede preguntar por sus propios datos.
+- Bajo cada respuesta, **Datos usados** muestra de dónde salió.
+- **Guardar** deja una pregunta a mano para repetirla; el botón con la goma de borrar (**Nueva conversación**) empieza de cero.
+- Tarda unos segundos. Nunca cambia nada en COTE.
+
+## El asistente prepara entregas, devoluciones e ingresos
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Puedes pedirle al asistente que prepare un movimiento, por ejemplo «Entrégale 50 mil a Juan Pérez para materiales» o «Entraron 300 mil por un cheque».
+
+El asistente **no guarda nada**: deja el formulario lleno y muestra el botón **Revisar y confirmar**. Al pulsarlo se abre la pantalla de siempre, en el paso de confirmar, donde revisas y pulsas **Sí, confirmo**.
 
 # Preguntas frecuentes
 
@@ -747,47 +788,45 @@ La lista «Persona vinculada» muestra las personas activas y, marcadas «— in
 
 Si eres trabajador y la lista **Cuenta** aparece vacía al crear una rendición, pídele al Jefe que revise tu configuración.
 
-El Jefe debe revisar tres cosas:
+El Jefe debe revisar:
 
 1. En **Usuarios**, que el usuario esté activo y tenga una **Persona vinculada**.
 2. En **Personas**, que esa persona esté activa.
-3. En **Cuentas**, que exista una cuenta **Personal**, habilitada, con esa persona como propietaria. Si falta, se crea en Cuentas → Nueva Cuenta.
+3. En **Trabajadores**, que tenga cuenta. Si su tarjeta dice **Crear su cuenta**, púlsalo.
 
 ## Cómo empezar a usar COTE desde cero
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-1. **Personas:** crea a cada trabajador.
-2. **Cuentas:** crea una cuenta Personal para cada uno (nacen en $0).
-3. **Usuarios** (solo el Jefe): crea el usuario de cada trabajador que rendirá y vincúlalo a su persona.
-4. **Transacciones:** registra un **ingreso a caja chica** a Tesorería y apruébalo.
-5. **Transacciones:** entrega dinero a cada trabajador y aprueba las entregas.
-6. Los trabajadores rinden sus gastos; el Jefe o el Tesorero aprueban o rechazan.
-7. Si un trabajador ya tenía dinero o deuda al partir, el Jefe ajusta su saldo en Cuentas → Editar con motivo «Saldo inicial».
-8. Al terminar cada mes, **Cierre de mes**.
+1. **Trabajadores** → **Agregar trabajador**, por cada uno. Su cuenta se crea sola.
+2. **Usuarios** (solo el Jefe): crea el usuario de cada trabajador que rendirá y vincúlalo a su persona.
+3. **Entró dinero:** registra el dinero que tiene la caja.
+4. **Entregar dinero:** entrega a cada trabajador lo que corresponda.
+5. Los trabajadores rinden sus gastos; revisa con **Revisar rendiciones**.
+6. Si un trabajador ya tenía dinero o deuda al partir, el Jefe ajusta su saldo en Cuentas → Editar con motivo «Saldo inicial».
+7. Al terminar cada mes, **Cerrar mes** contando la caja.
 
 ## Por qué no cambia el saldo de una cuenta
 
 **Quién puede:** todos los usuarios
 
-Los saldos cambian solo cuando una transferencia, un ingreso a caja chica o una rendición se **aprueba**. Si está Pendiente o Enviado, falta aprobarla en **Aprobaciones**. Si fue rechazada o eliminada, no mueve el saldo.
+Las entregas, devoluciones e ingresos cambian los saldos apenas se confirman. Las rendiciones cambian el saldo recién cuando el Jefe o el Tesorero las aprueban: si está **Enviado**, falta revisarla. Lo rechazado, eliminado o anulado no mueve saldos.
 
-## Qué significa que un trabajador tenga saldo negativo
+## Qué significa «le debemos»
 
 **Quién puede:** todos los usuarios
 
-Que rindió más de lo que se le entregó: gastó de su bolsillo y la empresa le debe esa diferencia. Aparece como «Se le debe» en Cuentas y en «Se les debe» del Panel. Para pagarle, se le hace una **entrega** desde Tesorería por ese monto y se aprueba.
+Que el trabajador rindió más de lo que se le entregó: gastó de su bolsillo y la empresa le debe esa diferencia. Para pagarle, en **Trabajadores** pulsa **Pagarle** en su tarjeta: es una entrega por ese monto.
 
-## Me equivoqué en una transacción
+## Me equivoqué en una entrega, devolución o ingreso
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-- Si está **Pendiente**: edítala (Ver → Editar), o recházala con motivo y crea una nueva.
-- Si ya está **Aprobada**: no se puede editar ni eliminar. Corrígela con la transacción contraria (por ejemplo, una devolución por el mismo monto) o pídele al Jefe un ajuste manual de saldo con su motivo.
+**Anúlalo**: en la pantalla «¡Listo!» con **Me equivoqué, anular**, o después en **Movimientos** con ↶ **Anular**. Los saldos vuelven a como estaban. Luego registra el movimiento correcto.
 
 ## Me equivoqué en una rendición
 
 **Quién puede:** todos los usuarios
 
 - Si está **Enviado** o **Rechazado**: edítala o elimínala.
-- Si ya está **Aprobado**: no se puede modificar. Habla con el Jefe o el Tesorero: pueden compensarla con una entrega, una devolución o un ajuste de saldo.
+- Si ya está **Aprobado**: el Jefe o el Tesorero pueden **Anular aprobación** desde la ficha; la rendición vuelve a quedar para corregir y el monto vuelve al saldo.

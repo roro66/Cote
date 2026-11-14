@@ -41,8 +41,20 @@ class PeriodClosingController extends Controller
         $data = $request->validate([
             'month' => 'required|date_format:Y-m',
             'treasury_counted' => 'nullable|numeric',
+            'count' => 'nullable|array',
+            'count.*' => 'nullable|integer|min:0|max:100000',
+            'bank' => 'nullable|numeric|min:0',
             'notes' => 'nullable|string|max:2000',
-        ], [], ['treasury_counted' => 'dinero contado en Tesorería', 'notes' => 'observaciones']);
+        ], [], ['treasury_counted' => 'dinero contado en Tesorería', 'count.*' => 'cantidad', 'bank' => 'dinero en el banco', 'notes' => 'observaciones']);
+
+        // Si contó billete por billete, el total sale de la cuenta y se guarda el detalle
+        $countDetail = null;
+        $counted = collect(PeriodClosing::DENOMINATIONS)->mapWithKeys(fn ($d) => [$d => (int) ($data['count'][$d] ?? 0)])->filter();
+        if ($counted->isNotEmpty() || ($data['bank'] ?? null) !== null) {
+            $bank = (float) ($data['bank'] ?? 0);
+            $countDetail = ['billetes_y_monedas' => $counted->all(), 'banco' => $bank];
+            $data['treasury_counted'] = $counted->sum(fn ($qty, $value) => $qty * $value) + $bank;
+        }
 
         $month = $this->monthFrom($data['month']);
         if ($blocker = $this->closeBlocker($month)) {
@@ -55,6 +67,7 @@ class PeriodClosingController extends Controller
             'closed_by' => $request->user()->id,
             'closed_at' => now(),
             'treasury_counted' => $data['treasury_counted'] ?? null,
+            'count_detail' => $countDetail,
             'notes' => $data['notes'] ?? null,
             'snapshot' => [
                 'rows' => $report['rows'],

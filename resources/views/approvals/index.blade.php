@@ -262,56 +262,15 @@
                             badge.style.display = info.recordsTotal > 0 ? 'inline-block' : 'none';
                         }
                     },
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fas fa-copy"></i> Copiar',
-                            className: 'btn btn-secondary btn-sm',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i> CSV',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
+                    buttons: [
                         {
                             extend: 'excel',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-secondary btn-sm',
+                            text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                            className: 'btn btn-success btn-sm',
                             filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
                                 columns: dtExportColumns
                             }
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'transferencias_pendientes_' + new Date().toISOString().split('T')[0],
-                            title: 'Transferencias Pendientes - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-secondary btn-sm',
-                            title: 'Transferencias Pendientes - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fas fa-columns"></i> Columnas',
-                            className: 'btn btn-secondary btn-sm',
-                            columns: ':not(:last-child)' // No permitir ocultar columna de Acciones
                         }
                     ],
                     responsive: true,
@@ -406,56 +365,15 @@
                             badge.style.display = info.recordsTotal > 0 ? 'inline-block' : 'none';
                         }
                     },
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fas fa-copy"></i> Copiar',
-                            className: 'btn btn-secondary btn-sm',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i> CSV',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
+                    buttons: [
                         {
                             extend: 'excel',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-secondary btn-sm',
+                            text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                            className: 'btn btn-success btn-sm',
                             filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
                                 columns: dtExportColumns
                             }
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'rendiciones_pendientes_' + new Date().toISOString().split('T')[0],
-                            title: 'Rendiciones Pendientes - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-secondary btn-sm',
-                            title: 'Rendiciones Pendientes - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fas fa-columns"></i> Columnas',
-                            className: 'btn btn-secondary btn-sm',
-                            columns: ':not(:last-child)' // No permitir ocultar columna de Acciones
                         }
                     ],
                     responsive: true,

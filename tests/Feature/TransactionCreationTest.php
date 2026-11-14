@@ -22,18 +22,22 @@ function person_account(int $balance = 0, array $attrs = []): Account
     return Account::factory()->create(array_merge(['type' => 'person', 'person_id' => $person->id, 'balance' => $balance], $attrs));
 }
 
-it('creates a pending transfer from treasury to a person', function () {
+it('registers a delivery from treasury to a person already approved', function () {
     $treasury = Account::factory()->create(['type' => 'treasury', 'balance' => 500_000]);
     $person = person_account();
+    $treasurer = create_treasurer_user();
 
-    $this->actingAs(create_treasurer_user())
+    $this->actingAs($treasurer)
         ->postJson(route('transactions.store'), transfer_payload($treasury, $person, 100_000))
         ->assertOk()
         ->assertJson(['success' => true]);
 
     $tx = Transaction::sole();
-    expect($tx->status)->toBe('pending');
-    expect((float) $treasury->refresh()->balance)->toBe(500000.0);
+    expect($tx->status)->toBe('approved')
+        ->and($tx->approved_by)->toBe($treasurer->id)
+        ->and($tx->type_spanish)->toBe('Entrega')
+        ->and((float) $treasury->refresh()->balance)->toBe(400000.0)
+        ->and((float) $person->refresh()->balance)->toBe(100000.0);
 });
 
 it('rejects a transfer without enough funds', function () {
@@ -56,7 +60,7 @@ it('rejects a transfer between two personal accounts', function () {
     expect(Transaction::count())->toBe(0);
 });
 
-it('registers a deposit into treasury that only adds money once approved', function () {
+it('registers a deposit into treasury that adds money right away', function () {
     $treasury = Account::factory()->create(['type' => 'treasury', 'balance' => 0]);
     $treasurer = create_treasurer_user();
 
@@ -70,12 +74,8 @@ it('registers a deposit into treasury that only adds money once approved', funct
         ->assertOk();
 
     $deposit = Transaction::sole();
-    expect($deposit->status)->toBe('pending');
+    expect($deposit->status)->toBe('approved');
     expect($deposit->from_account_id)->toBeNull();
-    expect((float) $treasury->refresh()->balance)->toBe(0.0);
-
-    $this->actingAs($treasurer)->postJson(route('approvals.transactions.approve', $deposit))->assertOk();
-
     expect((float) $treasury->refresh()->balance)->toBe(500000.0);
 
     $statement = app(\App\Services\AccountStatementService::class)->build($treasury);

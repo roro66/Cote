@@ -26,12 +26,16 @@ class Transaction extends Model
         'approved_by',
         'status',
         'approved_at',
-        'is_enabled'
+        'is_enabled',
+        'annulled_at',
+        'annulled_by',
+        'annul_reason',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'approved_at' => 'datetime',
+        'annulled_at' => 'datetime',
         'is_enabled' => 'boolean',
     ];
 
@@ -64,6 +68,11 @@ class Transaction extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function annulledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'annulled_by');
+    }
+
     // Alias para compatibilidad
     public function creator(): BelongsTo
     {
@@ -87,10 +96,18 @@ class Transaction extends Model
     }
 
     // Accessors
+    /** Nombre del movimiento en palabras de todos los días: entrega, devolución o ingreso a caja chica. */
     public function getTypeSpanishAttribute(): string
     {
+        if ($this->type === 'transfer') {
+            return match (true) {
+                $this->fromAccount?->type === 'treasury' => 'Entrega',
+                $this->toAccount?->type === 'treasury' => 'Devolución',
+                default => 'Transferencia',
+            };
+        }
+
         return match ($this->type) {
-            'transfer' => 'Transferencia',
             'deposit' => 'Ingreso a caja chica',
             'adjustment' => 'Ajuste',
             default => 'Desconocido'
@@ -101,11 +118,20 @@ class Transaction extends Model
     {
         return match ($this->status) {
             'pending' => 'Pendiente',
-            'approved' => 'Aprobado',
-            'rejected' => 'Rechazado',
-            'completed' => 'Completado',
+            'approved' => 'Aprobada',
+            'rejected' => 'Rechazada',
+            'completed' => 'Completada',
+            'annulled' => 'Anulada',
             default => 'Desconocido'
         };
+    }
+
+    /** Persona involucrada en una entrega o devolución. */
+    public function getWorkerNameAttribute(): ?string
+    {
+        $account = $this->fromAccount?->type === 'person' ? $this->fromAccount : $this->toAccount;
+
+        return $account?->type === 'person' ? ($account->person?->full_name ?? $account->name) : null;
     }
 
     public function getAmountFormattedAttribute(): string

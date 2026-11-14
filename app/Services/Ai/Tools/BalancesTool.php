@@ -13,7 +13,7 @@ class BalancesTool extends AssistantTool
 
     public function description(): string
     {
-        return 'Saldo de la cuenta interna de cada persona: cuánto tiene por rendir (saldo positivo) o cuánto se le debe (saldo negativo). Filtra por persona o por situación. Para un trabajador, solo su propio saldo.';
+        return 'Saldo de la cuenta interna de cada persona: cuánto dinero de la empresa tiene en su poder (saldo positivo) o cuánto le debemos (saldo negativo). Filtra por persona o por situación. Para un trabajador, solo su propio saldo.';
     }
 
     public function parameters(): array
@@ -24,8 +24,8 @@ class BalancesTool extends AssistantTool
                 'persona' => ['type' => 'string', 'description' => 'Nombre de la persona tal como lo dijo el usuario (opcional)'],
                 'situacion' => [
                     'type' => 'string',
-                    'enum' => ['todas', 'por_rendir', 'se_le_debe', 'al_dia'],
-                    'description' => 'por_rendir: tienen dinero de la empresa; se_le_debe: gastaron de su bolsillo; al_dia: saldo 0',
+                    'enum' => ['todas', 'en_su_poder', 'le_debemos', 'al_dia'],
+                    'description' => 'en_su_poder: tienen dinero de la empresa; le_debemos: gastaron de su bolsillo; al_dia: saldo 0',
                 ],
             ],
         ];
@@ -43,10 +43,10 @@ class BalancesTool extends AssistantTool
             ->where('type', 'person')
             ->where('is_enabled', true)
             ->when($people !== null, fn ($q) => $q->whereIn('person_id', $people->pluck('id')))
-            ->when($situation === 'por_rendir', fn ($q) => $q->where('balance', '>', 0))
-            ->when($situation === 'se_le_debe', fn ($q) => $q->where('balance', '<', 0))
+            ->when($situation === 'en_su_poder', fn ($q) => $q->where('balance', '>', 0))
+            ->when($situation === 'le_debemos', fn ($q) => $q->where('balance', '<', 0))
             ->when($situation === 'al_dia', fn ($q) => $q->where('balance', 0))
-            ->orderBy('balance', $situation === 'se_le_debe' ? 'asc' : 'desc')
+            ->orderBy('balance', $situation === 'le_debemos' ? 'asc' : 'desc')
             ->get();
 
         $rows = $accounts->map(fn (Account $a) => [
@@ -61,10 +61,10 @@ class BalancesTool extends AssistantTool
             'columnas' => ['persona', 'cuenta', 'saldo_clp', 'situacion'],
             'filas' => $rows,
             'resumen' => [
-                'por_rendir_clp' => $this->money($accounts->where('balance', '>', 0)->sum('balance')),
-                'se_les_debe_clp' => $this->money(abs((float) $accounts->where('balance', '<', 0)->sum('balance'))),
+                'en_poder_de_trabajadores_clp' => $this->money($accounts->where('balance', '>', 0)->sum('balance')),
+                'les_debemos_clp' => $this->money(abs((float) $accounts->where('balance', '<', 0)->sum('balance'))),
             ],
-            'mensaje' => $rows === [] ? 'No hay cuentas que calcen.' : 'saldo_clp negativo significa que la empresa le debe ese monto.',
+            'mensaje' => $rows === [] ? 'No hay cuentas que calcen.' : 'saldo_clp negativo significa que la empresa le debe ese monto: dilo como «le debemos».',
         ];
     }
 }

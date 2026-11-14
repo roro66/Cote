@@ -228,6 +228,36 @@ class ExcelExportService
     }
 
     /**
+     * Libro de caja de un mes: entradas y salidas de Tesorería con el saldo después de cada una.
+     *
+     * @param array{month: \Carbon\CarbonInterface, opening: float, closing: float, total_in: float, total_out: float, rows: \Illuminate\Support\Collection} $book
+     */
+    public function exportCashBook(array $book, string $filename): StreamedResponse
+    {
+        return $this->stream($filename, function (XlsxWriter $writer) use ($book) {
+            $money = [3 => $this->moneyFormat, 4 => $this->moneyFormat, 5 => $this->moneyFormat];
+
+            $this->addRow($writer, ['LIBRO DE CAJA: ' . mb_strtoupper($book['month']->translatedFormat('F Y'))], $this->titleStyle, false);
+            $this->addRow($writer, ['Generado:', now()->format('d/m/Y H:i')], null, false);
+            $this->addRow($writer, []);
+
+            $this->addRow($writer, ['Fecha', 'Qué pasó', 'Detalle', 'Entrada', 'Salida', 'Saldo'], $this->headerStyle);
+            $this->addRow($writer, ['', 'Saldo al empezar el mes', '', '', '', $book['opening']], $this->dataStyle, true, $money);
+            foreach ($book['rows'] as $row) {
+                $this->addRow($writer, [
+                    $row['date'],
+                    $row['kind'],
+                    $row['detail'],
+                    $row['in'] > 0 ? $row['in'] : '',
+                    $row['out'] > 0 ? $row['out'] : '',
+                    $row['balance'],
+                ], $this->dataStyle, true, [0 => $this->dateTimeFormat] + $money);
+            }
+            $this->addRow($writer, ['', 'TOTALES DEL MES', '', $book['total_in'], $book['total_out'], $book['closing']], $this->totalStyle, true, $money);
+        });
+    }
+
+    /**
      * Cierre (o resumen provisorio) de un mes por cuenta, con el arqueo de Tesorería si se registró.
      *
      * @param array{rows: array<int,array<string,mixed>>, totals: array<string,float>} $report
@@ -258,7 +288,7 @@ class ExcelExportService
                     (float) $row['rendered'],
                     (float) $row['adjustments'],
                     (float) $row['closing'],
-                    $isTreasury ? 'Disponible' : ($row['closing'] > 0 ? 'Por rendir' : ($row['closing'] < 0 ? 'Se le debe' : 'Al día')),
+                    $isTreasury ? 'Disponible' : ($row['closing'] > 0 ? 'En su poder' : ($row['closing'] < 0 ? 'Le debemos' : 'Al día')),
                 ], $isTreasury ? $this->totalStyle : $this->dataStyle, true, $money);
             }
             $this->addRow($writer, []);
@@ -266,8 +296,8 @@ class ExcelExportService
             $this->addRow($writer, ['RESUMEN'], $this->categoryStyle, false);
             $summary = [
                 'Tesorería al cierre:' => $totals['treasury_closing'],
-                'Por rendir (trabajadores):' => $totals['to_render'],
-                'Se les debe:' => $totals['owed'],
+                'En poder de trabajadores:' => $totals['to_render'],
+                'Les debemos:' => $totals['owed'],
                 'Rendido en el mes:' => $totals['rendered'],
             ];
             foreach ($summary as $label => $amount) {

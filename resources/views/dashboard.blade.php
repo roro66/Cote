@@ -10,8 +10,8 @@
             @if(config('ai.enabled'))
                 @php
                     $assistantQuestions = auth()->user()->hasAnyRole(['boss', 'treasurer'])
-                        ? ['¿Qué está pendiente de aprobar?', '¿Quiénes tienen dinero por rendir?', '¿A quiénes les debemos dinero?']
-                        : ['¿Cuánto tengo por rendir?', '¿En qué estado están mis rendiciones?', '¿Cómo creo una rendición?'];
+                        ? ['¿Qué está pendiente de aprobar?', '¿Quiénes tienen dinero de la empresa en su poder?', '¿A quiénes les debemos dinero?']
+                        : ['¿Cuánto dinero de la empresa tengo?', '¿En qué estado están mis rendiciones?', '¿Cómo creo una rendición?'];
                 @endphp
                 <div class="bg-white shadow rounded-lg mb-6 p-4 d-flex flex-wrap align-items-center gap-2">
                     <span class="me-2"><i class="fas fa-robot text-primary"></i> <strong>Pregúntale al asistente:</strong></span>

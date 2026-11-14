@@ -232,6 +232,36 @@ class ExpenseService
     }
 
     /**
+     * Deshace la aprobación: devuelve el total al saldo de la cuenta y la deja rechazada
+     * con el motivo, para que el trabajador la corrija y la reenvíe.
+     */
+    public function annulExpense(Expense $expense, int $userId, string $reason): bool
+    {
+        DB::transaction(function () use ($expense, $userId, $reason) {
+            $locked = Expense::whereKey($expense->id)->lockForUpdate()->firstOrFail();
+
+            if ($locked->status !== 'approved') {
+                throw new \DomainException('Solo se pueden anular rendiciones aprobadas.');
+            }
+
+            Account::lockForUpdate()->find($locked->account_id)?->increment('balance', $locked->total_amount);
+
+            $locked->update([
+                'status' => 'rejected',
+                'reviewed_by' => $userId,
+                'reviewed_at' => now(),
+                'rejection_reason' => 'Aprobación anulada: '.$reason,
+            ]);
+
+            Log::info('Rendición anulada', ['expense_id' => $locked->id, 'annulled_by' => $userId]);
+        });
+
+        $expense->refresh();
+
+        return true;
+    }
+
+    /**
      * Rechazar una rendición
      */
     public function rejectExpense(Expense $expense, int $reviewedBy, string $reason): bool

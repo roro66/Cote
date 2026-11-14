@@ -21,14 +21,14 @@
                         </div>
                         <div class="col-md-3">
                             <div class="card bg-warning text-dark h-100"><div class="card-body">
-                                <h5 class="card-title">Por rendir</h5>
+                                <h5 class="card-title">En poder de trabajadores <x-help text="Dinero de la empresa que los trabajadores tienen y todavía no rinden con boletas ni devuelven." /></h5>
                                 <h2 class="mb-0">${{ number_format($stats['to_render'], 0, ',', '.') }}</h2>
                                 <div class="small">En manos de trabajadores</div>
                             </div></div>
                         </div>
                         <div class="col-md-3">
                             <div class="card bg-danger text-white h-100"><div class="card-body">
-                                <h5 class="card-title">Se les debe</h5>
+                                <h5 class="card-title">Les debemos <x-help text="Lo que los trabajadores gastaron de su bolsillo. Se les paga con una entrega desde la caja." /></h5>
                                 <h2 class="mb-0">${{ number_format($stats['owed'], 0, ',', '.') }}</h2>
                                 <div class="small">Gastaron de su bolsillo</div>
                             </div></div>
@@ -181,56 +181,15 @@
                         [10, 25, 50, 100, "Todos"]
                     ],
                     pageLength: 25,
-                    buttons: [{
-                            extend: 'copy',
-                            text: '<i class="fas fa-copy"></i> Copiar',
-                            className: 'btn btn-secondary btn-sm',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'csv',
-                            text: '<i class="fas fa-file-csv"></i> CSV',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'cuentas_' + new Date().toISOString().split('T')[0],
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
+                    buttons: [
                         {
                             extend: 'excel',
-                            text: '<i class="fas fa-file-excel"></i> Excel',
-                            className: 'btn btn-secondary btn-sm',
+                            text: '<i class="fas fa-file-excel"></i> Descargar Excel',
+                            className: 'btn btn-success btn-sm',
                             filename: 'cuentas_' + new Date().toISOString().split('T')[0],
                             exportOptions: {
                                 columns: dtExportColumns
                             }
-                        },
-                        {
-                            extend: 'pdf',
-                            text: '<i class="fas fa-file-pdf"></i> PDF',
-                            className: 'btn btn-secondary btn-sm',
-                            filename: 'cuentas_' + new Date().toISOString().split('T')[0],
-                            title: 'Lista de Cuentas - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fas fa-print"></i> Imprimir',
-                            className: 'btn btn-secondary btn-sm',
-                            title: 'Lista de Cuentas - COTE',
-                            exportOptions: {
-                                columns: dtExportColumns
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fas fa-columns"></i> Columnas',
-                            className: 'btn btn-secondary btn-sm',
-                            columns: ':not(:last-child)' // No permitir ocultar columna de Acciones
                         }
                     ],
                     responsive: true,

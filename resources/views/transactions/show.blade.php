@@ -5,6 +5,17 @@
                 Detalle de Transacción #{{ $transaction->transaction_number }}
             </h2>
             <div class="flex gap-2">
+                @if ($transaction->status === 'approved')
+                    <form method="POST" action="{{ route('transactions.annul', $transaction) }}" class="d-inline">
+                        @csrf
+                        <input type="hidden" name="reason">
+                        <button type="button"
+                                onclick="cotePrompt('¿Por qué anulas este movimiento? Los saldos vuelven a como estaban antes.').then((reason) => { if (!reason) return; this.form.reason.value = reason; this.form.requestSubmit(); })"
+                                class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 transition ease-in-out duration-150">
+                            <i class="fas fa-undo mr-1"></i> Anular
+                        </button>
+                    </form>
+                @endif
                 @if ($transaction->status === 'pending')
                     <a href="{{ route('transactions.edit', $transaction) }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
@@ -38,12 +49,14 @@
                                         'approved' => 'bg-green-100 text-green-800 border-green-200',
                                         'rejected' => 'bg-red-100 text-red-800 border-red-200',
                                         'completed' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                        'annulled' => 'bg-gray-100 text-gray-700 border-gray-300',
                                     ];
                                     $statusText = [
                                         'pending' => 'Pendiente',
                                         'approved' => 'Aprobada',
                                         'rejected' => 'Rechazada',
                                         'completed' => 'Completada',
+                                        'annulled' => 'Anulada',
                                     ];
                                 @endphp
                                 <span
@@ -53,6 +66,15 @@
                             </div>
                         </div>
                     </div>
+
+                    @if ($transaction->status === 'annulled')
+                        <div class="alert alert-secondary mb-6">
+                            <i class="fas fa-undo me-1"></i>
+                            <strong>Anulada</strong> por {{ $transaction->annulledBy?->name ?? '—' }}
+                            el {{ $transaction->annulled_at?->format('d/m/Y H:i') }}. Los saldos volvieron a como estaban.
+                            <br><strong>Motivo:</strong> {{ $transaction->annul_reason }}
+                        </div>
+                    @endif
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 

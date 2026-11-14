@@ -21,7 +21,8 @@ class AccountStatementService
         $movements = $this->transactions($account)
             ->concat($this->expenses($account))
             ->concat($this->adjustments($account))
-            ->sortByDesc(fn (array $m) => $m['date']?->getTimestamp() ?? 0)
+            // Mismo segundo: el registro creado después va primero
+            ->sort(fn (array $a, array $b) => [$b['date']?->getTimestamp() ?? 0, $b['seq']] <=> [$a['date']?->getTimestamp() ?? 0, $a['seq']])
             ->values();
 
         $running = (float) $account->balance;
@@ -53,6 +54,7 @@ class AccountStatementService
 
                 return [
                     'date' => $tx->approved_at ?? $tx->updated_at,
+                    'seq' => $tx->id,
                     'kind' => $tx->type_spanish,
                     'reference' => $tx->transaction_number,
                     'url' => route('transactions.show', $tx),
@@ -72,6 +74,7 @@ class AccountStatementService
             ->get()
             ->map(fn (Expense $expense) => [
                 'date' => $expense->reviewed_at ?? $expense->updated_at,
+                'seq' => $expense->id,
                 'kind' => 'Rendición',
                 'reference' => $expense->expense_number,
                 'url' => route('expenses.show', $expense),
@@ -93,6 +96,7 @@ class AccountStatementService
 
                 return [
                     'date' => $log->created_at,
+                    'seq' => $log->id,
                     'kind' => 'Ajuste manual',
                     'reference' => null,
                     'url' => null,

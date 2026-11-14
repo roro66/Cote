@@ -1,4 +1,20 @@
 <div>
+    <div class="bg-white shadow rounded-lg mb-6 p-4 cote-easy">
+        <h3 class="h5 mb-3"><i class="fas fa-tasks text-primary me-1"></i> Lo que tienes que hacer hoy</h3>
+        @forelse ($todo as $task)
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2 border-bottom">
+                <span class="fs-6">
+                    <i class="fas fa-circle text-{{ $task['tone'] }} me-2" style="font-size: 0.6rem; vertical-align: middle;"></i>{{ $task['text'] }}
+                </span>
+                @isset($task['link'])
+                    <a href="{{ $task['link'] }}" class="btn btn-outline-primary">{{ $task['action'] }}</a>
+                @endisset
+            </div>
+        @empty
+            <p class="text-success fs-6 mb-0"><i class="fas fa-check me-1"></i> Todo al día. No hay nada pendiente.</p>
+        @endforelse
+    </div>
+
     @hasanyrole('boss|treasurer')
     <!-- Resumen de Cuentas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -55,7 +71,7 @@
                     </div>
                     <div class="ml-5 w-0 flex-1">
                         <dl>
-                            <dt class="text-sm font-medium text-gray-500 truncate">Transacciones Pendientes</dt>
+                            <dt class="text-sm font-medium text-gray-500 truncate">Movimientos pendientes</dt>
                             <dd class="text-lg font-medium text-gray-900">{{ $pendingTransactions }}</dd>
                         </dl>
                     </div>
@@ -89,7 +105,7 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Requiere atención</h3>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <a href="{{ route('accounts.index') }}" class="block p-3 bg-gray-50 rounded text-decoration-none">
-                        <p class="text-sm text-gray-500 mb-1">Por rendir</p>
+                        <p class="text-sm text-gray-500 mb-1">En poder de trabajadores <x-help text="Dinero de la empresa que los trabajadores tienen y todavía no rinden ni devuelven." /></p>
                         <p class="text-lg font-medium text-gray-900 mb-0">${{ number_format($toRender, 0, ',', '.') }}</p>
                         <p class="text-xs text-gray-500 mb-0">En manos de trabajadores</p>
                     </a>
@@ -104,7 +120,7 @@
                         <p class="text-xs text-gray-500 mb-0">{{ $pendingExpenses }} pendiente(s)</p>
                     </a>
                     <div class="p-3 bg-gray-50 rounded">
-                        <p class="text-sm text-gray-500 mb-1">Se les debe (gastaron de su bolsillo)</p>
+                        <p class="text-sm text-gray-500 mb-1">Les debemos <x-help text="Lo que gastaron de su bolsillo. Se les paga con una entrega desde la caja." /></p>
                         @forelse($negativeAccounts as $account)
                             <a href="{{ route('accounts.movements', $account) }}" class="d-flex justify-content-between text-sm text-decoration-none">
                                 <span class="text-gray-900">{{ $account->person?->full_name ?? $account->name }}</span>
@@ -148,10 +164,10 @@
             </div>
         </div>
 
-        <!-- Transacciones Recientes -->
+        <!-- Últimos movimientos -->
         <div class="bg-white shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Transacciones Recientes</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Últimos movimientos</h3>
                 <div class="space-y-3">
                     @forelse($recentTransactions as $transaction)
                         <div class="flex items-center justify-between p-3 bg-gray-50 rounded">

@@ -13,7 +13,7 @@ class SchemaGuide
         return <<<'SCHEMA'
 accounts(id, name, type, person_id, balance numeric, notes, is_enabled bool, is_protected bool, created_at)
   type: 'treasury' (Tesorería, una sola) o 'person' (cuenta interna de un trabajador, person_id → people.id).
-  balance de una cuenta person: > 0 «por rendir» (tiene dinero de la empresa); < 0 «se le debe» (gastó de su bolsillo); 0 «al día».
+  balance de una cuenta person: > 0 «en su poder» (tiene dinero de la empresa); < 0 «le debemos» (gastó de su bolsillo); 0 «al día».
 transactions(id, transaction_number, type, from_account_id, to_account_id, amount numeric, description, notes, created_by, approved_by, status, approved_at, is_enabled, created_at)
   type: 'transfer' (entrega Tesorería→persona o devolución persona→Tesorería), 'deposit' (ingreso a caja chica: from_account_id NULL, to_account_id = Tesorería), 'adjustment' (histórico).
   status: 'pending', 'approved', 'rejected'. Solo 'approved' movió saldos; su fecha es approved_at. created_by/approved_by → users.id.

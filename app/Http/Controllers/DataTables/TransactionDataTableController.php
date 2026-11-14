@@ -44,6 +44,7 @@ class TransactionDataTableController extends Controller
                         'approved' => 'Aprobada',
                         'rejected' => 'Rechazada',
                         'completed' => 'Completada',
+                        'annulled' => 'Anulada',
                         default => ucfirst($row->status)
                     };
                     $class = match ($row->status) {
@@ -51,6 +52,7 @@ class TransactionDataTableController extends Controller
                         'approved' => 'bg-success',
                         'rejected' => 'bg-danger',
                         'completed' => 'bg-info',
+                        'annulled' => 'bg-secondary',
                         default => 'bg-secondary'
                     };
                     $action = '<div class="btn-group" role="group">
@@ -191,6 +193,7 @@ class TransactionDataTableController extends Controller
                         'approved' => 'Aprobada',
                         'rejected' => 'Rechazada',
                         'completed' => 'Completada',
+                        'annulled' => 'Anulada',
                         default => ucfirst($row->status)
                     };
                     $class = match ($row->status) {
@@ -198,6 +201,7 @@ class TransactionDataTableController extends Controller
                         'approved' => 'bg-success',
                         'rejected' => 'bg-danger',
                         'completed' => 'bg-info',
+                        'annulled' => 'bg-secondary',
                         default => 'bg-secondary'
                     };
                     return '<span class="badge ' . $class . '">' . $statusText . '</span>';
@@ -241,6 +245,11 @@ class TransactionDataTableController extends Controller
                         </button>
                         <button type="button" class="btn btn-danger btn-sm" title="Rechazar" aria-label="Rechazar" onclick="rejectTransaction(' . $row->id . ')">
                             <i class="fas fa-times"></i>
+                        </button>';
+                    }
+                    if ($row->status === 'approved') {
+                        $actionBtn .= '<button type="button" class="btn btn-outline-danger btn-sm" title="Anular" aria-label="Anular" onclick="annulTransaction(' . $row->id . ')">
+                            <i class="fas fa-undo"></i>
                         </button>';
                     }
 

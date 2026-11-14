@@ -90,7 +90,7 @@ it('closes a finished month with a frozen snapshot and the cash count', function
     $this->actingAs($user)->get(route('closings.index', ['month' => '2026-10']))
         ->assertOk()
         ->assertSee('Cerrado')
-        ->assertSee('Diferencia: -$1.000')
+        ->assertSee('Faltaron $1.000.')
         ->assertSee('$830.000');
 });
 

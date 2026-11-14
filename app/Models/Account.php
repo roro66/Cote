@@ -117,8 +117,8 @@ class Account extends Model
         }
 
         return match (true) {
-            (float) $this->balance > 0 => ['label' => 'Por rendir', 'class' => 'bg-warning text-dark'],
-            (float) $this->balance < 0 => ['label' => 'Se le debe', 'class' => 'bg-danger'],
+            (float) $this->balance > 0 => ['label' => 'En su poder', 'class' => 'bg-warning text-dark'],
+            (float) $this->balance < 0 => ['label' => 'Le debemos', 'class' => 'bg-danger'],
             default => ['label' => 'Al día', 'class' => 'bg-success'],
         };
     }

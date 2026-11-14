@@ -61,8 +61,8 @@ it('lets the boss look up anyone by name, accents aside', function () {
 
     $result = app(BalancesTool::class)->run(['persona' => 'jose munoz']);
 
-    expect($result['filas'][0]['situacion'])->toBe('Se le debe')
-        ->and($result['resumen']['se_les_debe_clp'])->toEqual(8000);
+    expect($result['filas'][0]['situacion'])->toBe('Le debemos')
+        ->and($result['resumen']['les_debemos_clp'])->toEqual(8000);
 });
 
 it('shows a worker the reason their expense report was rejected', function () {
@@ -156,7 +156,7 @@ it('shows the assistant page to any signed in user', function () {
     $this->actingAs(User::factory()->create())
         ->get(route('assistant'))
         ->assertOk()
-        ->assertSee('¿Cuánto tengo por rendir?');
+        ->assertSee('¿Cuánto dinero de la empresa tengo?');
 });
 
 it('hides the assistant when it is disabled', function () {

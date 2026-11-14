@@ -62,6 +62,16 @@ Route::middleware(['auth', 'verified', 'enabled'])->group(function () {
 
 // Gestión de tesorería: solo jefe y tesorero
 Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group(function () {
+    // Tareas de todos los días, paso a paso
+    Route::get('/caja/{mode}', fn (string $mode) => view('cash.movement', ['mode' => $mode]))
+        ->whereIn('mode', \App\Livewire\CashMovement::MODES)
+        ->name('cash.movement');
+    Route::get('/libro-de-caja', [\App\Http\Controllers\CashBookController::class, 'index'])->name('cashbook.index');
+    Route::get('/libro-de-caja/excel', [\App\Http\Controllers\CashBookController::class, 'export'])->name('cashbook.export');
+    Route::get('/trabajadores', [\App\Http\Controllers\WorkerController::class, 'index'])->name('workers.index');
+    Route::post('/trabajadores/{person}/cuenta', [\App\Http\Controllers\WorkerController::class, 'openAccount'])->name('workers.account');
+    Route::get('/aprobaciones/revisar', fn () => view('approvals.review'))->name('approvals.review');
+
     // Estadísticas
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics.index');
     Route::get('/statistics/person/{person}/monthly', [StatisticsController::class, 'personMonthly'])->name('statistics.person.monthly');
@@ -107,6 +117,8 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
         Route::post('approvals/transactions/{transaction}/reject', [ApprovalController::class, 'rejectTransaction'])->name('approvals.transactions.reject');
         Route::post('approvals/expenses/{expense}/approve', [ApprovalController::class, 'approveExpense'])->name('approvals.expenses.approve');
         Route::post('approvals/expenses/{expense}/reject', [ApprovalController::class, 'rejectExpense'])->name('approvals.expenses.reject');
+        Route::post('transactions/{transaction}/annul', [ApprovalController::class, 'annulTransaction'])->name('transactions.annul');
+        Route::post('expenses/{expense}/annul', [ApprovalController::class, 'annulExpense'])->name('expenses.annul');
     });
 
     // DataTables AJAX

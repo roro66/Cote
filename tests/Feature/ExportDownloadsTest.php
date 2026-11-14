@@ -95,7 +95,7 @@ it('exports a provisional summary for an open month and the saved snapshot for a
     $open->assertOk()->assertDownload('cierre_2026-09_provisorio.xlsx');
     $openRows = collect(downloaded_xlsx_rows($open));
     expect($openRows->firstWhere(0, 'Estado:')[1])->toStartWith('Abierto')
-        ->and($openRows->contains(fn ($row) => ($row[0] ?? null) === 'Ana Pérez' && $row[8] === 'Por rendir'))->toBeTrue();
+        ->and($openRows->contains(fn ($row) => ($row[0] ?? null) === 'Ana Pérez' && $row[8] === 'En su poder'))->toBeTrue();
 
     $this->actingAs($treasurer)->post(route('closings.store'), ['month' => '2026-09', 'treasury_counted' => 380000]);
     expect(PeriodClosing::count())->toBe(1);

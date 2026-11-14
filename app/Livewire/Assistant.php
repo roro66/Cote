@@ -16,16 +16,17 @@ use Throwable;
 class Assistant extends Component
 {
     public const STAFF_EXAMPLES = [
-        '¿Cuánto hay en Tesorería y cuánto está por rendir?',
+        '¿Cuánto hay en la caja y cuánto tienen los trabajadores?',
         '¿Qué está pendiente de aprobar?',
         '¿A quiénes les debemos dinero?',
         '¿Cuánto se gastó por categoría el mes pasado?',
         '¿Quién rindió más en los últimos 3 meses?',
         '¿Cómo registro un ingreso a caja chica?',
+        'Quiero entregarle dinero a un trabajador',
     ];
 
     public const WORKER_EXAMPLES = [
-        '¿Cuánto tengo por rendir?',
+        '¿Cuánto dinero de la empresa tengo?',
         '¿En qué estado están mis rendiciones?',
         '¿Por qué me rechazaron una rendición?',
         '¿Cómo creo una rendición?',
@@ -167,6 +168,7 @@ class Assistant extends Component
             'resumen' => $result['resumen'] ?? null,
             'candidatos' => $result['candidatos'] ?? [],
             'secciones' => array_column($result['secciones'] ?? [], 'titulo'),
+            'url' => $step['tool'] === 'preparar_movimiento' && ! empty($result['ok']) ? ($result['url'] ?? null) : null,
         ];
     }
 
