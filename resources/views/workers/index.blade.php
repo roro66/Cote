@@ -21,9 +21,14 @@
                         <strong>{{ $money($owed) }}</strong>
                     </div>
                 </div>
-                <a href="{{ route('people.index', ['nuevo' => 1]) }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-user-plus me-1"></i> Agregar trabajador
-                </a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('workers.import') }}" class="btn btn-outline-success btn-lg">
+                        <i class="fas fa-file-excel me-1"></i> Importar desde Excel
+                    </a>
+                    <a href="{{ route('people.index', ['nuevo' => 1]) }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-1"></i> Agregar trabajador
+                    </a>
+                </div>
             </div>
 
             <input type="search" class="form-control form-control-lg mb-3" placeholder="Escribe un nombre para buscar" id="worker-search" autocomplete="off">

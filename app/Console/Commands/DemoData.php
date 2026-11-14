@@ -215,7 +215,7 @@ class DemoData extends Command
 
             do {
                 $number = mt_rand(8_000_000, 24_000_000);
-                $rut = number_format($number, 0, '', '.') . '-' . $this->rutDv($number);
+                $rut = $number . '-' . $this->rutDv($number);
             } while (isset($usedRuts[$rut]));
             $usedRuts[$rut] = true;
 

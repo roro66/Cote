@@ -42,7 +42,7 @@ class StorePersonRequest extends FormRequest
                 'unique:people,rut' . ($personId ? ',' . $personId : ''),
                 new ValidChileanRut()
             ],
-            'email' => 'required|email|unique:people,email' . ($personId ? ',' . $personId : ''),
+            'email' => 'nullable|email|unique:people,email' . ($personId ? ',' . $personId : ''),
             'phone' => 'nullable|string|max:20',
             'role_type' => 'required|in:tesorero,trabajador',
             'bank_id' => 'nullable|exists:banks,id',
@@ -82,7 +82,6 @@ class StorePersonRequest extends FormRequest
             'last_name.required' => 'El apellido es obligatorio.',
             'rut.required' => 'El RUT es obligatorio.',
             'rut.unique' => 'Este RUT ya está registrado.',
-            'email.required' => 'El correo electrónico es obligatorio.',
             'email.email' => 'Debe ingresar un correo electrónico válido.',
             'email.unique' => 'Este correo electrónico ya está registrado.',
             'role_type.required' => 'Debe seleccionar un tipo de rol.',

@@ -232,6 +232,37 @@ class ExcelExportService
      *
      * @param array{month: \Carbon\CarbonInterface, opening: float, closing: float, total_in: float, total_out: float, rows: \Illuminate\Support\Collection} $book
      */
+    /** Planilla modelo para importar trabajadores: una hoja para llenar y otra con instrucciones. */
+    public function exportPeopleTemplate(string $filename): StreamedResponse
+    {
+        return $this->stream($filename, function (XlsxWriter $writer) {
+            $writer->getCurrentSheet()->setName('Trabajadores');
+            $headers = collect(\App\Services\PeopleImportService::COLUMNS)->pluck(0)->filter()->values()->all();
+            $this->addRow($writer, $headers, $this->headerStyle);
+            foreach ($headers as $index => $header) {
+                $writer->getCurrentSheet()->setColumnWidth(max(16, mb_strlen($header) + 6), $index + 1);
+            }
+
+            $writer->addNewSheetAndMakeItCurrent()->setName('Instrucciones');
+            $this->widths = new XlsxColumnWidths();
+            $this->addRow($writer, ['CÓMO LLENAR LA PLANILLA'], $this->titleStyle, false);
+            $this->addRow($writer, []);
+            foreach ([
+                ['Una fila por trabajador, en la hoja «Trabajadores». No cambies los títulos de la primera fila.'],
+                ['Obligatorios: Nombres, Apellidos y RUT (con o sin puntos, con guión y dígito verificador: 12.345.678-5).'],
+                ['Opcionales: Correo, Teléfono, Dirección, Banco, Tipo de cuenta y N° de cuenta.'],
+                ['Banco: escríbelo como lo conoces (BancoEstado, Santander, BCI, Banco de Chile, etc.).'],
+                ['Tipo de cuenta: Cuenta Corriente, Cuenta Vista, Cuenta RUT, Cuenta de Ahorro o Chequera Electrónica.'],
+                ['Si un trabajador tiene dos cuentas bancarias, repite la fila con el mismo RUT y la otra cuenta.'],
+                ['Saldo actual (opcional): dinero de la empresa que el trabajador tiene hoy. Si le deben dinero, escríbelo con signo menos (-25000). Vacío = parte en $0.'],
+                ['Si el RUT ya existe en COTE, sus datos se actualizan con los de la planilla.'],
+                ['Antes de guardar, COTE muestra cada fila para revisarla. Nada se guarda hasta que pulses «Importar».'],
+            ] as $line) {
+                $this->addRow($writer, $line, $this->dataStyle);
+            }
+        });
+    }
+
     public function exportCashBook(array $book, string $filename): StreamedResponse
     {
         return $this->stream($filename, function (XlsxWriter $writer) use ($book) {

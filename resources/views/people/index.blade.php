@@ -127,9 +127,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="create_email" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="create_email" name="email"
-                                        required>
+                                    <label for="create_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="create_email" name="email">
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -323,9 +322,8 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="edit_email" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="edit_email" name="email"
-                                        required>
+                                    <label for="edit_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="edit_email" name="email">
                                     <div class="invalid-feedback"></div>
                                 </div>
                             </div>
@@ -794,7 +792,7 @@
                         document.getElementById('edit_first_name').value = person.first_name;
                         document.getElementById('edit_last_name').value = person.last_name;
                         document.getElementById('edit_rut').value = person.rut;
-                        document.getElementById('edit_email').value = person.email;
+                        document.getElementById('edit_email').value = person.email || '';
                         document.getElementById('edit_phone').value = person.phone || '';
                         document.getElementById('edit_role_type').value = person.role_type;
                         document.getElementById('edit_bank_id').value = person.bank_id || '';

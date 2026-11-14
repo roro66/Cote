@@ -45,7 +45,7 @@ class Person extends Model
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'rut' => ['required', 'string', 'unique:people,rut', new ValidChileanRut()],
-            'email' => 'required|email|unique:people,email',
+            'email' => 'nullable|email|unique:people,email',
             'phone' => 'nullable|string|max:20',
             'role_type' => 'required|in:tesorero,trabajador',
             'is_enabled' => 'boolean',

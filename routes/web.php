@@ -70,6 +70,10 @@ Route::middleware(['auth', 'verified', 'enabled', 'role:boss|treasurer'])->group
     Route::get('/libro-de-caja/excel', [\App\Http\Controllers\CashBookController::class, 'export'])->name('cashbook.export');
     Route::get('/trabajadores', [\App\Http\Controllers\WorkerController::class, 'index'])->name('workers.index');
     Route::post('/trabajadores/{person}/cuenta', [\App\Http\Controllers\WorkerController::class, 'openAccount'])->name('workers.account');
+    Route::get('/trabajadores/importar', [\App\Http\Controllers\WorkerImportController::class, 'show'])->name('workers.import');
+    Route::get('/trabajadores/importar/planilla', [\App\Http\Controllers\WorkerImportController::class, 'template'])->name('workers.import.template');
+    Route::post('/trabajadores/importar/revisar', [\App\Http\Controllers\WorkerImportController::class, 'preview'])->name('workers.import.preview');
+    Route::post('/trabajadores/importar', [\App\Http\Controllers\WorkerImportController::class, 'store'])->name('workers.import.store');
     Route::get('/aprobaciones/revisar', fn () => view('approvals.review'))->name('approvals.review');
 
     // Estadísticas

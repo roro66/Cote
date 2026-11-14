@@ -202,7 +202,28 @@ Botones de cada tarjeta:
 - **Cartola:** todos sus movimientos.
 - **Crear su cuenta:** aparece solo si todavía no tiene cuenta para recibir dinero.
 
-Arriba: **En poder de trabajadores** y **Les debemos** en total, la búsqueda por nombre y **Agregar trabajador** (abre el formulario de nueva persona).
+Arriba: **En poder de trabajadores** y **Les debemos** en total, la búsqueda por nombre, **Importar desde Excel** y **Agregar trabajador** (abre el formulario de nueva persona).
+
+## Importar trabajadores desde Excel
+
+**Quién puede:** rol `boss` o rol `treasurer`
+
+Para cargar de una vez la nómina que se llevaba en Excel. Menú **Trabajadores** → **Importar desde Excel**.
+
+1. **Descargar planilla modelo** (opcional): trae las columnas Nombres, Apellidos, RUT, Correo, Teléfono, Dirección, Banco, Tipo de cuenta, N° de cuenta y Saldo actual, y una hoja de instrucciones. También sirve la planilla propia: COTE reconoce títulos como «Nombre completo», «Rut», «Banco», «N° Cta» o «Por rendir».
+2. Elige el archivo (Excel .xlsx, CSV u OpenOffice .ods) y pulsa **Revisar archivo**. Un Excel antiguo (.xls) hay que abrirlo y guardarlo como .xlsx.
+3. COTE muestra cada fila **sin guardar nada**: «Nuevo», «Se actualiza» (el RUT ya existe), «Otra cuenta» (mismo RUT repetido: se agrega otra cuenta bancaria) o «No se importa» en rojo, con el motivo (RUT inválido, falta el nombre). Los avisos en amarillo explican lo que se omitió, por ejemplo un banco que no se reconoce o un correo que ya usa otra persona.
+4. Pulsa **Importar N trabajadores** y confirma.
+
+Qué hace al importar:
+
+- Crea a cada trabajador con su cuenta para recibir dinero y sus cuentas bancarias. La primera queda como predeterminada.
+- Si el RUT ya existe, actualiza los datos que vienen en la planilla. Las celdas vacías no borran nada.
+- **Saldo actual** (opcional): dinero de la empresa que el trabajador tiene hoy; con signo menos si le debemos. Queda en su cartola como «Saldo inicial importado desde Excel». La caja no cambia. Solo se aplica a cuentas que todavía no tienen movimientos.
+- «Cuenta RUT» se entiende como BancoEstado y, si falta el número, usa el RUT sin dígito verificador.
+- Nombres escritos todo en mayúsculas quedan como «Juan Pérez». Un nombre completo se separa dejando los dos últimos apellidos.
+
+Las filas en rojo se pueden corregir en el Excel y volver a subir: los ya importados solo se actualizan.
 
 ## Revisar rendiciones de a una
 
@@ -539,7 +560,7 @@ Menú **Personas**. Una persona es la ficha de cada trabajador (o del tesorero):
 2. Completa:
    - **Nombres** y **Apellidos** (obligatorios).
    - **RUT** (obligatorio, chileno válido, único). Se puede escribir con o sin puntos; se formatea solo. Si el dígito verificador no corresponde: «RUT inválido: el dígito verificador no corresponde.».
-   - **Email** (obligatorio, único entre personas).
+   - **Email** (opcional; si se escribe, no puede repetirse entre personas).
    - **Teléfono** (opcional, hasta 20 caracteres).
    - **Tipo de Rol:** Trabajador o Tesorero. Es solo informativo; los permisos se dan en Usuarios.
    - **Banco**, **Tipo de Cuenta**, **Número de Cuenta** y **Dirección** (opcionales).
@@ -798,12 +819,12 @@ El Jefe debe revisar:
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-1. **Trabajadores** → **Agregar trabajador**, por cada uno. Su cuenta se crea sola.
+1. **Trabajadores** → **Importar desde Excel** con la nómina (y, si se tiene, el saldo de cada uno), o **Agregar trabajador** de a uno. Su cuenta se crea sola.
 2. **Usuarios** (solo el Jefe): crea el usuario de cada trabajador que rendirá y vincúlalo a su persona.
 3. **Entró dinero:** registra el dinero que tiene la caja.
 4. **Entregar dinero:** entrega a cada trabajador lo que corresponda.
 5. Los trabajadores rinden sus gastos; revisa con **Revisar rendiciones**.
-6. Si un trabajador ya tenía dinero o deuda al partir, el Jefe ajusta su saldo en Cuentas → Editar con motivo «Saldo inicial».
+6. Si un trabajador ya tenía dinero o deuda al partir y no venía en el Excel, el Jefe ajusta su saldo en Cuentas → Editar con motivo «Saldo inicial».
 7. Al terminar cada mes, **Cerrar mes** contando la caja.
 
 ## Por qué no cambia el saldo de una cuenta
