@@ -26,8 +26,8 @@
 
         <div class="guest-page min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100" style="background-image: url('{{ asset('assets/img/pattern-bills.svg') }}'); background-repeat: repeat; background-size: 160px 160px;">
             <div class="mb-4">
-                <a href="/" class="guest-logo inline-block">
-                    <img src="{{ asset('assets/img/logo01.png') }}" alt="{{ config('app.name') }}" class="h-auto max-w-full" style="width: 480px;" />
+                <a href="/" class="guest-logo inline-block text-decoration-none" aria-label="{{ config('app.name') }}">
+                    <x-cote-logo class="guest-logo-svg" variant="dark" />
                 </a>
             </div>
 
