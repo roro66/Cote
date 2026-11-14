@@ -342,6 +342,20 @@ html:not([data-bs-theme="dark"]) .guest-theme-toggle {
     width: min(490px, 88vw); /* ~75% más grande que el mark base de 280px */
     height: auto;
 }
+
+/* Moneda del logo: giro continuo sobre el eje Z */
+.cote-logo-coin-spin {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: rotateZ(0deg);
+    animation: cote-coin-spin-z 4.5s linear infinite;
+}
+@keyframes cote-coin-spin-z {
+    to { transform: rotateZ(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cote-logo-coin-spin { animation: none; }
+}
 [data-bs-theme="dark"] .guest-logo {
     background: rgba(15, 23, 42, 0.55);
     border-color: rgba(255, 255, 255, 0.1);

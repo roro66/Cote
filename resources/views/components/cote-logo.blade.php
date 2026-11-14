@@ -23,9 +23,13 @@
     <rect x="2" y="6" width="60" height="60" rx="16" fill="url(#{{ $id }}-mark)"/>
     <path d="M10 18c8-8 22-10 34-2" fill="none" stroke="url(#{{ $id }}-sheen)" stroke-width="6" stroke-linecap="round"/>
     <path d="M48 26.5c-2.2-5.8-8.2-9.8-15.2-9.8-9.1 0-16.5 7.2-16.5 19.3s7.4 19.3 16.5 19.3c7 0 13-4 15.2-9.8" fill="none" stroke="#fff" stroke-width="6.2" stroke-linecap="round"/>
-    <circle cx="40.5" cy="36" r="7.2" fill="#fbbf24"/>
-    <circle cx="40.5" cy="36" r="4.6" fill="none" stroke="#92400e" stroke-width="1.2" opacity="0.45"/>
-    <text x="40.5" y="39.2" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#78350f">$</text>
+    <g class="cote-logo-coin" transform="translate(40.5 36)">
+        <g class="cote-logo-coin-spin">
+            <circle cx="0" cy="0" r="7.2" fill="#fbbf24"/>
+            <circle cx="0" cy="0" r="4.6" fill="none" stroke="#92400e" stroke-width="1.2" opacity="0.45"/>
+            <text x="0" y="3.2" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="8.5" font-weight="700" fill="#78350f">$</text>
+        </g>
+    </g>
     <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
         <text x="78" y="38" font-size="28" font-weight="700" letter-spacing="0.5" fill="{{ $word }}">COTE</text>
         <text x="79" y="56" font-size="12" font-weight="500" letter-spacing="2.4" fill="{{ $sub }}">TESORERIA</text>
