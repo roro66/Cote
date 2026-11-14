@@ -343,15 +343,20 @@ html:not([data-bs-theme="dark"]) .guest-theme-toggle {
     height: auto;
 }
 
-/* Moneda del logo: giro continuo sobre el eje Z */
+/* Moneda del logo: giro continuo sobre el eje vertical (Y) */
+.cote-logo-coin {
+    transform-style: preserve-3d;
+    perspective: 120px;
+}
 .cote-logo-coin-spin {
     transform-box: fill-box;
     transform-origin: center;
-    transform: rotateZ(0deg);
-    animation: cote-coin-spin-z 4.5s linear infinite;
+    transform: rotateY(0deg);
+    animation: cote-coin-spin-y 3.2s linear infinite;
+    transform-style: preserve-3d;
 }
-@keyframes cote-coin-spin-z {
-    to { transform: rotateZ(360deg); }
+@keyframes cote-coin-spin-y {
+    to { transform: rotateY(360deg); }
 }
 @media (prefers-reduced-motion: reduce) {
     .cote-logo-coin-spin { animation: none; }
