@@ -52,7 +52,13 @@
                 <h3 class="h4 mb-0"><i class="fas fa-file-invoice-dollar text-warning me-2"></i>Registrar una rendición recibida</h3>
             </div>
             <div class="card-body">
-                <p class="fs-5 mb-3">¿De quién es la rendición?</p>
+                <ol class="cote-steps mb-4">
+                    <li class="is-current">Trabajador</li>
+                    <li>Fotos y planilla</li>
+                    <li>Listo</li>
+                </ol>
+                <p class="fs-5 mb-1"><strong>¿Quién te mandó la rendición?</strong></p>
+                <p class="text-muted mb-3">Haz clic en su nombre para empezar. Después subes las fotos y copias la planilla.</p>
                 <input type="search" class="form-control form-control-lg mb-3" placeholder="Escribe un nombre para buscar"
                        wire:model.live.debounce.250ms="search" autofocus>
                 <div class="row g-3">
@@ -62,6 +68,9 @@
                             <button type="button" class="btn cote-person-card w-100 text-start" wire:click="choose({{ $worker->id }})">
                                 <span class="d-block fw-bold fs-5">{{ $worker->person?->full_name ?? $worker->name }}</span>
                                 <span class="d-block {{ $s['class'] }}">{{ ucfirst($s['text']) }}</span>
+                                <span class="d-block mt-2 fw-semibold text-warning-emphasis">
+                                    <i class="fas fa-file-invoice-dollar me-1"></i> Registrar su rendición <i class="fas fa-chevron-right ms-1 small"></i>
+                                </span>
                             </button>
                         </div>
                     @empty
@@ -148,6 +157,13 @@
                 @endunless
             </div>
             <div class="card-body">
+                @unless ($expenseId)
+                    <ol class="cote-steps mb-3">
+                        <li class="is-done">Trabajador</li>
+                        <li class="is-current">Fotos y planilla</li>
+                        <li>Listo</li>
+                    </ol>
+                @endunless
                 <div class="row g-3 mb-3">
                     <div class="col-sm-4 col-lg-3">
                         <label class="form-label fw-semibold" for="intake-date">Fecha de rendición</label>
