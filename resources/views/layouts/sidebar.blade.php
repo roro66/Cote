@@ -1,12 +1,10 @@
 {{-- Sidebar lateral siempre visible (sin colapsar) --}}
 <aside id="sidebar" class="sidebar shadow-sm">
     {{-- Brand: logo arriba del menú --}}
-    <div class="sidebar-brand d-flex flex-column align-items-center border-bottom border-secondary">
-        <div class="d-flex align-items-center justify-content-center w-100 px-2">
-            <a href="{{ route('dashboard') }}" class="sidebar-brand-link text-decoration-none d-flex align-items-center overflow-hidden justify-content-center">
-                <img src="{{ asset('assets/img/logo01.png') }}" alt="COTE" class="sidebar-logo img-fluid" />
-            </a>
-        </div>
+    <div class="sidebar-brand border-bottom border-secondary">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand-link text-decoration-none" title="Ir al panel">
+            <img src="{{ asset('assets/img/cote-logo.svg') }}?v=2" alt="COTE Tesorería" class="sidebar-logo" width="220" height="56" />
+        </a>
     </div>
 
     {{-- Nav --}}
