@@ -24,15 +24,27 @@
             </svg>
         </button>
 
-        <div class="guest-page min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100" style="background-image: url('{{ asset('assets/img/pattern-bills.svg') }}'); background-repeat: repeat; background-size: 160px 160px;">
-            <div class="mb-4">
-                <a href="/" class="guest-logo inline-block text-decoration-none" aria-label="{{ config('app.name') }}">
-                    <x-cote-logo class="guest-logo-svg" variant="dark" />
-                </a>
+        <div class="guest-page min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
+            <div class="guest-atmosphere" aria-hidden="true">
+                <div class="guest-atmosphere-wash"></div>
+                <div class="guest-atmosphere-pattern"></div>
+                <div class="guest-float guest-float-a"></div>
+                <div class="guest-float guest-float-b"></div>
+                <div class="guest-float guest-float-c"></div>
+                <div class="guest-float guest-float-d"></div>
+                <div class="guest-float guest-float-e"></div>
             </div>
 
-            <div class="guest-card w-full sm:max-w-md mt-6 px-6 py-4 bg-white/90 shadow-md overflow-hidden sm:rounded-lg" style="backdrop-filter: blur(6px);">
-                {{ $slot }}
+            <div class="guest-stage relative z-1">
+                <div class="mb-4">
+                    <a href="/" class="guest-logo inline-block text-decoration-none" aria-label="{{ config('app.name') }}">
+                        <x-cote-logo class="guest-logo-svg" variant="dark" />
+                    </a>
+                </div>
+
+                <div class="guest-card w-full sm:max-w-md mt-6 px-6 py-4 bg-white/90 shadow-md overflow-hidden sm:rounded-lg" style="backdrop-filter: blur(6px);">
+                    {{ $slot }}
+                </div>
             </div>
         </div>
 
