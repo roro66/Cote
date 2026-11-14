@@ -221,17 +221,63 @@
             @endif
 
             @if ($history->isNotEmpty())
+                @php $byYear = $history->groupBy(fn ($item) => $item->period->year); @endphp
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-4">
-                        <h5>Meses cerrados</h5>
-                        <ul class="list-unstyled mb-0">
-                            @foreach ($history as $item)
-                                <li>
-                                    <a href="{{ route('closings.index', ['month' => $item->period->format('Y-m')]) }}">{{ ucfirst($item->period->translatedFormat('F Y')) }}</a>
-                                    <span class="small text-muted">— {{ $item->closedBy?->name }}, {{ $item->closed_at->format('d/m/Y') }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
+                        <div class="d-flex flex-wrap align-items-baseline justify-content-between gap-2 mb-3">
+                            <h5 class="mb-0">Meses cerrados</h5>
+                            <span class="text-muted small">{{ $history->count() }} {{ $history->count() === 1 ? 'mes' : 'meses' }}</span>
+                        </div>
+
+                        @foreach ($byYear as $year => $items)
+                            <h6 class="text-muted text-uppercase small fw-semibold mt-{{ $loop->first ? '0' : '4' }} mb-2">{{ $year }}</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0 cote-closings-history">
+                                    <thead>
+                                        <tr>
+                                            <th>Mes</th>
+                                            <th>Cerrado por</th>
+                                            <th>Fecha</th>
+                                            <th class="text-end">Arqueo</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($items as $item)
+                                            @php
+                                                $isCurrent = $month->format('Y-m') === $item->period->format('Y-m');
+                                                $counted = $item->treasury_counted;
+                                                $system = data_get($item->snapshot, 'totals.treasury_closing');
+                                                $diff = $counted !== null && $system !== null ? (float) $counted - (float) $system : null;
+                                            @endphp
+                                            <tr @class(['table-active' => $isCurrent])>
+                                                <td class="fw-semibold text-nowrap">{{ ucfirst($item->period->translatedFormat('F')) }}</td>
+                                                <td>{{ $item->closedBy?->name ?? '—' }}</td>
+                                                <td class="text-nowrap">{{ $item->closed_at->format('d/m/Y') }}</td>
+                                                <td class="text-end text-nowrap">
+                                                    @if ($counted === null)
+                                                        <span class="text-muted">Sin arqueo</span>
+                                                    @elseif ($diff === null || abs($diff) < 0.01)
+                                                        <span class="text-success">Cuadra</span>
+                                                    @elseif ($diff < 0)
+                                                        <span class="text-danger">Faltaron {{ $clp(abs($diff)) }}</span>
+                                                    @else
+                                                        <span class="text-warning-emphasis">Sobraron {{ $clp($diff) }}</span>
+                                                    @endif
+                                                </td>
+                                                <td class="text-end">
+                                                    @if ($isCurrent)
+                                                        <span class="badge bg-secondary">Viendo</span>
+                                                    @else
+                                                        <a href="{{ route('closings.index', ['month' => $item->period->format('Y-m')]) }}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             @endif
