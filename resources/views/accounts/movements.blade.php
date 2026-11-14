@@ -51,8 +51,20 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-4">
+                    <form method="GET" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <label for="periodo" class="fw-semibold mb-0">Mostrar:</label>
+                        <select id="periodo" name="periodo" class="form-select w-auto" onchange="this.form.submit()">
+                            @foreach ($periods as $value => $label)
+                                <option value="{{ $value }}" @selected($period === (string) $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        @if ($periodStart)
+                            <span class="text-muted">Saldo al empezar: <strong>{{ $clp($periodOpening) }}</strong></span>
+                        @endif
+                    </form>
+
                     @if ($movements->isEmpty())
-                        <p class="text-muted mb-0">Esta cuenta no tiene movimientos aprobados.</p>
+                        <p class="text-muted mb-0">{{ $period === 'todo' ? 'Esta cuenta no tiene movimientos aprobados.' : 'No hay movimientos en este período.' }}</p>
                     @else
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">

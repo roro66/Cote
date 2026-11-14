@@ -55,10 +55,7 @@ class AccountMovementsTool extends AssistantTool
         }
 
         [$from, $to, $label] = $this->period($args);
-        $statement = app(AccountStatementService::class)->build($account);
-
-        $movements = $statement['movements']->filter(fn ($m) => $m['date'] !== null
-            && $m['date']->between($from, $to));
+        $movements = app(AccountStatementService::class)->build($account, $from, $to)['movements'];
 
         $rows = $movements->map(fn ($m) => [
             'fecha' => $m['date']->timezone('America/Santiago')->format('d/m/Y'),

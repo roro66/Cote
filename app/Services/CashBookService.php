@@ -27,15 +27,10 @@ class CashBookService
             return ['treasury' => null, 'month' => $start, 'opening' => 0.0, 'closing' => 0.0, 'total_in' => 0.0, 'total_out' => 0.0, 'rows' => collect()];
         }
 
-        $statement = $this->statements->build($treasury);
-        $movements = $statement['movements'];
+        $statement = $this->statements->build($treasury, $start, $end);
+        $opening = (float) $statement['opening_balance'];
 
-        // Saldo al empezar el mes: el que quedó tras el último movimiento anterior; si no hubo, el saldo sin movimientos que lo expliquen.
-        $before = $movements->first(fn ($m) => $m['date'] !== null && $m['date']->lt($start));
-        $opening = $before ? (float) $before['balance_after'] : (float) $statement['opening_balance'];
-
-        $rows = $movements
-            ->filter(fn ($m) => $m['date'] !== null && $m['date']->between($start, $end))
+        $rows = $statement['movements']
             ->reverse()
             ->values()
             ->map(fn ($m) => [

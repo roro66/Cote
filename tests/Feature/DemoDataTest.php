@@ -36,6 +36,22 @@ it('creates a consistent demo history and removes it without touching real data'
         }
     }
 
+    // Un período muestra lo mismo que la historia completa, con los mismos saldos
+    $month = now()->subMonths(2)->startOfMonth();
+    foreach (Account::all() as $account) {
+        $full = $statements->build($account)['movements']
+            ->filter(fn ($m) => $m['date']->between($month, $month->copy()->endOfMonth()))->values();
+        $ranged = $statements->build($account, $month, $month->copy()->endOfMonth());
+        expect($ranged['movements']->pluck('balance_after')->all())->toEqual($full->pluck('balance_after')->all());
+        if ($full->isNotEmpty()) {
+            $last = $full->last();
+            expect($ranged['opening_balance'])->toEqual(round($last['balance_after'] - $last['in'] + $last['out'], 2));
+        }
+    }
+    $this->actingAs(App\Models\User::first())
+        ->get(route('accounts.movements', ['account' => $treasury, 'periodo' => (string) now()->year]))
+        ->assertOk()->assertSee('Saldo al empezar');
+
     $document = Document::first();
     expect($document)->not->toBeNull();
     Storage::disk('local')->assertExists($document->file_path);

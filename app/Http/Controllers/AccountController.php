@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Expense;
 use App\Models\Person;
 use Illuminate\Http\Request;
 
@@ -81,11 +82,44 @@ class AccountController extends Controller
         return response()->json($account->load('person'));
     }
 
-    public function movements(Account $account, \App\Services\AccountStatementService $statements)
+    public function movements(Request $request, Account $account, \App\Services\AccountStatementService $statements)
     {
         $account->load('person');
 
-        return view('accounts.movements', ['account' => $account, ...$statements->build($account)]);
+        $transactions = fn () => \App\Models\Transaction::where('status', 'approved')
+            ->where(fn ($q) => $q->where('from_account_id', $account->id)->orWhere('to_account_id', $account->id));
+        $first = collect([$transactions()->min('approved_at'), Expense::where('account_id', $account->id)->where('status', 'approved')->min('reviewed_at')])
+            ->filter()->min();
+        $firstYear = min($first ? \Illuminate\Support\Carbon::parse($first)->year : now()->year, now()->year);
+        $periods = ['12m' => 'Últimos 12 meses']
+            + collect(range(now()->year, $firstYear))->mapWithKeys(fn ($y) => [(string) $y => "Año {$y}"])->all()
+            + ['todo' => 'Todo'];
+
+        // Con mucha historia, una sola página con todo sería lenta e inútil
+        $period = (string) $request->query('periodo');
+        if (! isset($periods[$period])) {
+            $period = $transactions()->count() > 500 ? '12m' : 'todo';
+        }
+        [$from, $to] = match ($period) {
+            'todo' => [null, null],
+            '12m' => [now()->subMonths(12)->startOfDay(), null],
+            default => [\Illuminate\Support\Carbon::create((int) $period)->startOfYear(), \Illuminate\Support\Carbon::create((int) $period)->endOfYear()],
+        };
+
+        $statement = $statements->build($account, $from, $to);
+        $totals = $statements->totals($account);
+
+        return view('accounts.movements', [
+            'account' => $account,
+            'movements' => $statement['movements'],
+            'period' => $period,
+            'periods' => $periods,
+            'periodStart' => $from,
+            'periodOpening' => $statement['opening_balance'],
+            'total_in' => $totals['in'],
+            'total_out' => $totals['out'],
+            'opening_balance' => $statements->unexplainedBalance($account),
+        ]);
     }
 
     public function exportMovements(Account $account, \App\Services\AccountStatementService $statements, \App\Services\ExcelExportService $excel)
