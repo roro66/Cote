@@ -110,6 +110,29 @@ class ExpenseIntake extends Component
         $this->dispatch('intake-row-added', index: count($this->rows) - 1);
     }
 
+    /**
+     * Como en Sover (traspasos/recepciones): al salir del monto de la última línea completa, abrir otra.
+     */
+    public function maybeAddRowAfterBlur(int $index): void
+    {
+        if ($index !== count($this->rows) - 1) {
+            return;
+        }
+
+        $row = $this->rows[$index] ?? [];
+        if ((int) ($row['amount'] ?? 0) < 1) {
+            return;
+        }
+        if (trim((string) ($row['vendor'] ?? '')) === '' || trim((string) ($row['number'] ?? '')) === '') {
+            return;
+        }
+        if (($row['category_id'] ?? '') === '') {
+            return;
+        }
+
+        $this->addRow();
+    }
+
     public function removeRow(int $index): void
     {
         unset($this->rows[$index]);

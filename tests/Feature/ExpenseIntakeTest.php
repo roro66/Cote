@@ -101,6 +101,55 @@ it('copies date, project, city and document type into a new line', function () {
     ]);
 });
 
+it('adds a new line after leaving the amount of the last completed row', function () {
+    $account = intake_worker();
+    $row = intake_row(['project' => 'Obra Sur', 'city' => 'Osorno']);
+
+    $component = Livewire::test(ExpenseIntake::class)
+        ->call('choose', $account->id)
+        ->set('rows', [$row])
+        ->call('maybeAddRowAfterBlur', 0);
+
+    expect($component->get('rows'))->toHaveCount(2)
+        ->and($component->get('rows.1'))->toMatchArray([
+            'project' => 'Obra Sur', 'city' => 'Osorno', 'type' => $row['type'], 'date' => $row['date'],
+            'vendor' => '', 'number' => '', 'amount' => '',
+        ]);
+
+    $incomplete = Livewire::test(ExpenseIntake::class)
+        ->call('choose', $account->id)
+        ->set('rows', [intake_row(['vendor' => '', 'amount' => ''])])
+        ->call('maybeAddRowAfterBlur', 0);
+
+    expect($incomplete->get('rows'))->toHaveCount(1);
+});
+
+it('drops the trailing blank line when saving a paper expense report', function () {
+    $account = intake_worker(100000);
+    $filled = intake_row(['amount' => '1500']);
+    $blank = [
+        'date' => $filled['date'],
+        'category_id' => '',
+        'project' => $filled['project'],
+        'city' => $filled['city'],
+        'type' => $filled['type'],
+        'vendor' => '',
+        'number' => '',
+        'amount' => '',
+    ];
+
+    Livewire::test(ExpenseIntake::class)
+        ->call('choose', $account->id)
+        ->set('newPhotos', [UploadedFile::fake()->image('planilla.jpg')])
+        ->set('rows', [$filled, $blank])
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSet('step', 'listo');
+
+    expect(Expense::sole()->items)->toHaveCount(1)
+        ->and((int) Expense::sole()->total_amount)->toBe(1500);
+});
+
 it('asks for the photos, the vendor and the document number', function () {
     $account = intake_worker();
 

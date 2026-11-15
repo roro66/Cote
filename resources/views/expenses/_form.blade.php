@@ -73,10 +73,14 @@
     </div>
 
     <h5 class="mb-3">Gastos</h5>
+    <p class="text-muted small mb-2">
+        Al salir del último campo de un gasto completo se agrega solo la siguiente línea.
+        Si queda una línea en blanco al guardar, se elimina sola.
+    </p>
     <div id="expenseItems"></div>
 
     <div class="text-center mb-3">
-        <button type="button" class="btn btn-success" onclick="addExpenseItem()">
+        <button type="button" class="btn btn-outline-success btn-sm" onclick="addExpenseItem()">
             <i class="fas fa-plus me-1"></i>Agregar gasto
         </button>
     </div>
@@ -141,12 +145,12 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">N° de documento</label>
-                    <input type="text" class="form-control" data-field="receipt_number" maxlength="100">
+                    <input type="text" class="form-control" data-field="receipt_number" data-line-tail maxlength="100">
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Categoría</label>
-                    <select class="form-select item-category-select" data-field="expense_category_id">
+                    <select class="form-select item-category-select" data-field="expense_category_id" data-line-tail>
                         <option value="">-- Sin categorizar --</option>
                     </select>
                     <div class="invalid-feedback"></div>
@@ -238,6 +242,57 @@
         });
     }
 
+    function itemCards() {
+        return [...document.querySelectorAll('#expenseItems .expense-item')];
+    }
+
+    function fieldValue(card, field) {
+        const input = card.querySelector(`[data-field="${field}"]`);
+        if (!input) return '';
+        if (input.type === 'checkbox') return input.checked;
+        return (input.value || '').trim();
+    }
+
+    /** Línea vacía (cola automática): sin datos propios y sin id de gasto existente. */
+    function isBlankItem(card) {
+        if (fieldValue(card, 'id')) return false;
+        const amount = parseFloat(fieldValue(card, 'amount')) || 0;
+        return !fieldValue(card, 'description')
+            && amount <= 0
+            && !fieldValue(card, 'vendor_name')
+            && !fieldValue(card, 'receipt_number')
+            && !(card.querySelector('.item-files')?.files?.length);
+    }
+
+    /** Completa lo mínimo para pasar a la siguiente línea (como en Sover). */
+    function isReadyItem(card) {
+        const amount = parseFloat(fieldValue(card, 'amount')) || 0;
+        return !!fieldValue(card, 'description')
+            && amount > 0
+            && !!fieldValue(card, 'vendor_name');
+    }
+
+    function pruneBlankItems() {
+        const cards = itemCards();
+        cards.forEach(card => {
+            if (itemCards().length <= 1) return;
+            if (isBlankItem(card)) card.remove();
+        });
+        if (!itemCards().length) addExpenseItem();
+        calculateTotal();
+    }
+
+    function maybeAddItemAfterBlur(card) {
+        const cards = itemCards();
+        if (!card || card !== cards[cards.length - 1]) return;
+        if (!isReadyItem(card)) return;
+        addExpenseItem({ expense_date: fieldValue(card, 'expense_date') || TODAY });
+        requestAnimationFrame(() => {
+            const next = itemCards().at(-1);
+            next?.querySelector('[data-field="description"]')?.focus();
+        });
+    }
+
     window.addExpenseItem = function (data = {}) {
         const index = itemCounter++;
         const node = document.getElementById('expenseItemTemplate').content.cloneNode(true);
@@ -262,6 +317,7 @@
 
         document.getElementById('expenseItems').appendChild(card);
         calculateTotal();
+        return card;
     };
 
     function toggleReason(card) {
@@ -333,6 +389,29 @@
         const form = document.getElementById('expenseForm');
 
         form.addEventListener('input', e => { if (e.target.classList.contains('item-amount')) calculateTotal(); });
+        form.addEventListener('focusout', e => {
+            const card = e.target.closest('.expense-item');
+            if (!card) return;
+            // Si el foco sigue dentro de la misma línea, no agregar; al salir del último campo sí.
+            requestAnimationFrame(() => {
+                if (card.contains(document.activeElement)) return;
+                maybeAddItemAfterBlur(card);
+            });
+        });
+        form.addEventListener('keydown', e => {
+            if (e.key !== 'Enter' || e.target.tagName === 'TEXTAREA') return;
+            const field = e.target.closest('[data-field]');
+            if (!field || field.type === 'file' || field.type === 'checkbox') return;
+            e.preventDefault();
+            const card = field.closest('.expense-item');
+            const fields = [...card.querySelectorAll('input:not([type=hidden]):not([type=checkbox]):not([type=file]), select')];
+            const i = fields.indexOf(e.target);
+            if (e.target.matches('[data-line-tail]') || i === fields.length - 1) {
+                maybeAddItemAfterBlur(card);
+                return;
+            }
+            fields[i + 1]?.focus();
+        });
         form.addEventListener('change', e => {
             if (e.target.classList.contains('without-receipt')) {
                 toggleReason(e.target.closest('.expense-item'));
@@ -341,11 +420,14 @@
                 const names = Array.from(e.target.files || []).map(f => f.name);
                 e.target.closest('.expense-item').querySelector('.selected-files').textContent = names.length ? names.join(', ') : 'Ningún archivo nuevo';
             }
+            if (e.target.matches('select[data-line-tail]')) {
+                maybeAddItemAfterBlur(e.target.closest('.expense-item'));
+            }
         });
         form.addEventListener('click', e => {
             const btn = e.target.closest('[data-remove-item]');
             if (!btn) return;
-            if (document.querySelectorAll('.expense-item').length > 1) {
+            if (itemCards().length > 1) {
                 btn.closest('.expense-item').remove();
                 calculateTotal();
             } else {
@@ -368,7 +450,14 @@
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
+            pruneBlankItems();
             clearErrors(form);
+
+            if (itemCards().every(isBlankItem)) {
+                toastr.error('Agrega al menos un gasto con descripción, monto y proveedor.');
+                itemCards()[0]?.querySelector('[data-field="description"]')?.focus();
+                return;
+            }
 
             const submit = document.getElementById('expenseSubmit');
             submit.disabled = true;

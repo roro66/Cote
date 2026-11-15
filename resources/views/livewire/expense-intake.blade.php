@@ -181,12 +181,12 @@
                 <datalist id="intake-vendors">@foreach ($vendors as $v)<option value="{{ $v }}">@endforeach</datalist>
 
                 <p class="text-muted small mb-2">
-                    Copia cada línea de la planilla. <kbd>Enter</kbd> pasa al siguiente casillero; en el monto agrega otra línea con la misma fecha, proyecto y ciudad.
+                    Copia cada línea de la planilla. <kbd>Enter</kbd> pasa al siguiente casillero; al salir del monto de la última línea completa se agrega sola la siguiente (con la misma fecha, proyecto y ciudad). Las líneas en blanco se eliminan al guardar.
                 </p>
 
                 <div class="table-responsive cote-intake-grid"
                      x-data
-                     @keydown.enter="if ($event.target.matches('input, select')) { $event.preventDefault(); const cells = [...$el.querySelectorAll('input, select')]; const k = cells.indexOf($event.target); if ($event.target.dataset.last !== undefined) { $event.target.blur(); $wire.addRow(); } else if (cells[k + 1]) { cells[k + 1].focus(); } }"
+                     @keydown.enter="if ($event.target.matches('input, select')) { $event.preventDefault(); const cells = [...$el.querySelectorAll('input, select')]; const k = cells.indexOf($event.target); if ($event.target.dataset.last !== undefined) { $event.target.blur(); $wire.maybeAddRowAfterBlur(Number($event.target.closest('tr').dataset.row)); } else if (cells[k + 1]) { cells[k + 1].focus(); } }"
                      @intake-row-added.window="$nextTick(() => setTimeout(() => $el.querySelector(`[data-row='${$event.detail.index}'] select[data-first]`)?.focus(), 50))">
                     <table class="table table-sm align-middle mb-2">
                         <thead>
@@ -239,7 +239,9 @@
                                     </td>
                                     <td>
                                         <input type="text" inputmode="numeric" data-last class="form-control form-control-sm text-end @error("rows.$i.amount") is-invalid @enderror"
-                                               wire:model.blur="rows.{{ $i }}.amount" x-on:input="$el.value = $el.value.replace(/\D/g, '')" placeholder="0">
+                                               wire:model.blur="rows.{{ $i }}.amount"
+                                               wire:blur="maybeAddRowAfterBlur({{ $i }})"
+                                               x-on:input="$el.value = $el.value.replace(/\D/g, '')" placeholder="0">
                                         @error("rows.$i.amount") <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </td>
                                     <td>
