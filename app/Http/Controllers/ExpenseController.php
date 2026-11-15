@@ -157,7 +157,7 @@ class ExpenseController extends Controller
             'items.*.description' => 'required|string|max:255',
             'items.*.amount' => 'required|numeric|min:1',
             'items.*.document_type' => 'required|in:boleta,factura,guia_despacho,ticket,vale',
-            'items.*.vendor_name' => 'required|string|max:255',
+            'items.*.vendor_name' => 'nullable|string|max:255',
             'items.*.receipt_number' => 'nullable|string|max:100',
             'items.*.expense_category_id' => 'nullable|exists:expense_categories,id',
             'items.*.without_receipt' => 'nullable|boolean',
@@ -167,6 +167,19 @@ class ExpenseController extends Controller
             'items.*.files' => 'nullable|array',
             'items.*.files.*' => 'file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
         ]);
+
+        $vendorErrors = [];
+        foreach ($request->input('items', []) as $key => $item) {
+            if (\App\Models\ExpenseCategory::allowsBlankVendorId($item['expense_category_id'] ?? null)) {
+                continue;
+            }
+            if (trim((string) ($item['vendor_name'] ?? '')) === '') {
+                $vendorErrors["items.$key.vendor_name"] = ['Falta el proveedor.'];
+            }
+        }
+        if ($vendorErrors !== []) {
+            throw \Illuminate\Validation\ValidationException::withMessages($vendorErrors);
+        }
     }
 
     /** @return array<int, \Illuminate\Http\UploadedFile[]> archivos nuevos por posición de ítem */
@@ -206,6 +219,11 @@ class ExpenseController extends Controller
     {
         $errors = [];
         foreach ($request->items as $key => $item) {
+            // Viáticos: no hay boleta de un comercio concreto.
+            if (\App\Models\ExpenseCategory::allowsBlankVendorId($item['expense_category_id'] ?? null)) {
+                continue;
+            }
+
             if (ExpenseService::isWithoutReceipt($item)) {
                 if (trim((string) ($item['without_receipt_reason'] ?? '')) === '') {
                     $errors["items.$key.without_receipt_reason"] = ['Indica por qué este gasto no tiene comprobante.'];

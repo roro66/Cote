@@ -332,10 +332,10 @@ Cada gasto pide:
 | Descripción | Obligatoria, hasta 255 caracteres. Ejemplo: «Almuerzo cuadrilla». |
 | Monto (CLP) | Obligatorio, mínimo $1. |
 | Tipo de documento | Boleta, Factura, Ticket, Guía de despacho o Vale. |
-| Proveedor | Obligatorio, nombre del comercio. |
-| N° de documento | Opcional, hasta 100 caracteres. |
-| Categoría | Opcional. Si no eliges, queda «Sin categorizar». |
-| Comprobantes | Fotos o PDF, con **Agregar archivos**. |
+| Proveedor | Obligatorio, nombre del comercio. **Excepción:** si la categoría es **Viáticos**, puede quedar en blanco (no hay boleta de un comercio). |
+| N° de documento | Opcional, hasta 100 caracteres. En Viáticos también puede quedar en blanco. |
+| Categoría | Opcional. Si no eliges, queda «Sin categorizar». Elige **Viáticos** cuando sea un viático. |
+| Comprobantes | Fotos o PDF, con **Agregar archivos**. En **Viáticos** no son obligatorios (COTE lo trata como sin boleta individual). |
 
 **Comprobantes:**
 

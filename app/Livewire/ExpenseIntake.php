@@ -125,10 +125,12 @@ class ExpenseIntake extends Component
         if ((int) ($row['amount'] ?? 0) < 1) {
             return;
         }
-        if (trim((string) ($row['vendor'] ?? '')) === '' || trim((string) ($row['number'] ?? '')) === '') {
+        if (($row['category_id'] ?? '') === '') {
             return;
         }
-        if (($row['category_id'] ?? '') === '') {
+        // Viáticos: no exige proveedor ni N°. El resto sí.
+        if (! ExpenseCategory::allowsBlankVendorId($row['category_id'])
+            && (trim((string) ($row['vendor'] ?? '')) === '' || trim((string) ($row['number'] ?? '')) === '')) {
             return;
         }
 
@@ -190,20 +192,33 @@ class ExpenseIntake extends Component
             'rows.*.project' => 'nullable|string|max:150',
             'rows.*.city' => 'nullable|string|max:100',
             'rows.*.type' => 'required|in:' . implode(',', array_keys(self::TYPES)),
-            'rows.*.vendor' => 'required|string|max:255',
-            'rows.*.number' => 'required|string|max:100',
+            'rows.*.vendor' => 'nullable|string|max:255',
+            'rows.*.number' => 'nullable|string|max:100',
             'rows.*.amount' => 'required|integer|min:1',
         ], [
             'date.before_or_equal' => 'La fecha de la rendición no puede ser posterior a hoy.',
             'rows.*.date.required' => 'Falta la fecha.',
             'rows.*.date.before_or_equal' => 'La fecha no puede ser posterior a hoy.',
             'rows.*.category_id.required' => 'Elige el concepto.',
-            'rows.*.vendor.required' => 'Falta el proveedor.',
-            'rows.*.number.required' => 'Falta el N°.',
             'rows.*.amount.required' => 'Falta el monto.',
             'rows.*.amount.min' => 'El monto debe ser mayor a cero.',
             'rows.*.amount.integer' => 'Escribe el monto sin decimales.',
         ]);
+
+        foreach ($this->rows as $index => $row) {
+            if (ExpenseCategory::allowsBlankVendorId($row['category_id'] ?? null)) {
+                continue;
+            }
+            if (trim((string) ($row['vendor'] ?? '')) === '') {
+                $this->addError("rows.$index.vendor", 'Falta el proveedor.');
+            }
+            if (trim((string) ($row['number'] ?? '')) === '') {
+                $this->addError("rows.$index.number", 'Falta el N°.');
+            }
+        }
+        if ($this->getErrorBag()->isNotEmpty()) {
+            return;
+        }
 
         $duplicates = DuplicateReceipts::find(array_map(fn ($r) => [
             'document_type' => $r['type'], 'vendor_name' => $r['vendor'], 'receipt_number' => $r['number'],

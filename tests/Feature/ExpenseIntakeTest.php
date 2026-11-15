@@ -168,6 +168,29 @@ it('asks for the photos, the vendor and the document number', function () {
     expect(Expense::count())->toBe(0);
 });
 
+it('allows blank vendor and number for Viáticos on paper intake', function () {
+    $account = intake_worker(100000);
+    $viatico = (string) ExpenseCategory::where('code', 'VIA')->value('id');
+
+    Livewire::test(ExpenseIntake::class)
+        ->call('choose', $account->id)
+        ->set('newPhotos', [UploadedFile::fake()->image('planilla.jpg')])
+        ->set('rows', [intake_row([
+            'category_id' => $viatico,
+            'vendor' => '',
+            'number' => '',
+            'amount' => '45000',
+        ])])
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSet('step', 'listo');
+
+    $item = Expense::sole()->items()->first();
+    expect($item->vendor_name)->toBe('Viático')
+        ->and($item->document_number)->toBeNull()
+        ->and($item->without_receipt)->toBeTrue();
+});
+
 it('detects a receipt already rendered in another expense report', function () {
     $account = intake_worker();
     $row = intake_row(['vendor' => 'Copec', 'number' => '777']);

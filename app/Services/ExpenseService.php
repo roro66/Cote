@@ -62,16 +62,20 @@ class ExpenseService
 
             $keptItemIds = [];
             foreach (array_values($items) as $index => $data) {
+                $isViatico = \App\Models\ExpenseCategory::allowsBlankVendorId($data['expense_category_id'] ?? null);
+                $withoutReceipt = self::isWithoutReceipt($data) || ($isViatico && empty($filesByItem[$index] ?? []));
                 $fields = [
                     'description' => $data['description'],
                     'amount' => $data['amount'],
                     'document_type' => $data['document_type'],
-                    'vendor_name' => $data['vendor_name'],
+                    'vendor_name' => trim((string) ($data['vendor_name'] ?? '')) ?: ($isViatico ? 'Viático' : ''),
                     'document_number' => $data['receipt_number'] ?? null,
                     'expense_category_id' => $data['expense_category_id'] ?? null,
                     'expense_date' => $data['expense_date'],
-                    'without_receipt' => self::isWithoutReceipt($data),
-                    'without_receipt_reason' => self::isWithoutReceipt($data) ? trim((string) $data['without_receipt_reason']) : null,
+                    'without_receipt' => $withoutReceipt,
+                    'without_receipt_reason' => $withoutReceipt
+                        ? (trim((string) ($data['without_receipt_reason'] ?? '')) ?: ($isViatico ? 'Viático sin boleta individual' : null))
+                        : null,
                 ];
 
                 $item = ! empty($data['id']) ? $expense->items()->whereKey($data['id'])->first() : null;
@@ -154,17 +158,23 @@ class ExpenseService
             }
 
             foreach ($rows as $row) {
+                $isViatico = \App\Models\ExpenseCategory::allowsBlankVendorId($row['category_id'] ?? null);
+                $vendor = trim((string) ($row['vendor'] ?? ''));
+                $number = trim((string) ($row['number'] ?? ''));
                 $expense->items()->create([
                     'description' => $categories[$row['category_id']] ?? 'Gasto',
                     'amount' => $row['amount'],
                     'document_type' => $row['type'],
-                    'vendor_name' => $row['vendor'],
-                    'document_number' => $row['number'],
+                    'vendor_name' => $vendor !== '' ? $vendor : ($isViatico ? 'Viático' : ''),
+                    'document_number' => $number !== '' ? $number : null,
                     'expense_category_id' => $row['category_id'],
                     'expense_date' => $row['date'],
                     'project' => $row['project'] ?: null,
                     'city' => $row['city'] ?: null,
-                    'without_receipt' => false,
+                    'without_receipt' => $isViatico && $vendor === '' && $number === '',
+                    'without_receipt_reason' => $isViatico && $vendor === '' && $number === ''
+                        ? 'Viático sin boleta individual'
+                        : null,
                 ]);
             }
 

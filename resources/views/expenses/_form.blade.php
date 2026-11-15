@@ -139,8 +139,9 @@
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Proveedor <span class="text-danger">*</span></label>
+                    <label class="form-label">Proveedor <span class="text-danger vendor-required-mark">*</span></label>
                     <input type="text" class="form-control" data-field="vendor_name" placeholder="Nombre del comercio" required maxlength="255">
+                    <div class="form-text vendor-viatico-hint" style="display:none">En Viáticos puede quedar en blanco.</div>
                     <div class="invalid-feedback"></div>
                 </div>
                 <div class="col-md-3">
@@ -190,6 +191,7 @@
     const EXISTING_ITEMS = @json($itemsData);
     const EXPENSE_ENTITY_ID = @json($expense?->id);
     const AUTOSAVE_USER_ID = {{ auth()->check() ? (int) auth()->id() : 0 }};
+    const BLANK_VENDOR_CATEGORIES = @json(\App\Models\ExpenseCategory::blankVendorCategoryIds());
     const TODAY = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     let itemCounter = 0;
     let categories = [];
@@ -268,12 +270,30 @@
             && !(card.querySelector('.item-files')?.files?.length);
     }
 
+    function isViaticoCard(card) {
+        const cat = fieldValue(card, 'expense_category_id');
+        return BLANK_VENDOR_CATEGORIES.includes(Number(cat));
+    }
+
+    function syncViaticoFields(card) {
+        const viatico = isViaticoCard(card);
+        const vendor = card.querySelector('[data-field="vendor_name"]');
+        const mark = card.querySelector('.vendor-required-mark');
+        const hint = card.querySelector('.vendor-viatico-hint');
+        if (vendor) {
+            if (viatico) vendor.removeAttribute('required');
+            else vendor.setAttribute('required', 'required');
+        }
+        if (mark) mark.style.display = viatico ? 'none' : '';
+        if (hint) hint.style.display = viatico ? 'block' : 'none';
+    }
+
     /** Completa lo mínimo para pasar a la siguiente línea (como en Sover). */
     function isReadyItem(card) {
         const amount = parseFloat(fieldValue(card, 'amount')) || 0;
-        return !!fieldValue(card, 'description')
-            && amount > 0
-            && !!fieldValue(card, 'vendor_name');
+        if (!fieldValue(card, 'description') || amount <= 0) return false;
+        if (isViaticoCard(card)) return true;
+        return !!fieldValue(card, 'vendor_name');
     }
 
     function pruneBlankItems() {
@@ -318,6 +338,7 @@
         card.querySelector('[data-field="expense_date"]').max = TODAY;
         fillCategories(card.querySelector('.item-category-select'), data.expense_category_id);
         renderDocuments(card.querySelector('.existing-documents'), index, data.documents);
+        syncViaticoFields(card);
 
         document.getElementById('expenseItems').appendChild(card);
         calculateTotal();
@@ -424,6 +445,9 @@
                 const names = Array.from(e.target.files || []).map(f => f.name);
                 e.target.closest('.expense-item').querySelector('.selected-files').textContent = names.length ? names.join(', ') : 'Ningún archivo nuevo';
             }
+            if (e.target.matches('select[data-field="expense_category_id"]')) {
+                syncViaticoFields(e.target.closest('.expense-item'));
+            }
             if (e.target.matches('select[data-line-tail]')) {
                 maybeAddItemAfterBlur(e.target.closest('.expense-item'));
             }
@@ -506,7 +530,7 @@
             clearErrors(form);
 
             if (itemCards().every(isBlankItem)) {
-                toastr.error('Agrega al menos un gasto con descripción, monto y proveedor.');
+                toastr.error('Agrega al menos un gasto con descripción y monto.');
                 itemCards()[0]?.querySelector('[data-field="description"]')?.focus();
                 return;
             }

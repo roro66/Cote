@@ -182,6 +182,7 @@
 
                 <p class="text-muted small mb-2">
                     Copia cada línea de la planilla. <kbd>Enter</kbd> pasa al siguiente casillero; al salir del monto de la última línea completa se agrega sola la siguiente (con la misma fecha, proyecto y ciudad). Las líneas en blanco se eliminan al guardar.
+                    Si el concepto es <strong>Viáticos</strong>, proveedor y N° pueden quedar en blanco (no hay boleta de un comercio).
                 </p>
 
                 <div class="table-responsive cote-intake-grid"
