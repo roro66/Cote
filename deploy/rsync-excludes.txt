@@ -1,4 +1,5 @@
 .git
+.cursor
 node_modules
 /vendor/
 .env

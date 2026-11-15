@@ -882,5 +882,5 @@ Que el trabajador rindió más de lo que se le entregó: gastó de su bolsillo y
 **Quién puede:** todos los usuarios
 
 - Si está **Enviado** o **Rechazado**: ábrela (**Ver**) y usa **Editar** / **Corregir y reenviar**, o elimínala.
-- Si fue **recibida en papel** y ya está **Aprobado**: el Jefe o el Tesorero **Anulan la aprobación** y luego **Corregen** en la misma pantalla de registrar planilla.
+- Si fue **recibida en papel** y ya está **Aprobado**: el Jefe o el Tesorero **anulan la aprobación** y luego **corrigen** en la misma pantalla de registrar planilla.
 - Si ya está **Aprobado** (desde la app): el Jefe o el Tesorero pueden **Anular aprobación** desde la ficha; la rendición vuelve a quedar para corregir y el monto vuelve al saldo.
