@@ -100,6 +100,7 @@ Si la contraseña actual está mal, bajo el campo aparece «La contraseña es in
 - **Tema claro u oscuro:** botón con luna o sol, arriba a la derecha. La elección se recuerda en ese navegador.
 - **«¿Qué es esto?»:** el ícono ⓘ junto a algunas palabras explica qué significan. Haz clic en él.
 - **Avisos:** los mensajes de éxito o error aparecen arriba a la derecha y se cierran solos.
+- **Autoguardado:** en pantallas largas (registrar o crear/editar una rendición, y entregar / devolución / ingreso) COTE guarda un borrador en **tu navegador**. Aparece una tostadita verde abajo a la derecha («Autoguardando…»). Si cierras o refrescas a mitad de camino, al volver te pregunta si quieres **Restaurar** o **Descartar** el borrador. Al grabar con éxito el borrador se borra: no debe reaparecer al empezar otra. Las fotos no se guardan en el borrador.
 - **Confirmaciones:** antes de eliminar, aprobar o cerrar algo aparece un cuadro «Confirmar» con el botón de la acción y **Cancelar**.
 - **Tablas:** tienen **Buscar:**, el selector **Mostrar _ entradas** (10, 25, 50, 100 o Todos) y el botón **Descargar Excel**. El Excel trae lo que está cargado en la tabla: para bajar todo, elige antes **Mostrar Todos**.
 
@@ -136,7 +137,7 @@ Botón verde **Entregar dinero** de la barra superior (o **Entregar** en la tarj
 3. **Detalle:** un texto corto para acordarte después (viene escrito «Entrega de dinero para gastos»; puedes cambiarlo).
 4. **Confirmar:** COTE te muestra en palabras qué va a pasar, por ejemplo «Vas a entregar **$50.000** a **Juan Pérez**. La caja queda con $120.000. Juan queda: tiene $80.000 en su poder.». Si está bien, pulsa **Sí, confirmo**. Si no, **Atrás**.
 
-Al confirmar aparece «¡Listo!» y los saldos ya cambiaron. Desde ahí puedes **Registrar otro**, **Volver al inicio** o **Me equivoqué, anular**.
+Al confirmar aparece «¡Listo!» y los saldos ya cambiaron. Desde ahí puedes **Registrar otro**, **Volver al inicio** o **Me equivoqué, anular**. Mientras avanzas los pasos, el **autoguardado** puede guardar un borrador en el navegador por si se corta la sesión.
 
 Esta misma entrega sirve para **pagarle a un trabajador al que le debemos**: el botón de su tarjeta dice **Pagarle**.
 
@@ -229,18 +230,19 @@ Las filas en rojo se pueden corregir en el Excel y volver a subir: los ya import
 
 **Quién puede:** rol `boss` o rol `treasurer`
 
-Así llegan hoy las rendiciones: el trabajador manda fotos de la planilla «Rendición de Gastos» llenada a mano y de las hojas con las boletas pegadas. El tesorero las transcribe. Botón naranja **Registrar rendición** de la barra superior (o **Rendiciones** → **Registrar rendición recibida**).
+Así llegan hoy las rendiciones: el trabajador manda por WhatsApp (u otro medio) fotos de la planilla «Rendición de Gastos» llenada a mano y de las hojas con las boletas pegadas. El tesorero las transcribe. Botón naranja **Registrar rendición** de la barra superior (o **Rendiciones** → **Registrar rendición recibida**).
 
-1. **¿De quién es?** Elige al trabajador (cada tarjeta dice cuánto tiene en su poder o cuánto le debemos).
-2. **Agregar fotos:** sube las fotos que mandó (JPG, PNG, WEBP o PDF, hasta 10 MB cada una). Quedan fijas arriba mientras escribes, con botones para pasar de foto, acercar, alejar, girar o quitar. **Ocultar** las esconde. Al menos una foto es obligatoria.
+1. **¿De quién es?** Elige al trabajador con **Registrar su rendición ›** (cada tarjeta dice cuánto tiene en su poder o cuánto le debemos). Arriba se ven los pasos: persona → planilla → listo.
+2. **Agregar fotos:** sube las fotos que mandó (JPG, PNG, WEBP o PDF, hasta 10 MB cada una). Quedan fijas a la izquierda mientras escribes, con botones para pasar de foto, acercar, alejar, girar o quitar. **Ocultar** las esconde. Al menos una foto es obligatoria.
 3. **Fecha de rendición** (la de la planilla) y una **Observación** opcional.
-4. **Copia cada línea de la planilla:** Fecha, **Concepto** (la categoría: Peaje, Alimentación, Combustible…), **Proyecto**, **Ciudad**, **Documento** (Boleta o Factura), **Proveedor**, **N°** de la boleta o factura y **Monto**. Proveedor y N° están en cada comprobante y son obligatorios: así COTE avisa si una boleta ya se rindió antes. Proyecto, Ciudad y Proveedor sugieren lo ya escrito antes.
-   - **Enter** pasa al siguiente casillero. En el monto, **Enter** agrega otra línea con la misma fecha, proyecto, ciudad y documento (como las comillas «″» de la planilla).
-   - La ✕ quita una línea. Las líneas agregadas y no llenadas se ignoran.
+4. **Copia cada línea de la planilla:** Fecha, **Concepto** (la categoría: Peaje, Alimentación, Combustible…), **Proyecto**, **Ciudad**, **Documento** (Boleta, Factura, Ticket, Vale o Guía), **Proveedor**, **N°** de la boleta o factura y **Monto**. Proveedor y N° van en cada comprobante y son obligatorios: así COTE avisa si una boleta ya se rindió antes. Proyecto, Ciudad y Proveedor sugieren lo ya escrito antes.
+   - **Enter** pasa al siguiente casillero.
+   - Al salir del **monto** de la última línea completa (concepto, proveedor, N° y monto) se agrega **sola** la siguiente, con la misma fecha, proyecto, ciudad y tipo de documento (como las comillas «″» de la planilla). También puedes pulsar **Agregar línea**.
+   - La ✕ quita una línea. Las líneas en blanco se eliminan solas al guardar.
 5. **Totales como en la planilla:** «Subtotal facturas», «Subtotal boletas y otros» y «Total». Escribe el **Total escrito en la planilla**: COTE dice «¡Cuadra con la planilla!» o cuánto falta o sobra, para revisar si se copió mal una línea. Abajo dice cómo quedará el trabajador.
-6. **Guardar y aprobar.** La rendición queda **Aprobado** y se descuenta de lo que el trabajador tiene en su poder. Aparece «¡Listo!» con **Registrar otra rendición**, **Ver la rendición** e **Imprimir para firmar**.
+6. **Guardar y aprobar.** La rendición queda **Aprobado** y se descuenta de lo que el trabajador tiene en su poder. Aparece «¡Listo!» con **Registrar otra rendición**, **Ver la rendición** e **Imprimir para firmar**. Mientras escribes, el **autoguardado** guarda un borrador en el navegador (sin las fotos).
 
-Si se copió mal algo: en la ficha, **Anular aprobación** y luego **Corregir y reenviar**, que vuelve a abrir esta misma pantalla con las líneas y las fotos. Al guardar queda aprobada de nuevo.
+Si se copió mal algo: en la ficha, **Anular aprobación** y luego **Corregir y reenviar** (o **Editar**), que vuelve a abrir esta misma pantalla con las líneas y las fotos. Al guardar queda aprobada de nuevo.
 
 ## Revisar rendiciones de a una
 
@@ -309,9 +311,12 @@ Para crear una nueva, pulsa **Nueva Rendición** (o el botón verde **Nueva rend
    - El Jefe y el Tesorero ven todas las cuentas de trabajadores y pueden rendir a nombre de otra persona. El solicitante será el dueño de la cuenta.
    - Al elegir la cuenta aparecen «Saldo actual» y «Saldo si se aprueba esta rendición». Si queda negativo se avisa: «Quedará en negativo: la empresa le deberá esa diferencia.».
 3. Escribe la **Descripción general** (hasta 500 caracteres). Ejemplo: «Gastos semana del 14 al 18 de octubre».
-4. Completa el primer **Gasto** (ver «Datos de cada gasto»). Para más gastos, pulsa **Agregar gasto**. Para quitar uno, el ícono de papelera **Quitar gasto** (debe quedar al menos uno).
+4. Completa el primer **Gasto** (ver «Datos de cada gasto»).
+   - Al salir de un gasto completo (descripción, monto y proveedor) se agrega **sola** la siguiente línea. **Enter** avanza de campo; en el último campo de la línea también puede agregar otra.
+   - También puedes pulsar **Agregar gasto**. Para quitar uno, el ícono de papelera **Quitar gasto** (debe quedar al menos uno).
+   - Las líneas en blanco se eliminan solas al guardar.
 5. Revisa el **Total**, que se calcula solo.
-6. Pulsa **Crear rendición**. Aparece «Rendición creada correctamente.» y se abre su ficha, en estado Enviado.
+6. Pulsa **Crear rendición**. Aparece «Rendición creada correctamente.» y se abre su ficha, en estado Enviado. Mientras escribes, el **autoguardado** guarda un borrador en el navegador (sin las fotos nuevas).
 
 Si algo falta, el campo queda en rojo con su mensaje. Si la lista de cuentas está vacía, tu usuario no está vinculado a una persona con cuenta: pídeselo al Jefe.
 
@@ -377,12 +382,16 @@ En la ficha, botón **PDF**. Se abre en otra pestaña el archivo `rendicion_RND-
 
 **Quién puede:** todos los usuarios
 
-Se puede editar mientras esté **Enviado** o **Rechazado**. La edita su dueño, el Jefe o el Tesorero.
+Se puede editar mientras esté **Enviado** o **Rechazado** (también un borrador, si hubiera). La edita su dueño, el Jefe o el Tesorero. Una **Aprobado** no se edita hasta **Anular aprobación**.
 
-1. En la lista, ✏ **Editar**; o en la ficha, **Editar**.
-2. Cambia lo que necesites: cuenta, descripción, gastos, montos o comprobantes.
-3. Los comprobantes ya adjuntos aparecen como miniaturas. Para quitar uno, marca su casilla **Quitar** (se ve tachado). Para agregar, **Agregar archivos**.
-4. Pulsa **Guardar cambios**. Aparece «Rendición actualizada correctamente.».
+**Dónde:** menú **Rendiciones** → 👁 **Ver** la rendición → botón **Editar** o **Corregir y reenviar**.
+
+- Si la rendición fue **recibida en papel**, el Jefe o el Tesorero abren de nuevo **Registrar rendición** (ruta «corregir») con las líneas y las fotos.
+- Si se creó **desde la app**, se abre el formulario clásico de gastos con comprobante por ítem.
+
+1. Cambia lo que necesites: cuenta, descripción, gastos, montos o comprobantes.
+2. Los comprobantes o fotos ya adjuntos se pueden quitar o complementar.
+3. Pulsa **Guardar cambios** / **Guardar y reenviar** / **Guardar y aprobar**, según el caso.
 
 Al guardar se borran definitivamente los gastos que quitaste y los comprobantes marcados «Quitar». Si cambias la cuenta, el solicitante pasa a ser el dueño de la nueva cuenta. Una rendición **Aprobado** no se puede editar: «Esta rendición ya fue aprobada y no se puede modificar.».
 
@@ -727,6 +736,7 @@ Botón **Cerrar mes** de la barra superior (o menú **Cierre de mes**). Por defe
 - **Tarjetas:** «Tesorería al cierre», «En poder de trabajadores», «Les debemos» y «Rendido en el mes».
 - **Tabla por cuenta:** Cuenta, Saldo inicial, Entradas, Salidas, Rendido, Ajustes y Saldo final. La caja va primero.
 - **Exportar a Excel:** `cierre_AAAA-MM.xlsx` si está cerrado, o `cierre_AAAA-MM_provisorio.xlsx` si todavía está abierto.
+- **Meses cerrados:** abajo, una tabla por año con mes, quién cerró, fecha, resultado del arqueo (Cuadra / Faltaron / Sobraron / Sin arqueo) y **Ver** para abrir ese mes. El mes que estás mirando aparece marcado como **Viendo**.
 
 ## Cerrar un mes contando la caja
 
@@ -809,7 +819,7 @@ Para dejar a alguien como trabajador, desmarca todos sus roles. Para traspasar e
 
 Botón **Asistente** de la barra superior o del menú. Escribe tu pregunta como se la harías a una persona y pulsa **Preguntar**.
 
-- Puede explicar **cómo se hace algo** en COTE (por ejemplo «¿cómo rindo un gasto sin boleta?»).
+- Puede explicar **cómo se hace algo** en COTE (por ejemplo «¿cómo registro una rendición en papel?» o «¿cómo rindo un gasto sin boleta?»).
 - Puede responder **cifras**: cuánto hay en la caja, quién tiene dinero en su poder, a quién le debemos, qué hay por revisar, cuánto se gastó por categoría. El trabajador solo puede preguntar por sus propios datos.
 - Bajo cada respuesta, **Datos usados** muestra de dónde salió.
 - **Guardar** deja una pregunta a mano para repetirla; el botón con la goma de borrar (**Nueva conversación**) empieza de cero.
@@ -871,5 +881,6 @@ Que el trabajador rindió más de lo que se le entregó: gastó de su bolsillo y
 
 **Quién puede:** todos los usuarios
 
-- Si está **Enviado** o **Rechazado**: edítala o elimínala.
-- Si ya está **Aprobado**: el Jefe o el Tesorero pueden **Anular aprobación** desde la ficha; la rendición vuelve a quedar para corregir y el monto vuelve al saldo.
+- Si está **Enviado** o **Rechazado**: ábrela (**Ver**) y usa **Editar** / **Corregir y reenviar**, o elimínala.
+- Si fue **recibida en papel** y ya está **Aprobado**: el Jefe o el Tesorero **Anulan la aprobación** y luego **Corregen** en la misma pantalla de registrar planilla.
+- Si ya está **Aprobado** (desde la app): el Jefe o el Tesorero pueden **Anular aprobación** desde la ficha; la rendición vuelve a quedar para corregir y el monto vuelve al saldo.
