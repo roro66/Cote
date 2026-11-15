@@ -65,6 +65,7 @@
       this.saveTimeout = null;
       this.restoring = false;
       this.destroyed = false;
+      this.suppressUntil = 0;
 
       const tabKey = 'cote_autosave_tab_' + this.formSlug + (this.entityId ? '_e' + this.entityId : '');
       let tabDraftId = sessionStorage.getItem(tabKey);
@@ -158,10 +159,25 @@
 
     triggerSave() {
       if (this.destroyed || this.restoring) return;
+      if (this.suppressUntil && Date.now() < this.suppressUntil) return;
+      if (this.isFinishedState()) return;
       const formData = this.extractFormData();
       if (!formData) return;
+      if (formData.step === 'listo' || formData.doneId) return;
       if (!this.entityId && !this.hasMeaningfulData(formData)) return;
       this.saveDebounced(formData);
+    }
+
+    /** Tras grabar con éxito el componente queda en "listo": no volver a autoguardar ese contenido. */
+    isFinishedState() {
+      if (!this.componentId || !global.Livewire || !Livewire.find) return false;
+      try {
+        const component = Livewire.find(this.componentId);
+        if (!component) return false;
+        if (component.get('step') === 'listo') return true;
+        if (component.get('doneId')) return true;
+      } catch (e) { /* ignore */ }
+      return false;
     }
 
     hasMeaningfulData(data) {
@@ -232,6 +248,7 @@
     }
 
     checkForSavedData() {
+      if (this.isFinishedState()) return;
       const saved = this.load();
       if (!saved || !this.hasMeaningfulData(saved.data)) return;
       const self = this;
@@ -318,11 +335,28 @@
     }
 
     clear(markSuccess) {
+      clearTimeout(this.saveTimeout);
+      this.saveTimeout = null;
+      // Evita que un morph posterior al guardar vuelva a escribir el borrador.
+      if (markSuccess) this.suppressUntil = Date.now() + 8000;
       try {
         localStorage.removeItem(this.storageKey);
-        if (markSuccess) localStorage.setItem(this.lastSuccessfulSaveKey, new Date().toISOString());
+        if (markSuccess) {
+          localStorage.setItem(this.lastSuccessfulSaveKey, new Date().toISOString());
+          // Borra cualquier borrador del mismo formulario/usuario (p. ej. el que reescribió un morph).
+          this.clearSlugDrafts();
+        }
       } catch (e) { /* ignore */ }
       hideIndicator();
+    }
+
+    clearSlugDrafts() {
+      const prefix = 'cote_autosave_' + this.formSlug + '_u' + this.userId;
+      try {
+        Object.keys(localStorage).forEach(function (key) {
+          if (key.startsWith(prefix)) localStorage.removeItem(key);
+        });
+      } catch (e) { /* ignore */ }
     }
 
     cleanOld() {

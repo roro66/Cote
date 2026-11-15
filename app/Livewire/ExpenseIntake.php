@@ -235,9 +235,10 @@ class ExpenseIntake extends Component
             return;
         }
 
-        $this->clearClientAutosave();
         $this->doneId = $expense->id;
         $this->step = 'listo';
+        // Después de pasar a "listo": si se limpia antes, el morph puede volver a autoguardar las filas.
+        $this->clearClientAutosave();
     }
 
     /** @param  array<string, mixed>  $savedData */

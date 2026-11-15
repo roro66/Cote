@@ -146,9 +146,10 @@ class CashMovement extends Component
 
         try {
             $transaction = $service->createApproved([...$data, 'amount' => $amount, 'description' => $this->description], auth()->id());
-            $this->clearClientAutosave();
             $this->doneId = $transaction->id;
             $this->step = 'listo';
+            // Después de "listo": si se limpia antes, el morph puede volver a autoguardar el formulario.
+            $this->clearClientAutosave();
         } catch (\DomainException $e) {
             $this->addError('amount', $e->getMessage());
             $this->step = 'monto';
