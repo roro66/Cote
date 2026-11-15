@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RestoresAutosavedDraft;
 use App\Models\Account;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
@@ -21,6 +22,7 @@ use Livewire\WithFileUploads;
  */
 class ExpenseIntake extends Component
 {
+    use RestoresAutosavedDraft;
     use WithFileUploads;
 
     public const TYPES = ['boleta' => 'Boleta', 'factura' => 'Factura', 'ticket' => 'Ticket', 'vale' => 'Vale', 'guia_despacho' => 'Guía de despacho'];
@@ -233,12 +235,33 @@ class ExpenseIntake extends Component
             return;
         }
 
+        $this->clearClientAutosave();
         $this->doneId = $expense->id;
         $this->step = 'listo';
     }
 
+    /** @param  array<string, mixed>  $savedData */
+    public function restoreSavedData(array $savedData): void
+    {
+        try {
+            $this->applyAutosavedProperties($savedData, [
+                'accountId', 'date', 'description', 'declaredTotal', 'rows', 'step', 'search',
+            ]);
+            if ($this->accountId && $this->step === 'persona') {
+                $this->step = 'planilla';
+            }
+            if ($this->rows === []) {
+                $this->rows = [$this->blankRow()];
+            }
+            $this->notifyAutosaveRestored();
+        } catch (\Throwable) {
+            $this->notifyAutosaveRestoreFailed();
+        }
+    }
+
     public function restart(): void
     {
+        $this->clearClientAutosave();
         $this->reset(['step', 'search', 'accountId', 'description', 'declaredTotal', 'rows', 'newPhotos', 'photos', 'removePhotoIds', 'expenseId', 'doneId']);
         $this->date = now()->toDateString();
     }

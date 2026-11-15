@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RestoresAutosavedDraft;
 use App\Models\Account;
 use App\Models\Transaction;
 use App\Services\TransactionService;
@@ -15,6 +16,8 @@ use Livewire\Component;
  */
 class CashMovement extends Component
 {
+    use RestoresAutosavedDraft;
+
     public const MODES = ['entregar', 'devolucion', 'ingreso'];
 
     #[Locked]
@@ -143,11 +146,29 @@ class CashMovement extends Component
 
         try {
             $transaction = $service->createApproved([...$data, 'amount' => $amount, 'description' => $this->description], auth()->id());
+            $this->clearClientAutosave();
             $this->doneId = $transaction->id;
             $this->step = 'listo';
         } catch (\DomainException $e) {
             $this->addError('amount', $e->getMessage());
             $this->step = 'monto';
+        }
+    }
+
+    /** @param  array<string, mixed>  $savedData */
+    public function restoreSavedData(array $savedData): void
+    {
+        try {
+            $this->applyAutosavedProperties($savedData, ['accountId', 'amount', 'description', 'step', 'search']);
+            if ($this->mode === 'ingreso' && $this->step === 'persona') {
+                $this->step = 'monto';
+            }
+            if ($this->mode !== 'ingreso' && ! $this->accountId && $this->step !== 'persona') {
+                $this->step = 'persona';
+            }
+            $this->notifyAutosaveRestored();
+        } catch (\Throwable) {
+            $this->notifyAutosaveRestoreFailed();
         }
     }
 
@@ -169,6 +190,7 @@ class CashMovement extends Component
 
     public function restart(): void
     {
+        $this->clearClientAutosave();
         $this->reset(['accountId', 'amount', 'description', 'search', 'doneId']);
         $this->step = $this->mode === 'ingreso' ? 'monto' : 'persona';
         $this->resetErrorBag();

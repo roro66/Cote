@@ -507,6 +507,37 @@ html:not([data-bs-theme="dark"]) .guest-theme-toggle {
 [data-bs-theme="dark"] .guest-card .text-red-600 { color: #fca5a5 !important; }
 [data-bs-theme="dark"] .guest-card .text-green-600 { color: #86efac !important; }
 
+/* Autoguardado: tostada fija abajo-derecha, fuera del scroll */
+#cote-autosave-indicator {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 2050;
+    background: #e7f6ee;
+    color: #1c5c3a;
+    border: 1px solid #b7e0c8;
+    padding: 0.45rem 0.85rem;
+    border-radius: 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    box-shadow: 0 8px 20px rgba(40, 50, 70, 0.1);
+}
+#cote-autosave-indicator.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+[data-bs-theme="dark"] #cote-autosave-indicator {
+    background: #1e3329;
+    color: #d5f3e4;
+    border-color: #2f5a44;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
 /* Avisos (SweetAlert2): toasts pastel y confirmaciones */
 .cote-toast {
     border-radius: 16px !important;

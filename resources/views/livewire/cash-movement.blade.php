@@ -201,4 +201,10 @@
             </div>
         </div>
     @endif
+
+    @include('partials.cote-form-autosave', [
+        'formSlug' => 'cash-movement-'.$mode,
+        'entityId' => null,
+        'fields' => ['accountId', 'amount', 'description', 'step', 'search'],
+    ])
 </div>

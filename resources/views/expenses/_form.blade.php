@@ -184,13 +184,17 @@
 </template>
 
 @push('scripts')
+<script src="{{ asset('js/cote-form-autosave.js') }}"></script>
 <script>
 (function () {
     const EXISTING_ITEMS = @json($itemsData);
+    const EXPENSE_ENTITY_ID = @json($expense?->id);
+    const AUTOSAVE_USER_ID = {{ auth()->check() ? (int) auth()->id() : 0 }};
     const TODAY = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     let itemCounter = 0;
     let categories = [];
     let currentBalance = 0;
+    let expenseAutosave = null;
 
     const clp = n => '$' + new Intl.NumberFormat('es-CL').format(Math.round(Number(n) || 0));
 
@@ -438,6 +442,36 @@
         const accountSelect = document.getElementById('account_id');
         accountSelect.addEventListener('change', () => loadAccount(accountSelect.value));
 
+        function collectExpenseDraft() {
+            return {
+                account_id: accountSelect.value || '',
+                description: document.getElementById('description').value || '',
+                items: itemCards().map(card => ({
+                    id: fieldValue(card, 'id') || null,
+                    expense_date: fieldValue(card, 'expense_date'),
+                    description: fieldValue(card, 'description'),
+                    amount: fieldValue(card, 'amount'),
+                    document_type: fieldValue(card, 'document_type') || 'boleta',
+                    vendor_name: fieldValue(card, 'vendor_name'),
+                    receipt_number: fieldValue(card, 'receipt_number'),
+                    expense_category_id: fieldValue(card, 'expense_category_id') || '',
+                    without_receipt: !!fieldValue(card, 'without_receipt'),
+                    without_receipt_reason: fieldValue(card, 'without_receipt_reason'),
+                })),
+            };
+        }
+
+        function restoreExpenseDraft(data) {
+            document.getElementById('description').value = data.description || '';
+            if (data.account_id) accountSelect.value = String(data.account_id);
+            document.getElementById('expenseItems').innerHTML = '';
+            itemCounter = 0;
+            (data.items || []).forEach(item => addExpenseItem(item));
+            if (!itemCards().length) addExpenseItem();
+            loadAccount(accountSelect.value);
+            calculateTotal();
+        }
+
         fetch('/datatables/expense-categories', { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
             .then(r => r.ok ? r.json() : { data: [] })
             .then(json => { categories = Array.isArray(json.data) ? json.data : []; })
@@ -446,6 +480,24 @@
                 if (EXISTING_ITEMS.length) EXISTING_ITEMS.forEach(item => addExpenseItem(item));
                 else addExpenseItem();
                 loadAccount(accountSelect.value);
+
+                if (typeof CoteFormAutoSave !== 'undefined') {
+                    expenseAutosave = CoteFormAutoSave.attach({
+                        userId: AUTOSAVE_USER_ID,
+                        formSlug: EXPENSE_ENTITY_ID ? 'expenses-edit' : 'expenses-create',
+                        entityId: EXPENSE_ENTITY_ID,
+                        formRootSelector: '#expenseForm',
+                        debounceMs: 2500,
+                        getDomData: collectExpenseDraft,
+                        restoreDom: restoreExpenseDraft,
+                        hasMeaningfulFn: function (data) {
+                            return !!(data.account_id || String(data.description || '').trim()
+                                || (Array.isArray(data.items) && data.items.some(function (i) {
+                                    return i && (String(i.description || '').trim() || Number(i.amount) > 0 || String(i.vendor_name || '').trim());
+                                })));
+                        },
+                    });
+                }
             });
 
         form.addEventListener('submit', function (e) {
@@ -470,6 +522,10 @@
             .then(r => r.json().then(data => ({ ok: r.ok, data })))
             .then(({ ok, data }) => {
                 if (ok && data.success) {
+                    if (expenseAutosave && expenseAutosave.clear) expenseAutosave.clear(true);
+                    document.dispatchEvent(new CustomEvent('cote-autosave:clear', {
+                        detail: { formSlug: EXPENSE_ENTITY_ID ? 'expenses-edit' : 'expenses-create' },
+                    }));
                     toastr.success(data.message);
                     window.location.href = data.redirect;
                     return;

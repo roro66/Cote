@@ -297,4 +297,10 @@
             </div>
         </div>
     @endif
+
+    @include('partials.cote-form-autosave', [
+        'formSlug' => 'expense-intake',
+        'entityId' => $expenseId,
+        'fields' => ['accountId', 'date', 'description', 'declaredTotal', 'rows', 'step', 'search'],
+    ])
 </div>
